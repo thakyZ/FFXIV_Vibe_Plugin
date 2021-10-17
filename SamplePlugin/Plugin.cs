@@ -78,12 +78,12 @@ namespace SamplePlugin
             Chat.ChatMessage += CheckForTriggers; // XXX: o.o
         }
 
-        private readonly XivChatType[] allowedChatTypes = { XivChatType.Say, 
-            XivChatType.Shout, XivChatType.TellIncoming, XivChatType.Party, 
+        private readonly XivChatType[] allowedChatTypes = { 
+            XivChatType.TellIncoming, XivChatType.Party, 
             XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, 
             XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, 
-            XivChatType.FreeCompany, XivChatType.CustomEmote, XivChatType.CrossParty, 
-            XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, 
+            XivChatType.FreeCompany, XivChatType.CrossParty, XivChatType.PvPTeam, 
+            XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, 
             XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
             XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, 
             XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 };
