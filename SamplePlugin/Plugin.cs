@@ -31,6 +31,10 @@ namespace SamplePlugin
             {
                 return $"Trigger(intensity: {Intensity}, text: '{ToMatch}')";
             }
+            public string ToConfigString()
+            {
+                return $"{Intensity} {ToMatch}";
+            }
             public bool Equals(Trigger that)
             {
                 return this.Intensity == that.Intensity && this.ToMatch.Equals(that.ToMatch);
@@ -41,7 +45,7 @@ namespace SamplePlugin
         [RequiredVersion("1.0")]
         private ChatGui Chat { get; init; }
         private Buttplug.ButtplugClient buttplugClient;
-        private readonly List<Trigger> Triggers = new();
+        private readonly SortedSet<Trigger> Triggers = new SortedSet<Trigger>();
 
         public string Name => "Buttplug Triggers";
         private const string commandName = "/buttplugtriggers";
@@ -82,7 +86,7 @@ namespace SamplePlugin
             XivChatType.TellIncoming, XivChatType.Party, 
             XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, 
             XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, 
-            XivChatType.FreeCompany, XivChatType.CrossParty, XivChatType.PvPTeam, 
+            XivChatType.FreeCompany, XivChatType.CrossParty, 
             XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, 
             XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
             XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, 
@@ -91,7 +95,7 @@ namespace SamplePlugin
         private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled)
         {
             string sender = _sender.ToString();
-            if (!allowedChatTypes.Any(ct => ct == type) || !sender.ToString().Contains(AuthorizedUser)) {
+            if (!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
                 return;
             }
             string message = _message.ToString();
@@ -107,7 +111,7 @@ namespace SamplePlugin
         {
             this.PluginUi.Dispose();
             this.CommandManager.RemoveHandler(commandName);
-            this.buttplugClient.DisconnectAsync();
+            if(this.buttplugClient != null) this.buttplugClient.DisconnectAsync();
             Chat.ChatMessage -= CheckForTriggers; // XXX: ???
 
         }
@@ -132,6 +136,18 @@ namespace SamplePlugin
        {command} connect [ip[:port]] # defaults to 'localhost:12345', the intiface default
        {command} disconnect
        {command} user [authorized user] # set/clear sender string match
+       {command} save [file path]
+       {command} load [file path]
+
+Example:
+       {command} connect
+       {command} add 0 shh
+       {command} add 20 slowly 
+       {command} add 75 getting there
+       {command} add 100 hey ;)
+       {command} user Alice
+
+       These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
             Chat.Print(helpMessage);
         }
@@ -163,10 +179,10 @@ namespace SamplePlugin
                     SetAuthorizedUser(args);
                     break;
                 case "sav":
-                    Print("SORRY! This doesn't work yet.");
+                    SaveConfig(args);
                     break;
                 case "loa":
-                    Print("SORRY! This doesn't work yet.");
+                    LoadConfig(args);
                     break;
                 default:
                     Print($"Unknown subcommand: {args}");
@@ -175,10 +191,63 @@ namespace SamplePlugin
 
         }
 
+        private void LoadConfig(string args)
+        {
+            string config = "";
+            string path = "";
+            try
+            {
+                path = args.Split(" ")[1];
+                config = File.ReadAllText(path);
+            }
+            catch (Exception) 
+            {
+                PrintError($"Malformed or invalid arguments for [load]: {args}");
+                return;
+            }
+            foreach(string line in config.Split("\n")) {
+                string[] trigargs = line.Split(" ");
+                int intensity;
+                string toMatch = trigargs[1];
+                if (int.TryParse(trigargs[0], out intensity)) {
+                    Trigger trigger = new(intensity, toMatch);
+                    if (!Triggers.Add(trigger))
+                    {
+                        Print($"Note: duplicate trigger: {trigger}");
+                    };
+                }
+            }
+        }
+
+        private void SaveConfig(string args)
+        {
+            string path;
+            var config = string.Join("\n", Triggers.Select(t => t.ToString()));
+            try
+            {
+                path = args.Split(" ")[1];
+                File.WriteAllText(path, config);
+            }
+            catch (Exception)
+            {
+                PrintError($"Malformed or invalid arguments for [save]: {args}");
+                return;
+            }
+            Print($"Wrote current config to {path}");
+        }
+
         private void SetAuthorizedUser(string args)
         {
-            AuthorizedUser = args.Split(" ", 2)[1];
-            Print($"Authorized user set to: {AuthorizedUser}");
+            try
+            {
+                AuthorizedUser = args.Split(" ", 2)[1];
+            }
+            catch(IndexOutOfRangeException)
+            {
+                Print("Cleared authorized user.");
+                return;
+            }
+            Print($"Authorized user set to '{AuthorizedUser}'");
         }
 
         private void DisconnectButtplugs()
@@ -248,8 +317,8 @@ namespace SamplePlugin
                 PrintError("Malformed argument for [remove]");
                 return; // XXX: exceptional control flow
             }
-            Trigger removed = Triggers[id];
-            Triggers.RemoveAt(id);
+            Trigger removed = Triggers.ElementAt(id);
+            Triggers.Remove(removed);
             Print($@"Removed Trigger: {removed}");
         }
 
@@ -278,11 +347,11 @@ namespace SamplePlugin
         {
             string message =
                 @"Configured triggers:
-ID   Intensity     Text Match
+ID   Intensity   Text Match
 ";
             for (int i = 0; i < Triggers.Count; ++i)
             {
-                message += $"[{i}]\t{Triggers[i].Intensity}\t{Triggers[i].ToMatch}\n";
+                message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).ToMatch}\n";
             }
             Chat.Print(message);
         }
