@@ -16,7 +16,7 @@ namespace SamplePlugin
 {
     public sealed class Plugin : IDalamudPlugin
     {
-        private class Trigger
+        private class Trigger : IComparable
         {
             public Trigger(int intensity, string text)
             {
@@ -35,9 +35,11 @@ namespace SamplePlugin
             {
                 return $"{Intensity} {ToMatch}";
             }
-            public bool Equals(Trigger that)
+            public int CompareTo(object? obj)
             {
-                return this.Intensity == that.Intensity && this.ToMatch.Equals(that.ToMatch);
+                Trigger? that = obj as Trigger;
+                int thatintensity = that != null ? that.Intensity : 0;
+                return this.Intensity.CompareTo(thatintensity);
             }
         }
 
@@ -319,7 +321,7 @@ Example:
             }
             Trigger removed = Triggers.ElementAt(id);
             Triggers.Remove(removed);
-            Print($@"Removed Trigger: {removed}");
+            Print($"Removed Trigger: {removed}");
         }
 
         private void AddTrigger(string args)
@@ -339,8 +341,15 @@ Example:
                 return; // XXX: exceptional control flow
             }
             Trigger newTrigger = new(intensity, text);
-            Print($"Added Trigger: {newTrigger}");
-            Triggers.Add(newTrigger);
+            Print($"Adding Trigger: {newTrigger}...");
+            if (Triggers.Add(newTrigger))
+            {
+                Print("Success!");
+            }
+            else
+            {
+                PrintError($"Failed. Possible duplicate?");
+            }
         }
 
         private void ListTriggers()
