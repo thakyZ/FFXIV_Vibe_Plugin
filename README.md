@@ -39,19 +39,23 @@ Well done ! You have now FFXIV connected to Intiface and your toys.
 
 | Command                | Description  |
 |------------------------|--------------|
-| /buttplugtriggers      | List all the available commands |
-| /buttplugtriggers list | List all the added words and intensity |
-| /buttplugtriggers add <intensity 0-100> <The words to match> | Add a word that will trigger update the intensity of the toy. |
-| /buttplugtriggers user <UserName> | Triggered only by the define username. |
+| /bp | List all the available commands |
+| /bp list | List all the added words and intensity |
+| /bp add <intensity 0-100> <The words to match> | Add a word that will trigger update the intensity of the toy. |
+| /bp user <UserName> | Triggered only by the define username. |
+| /bp hp_toggler | Will vibe when some HP are missing. |
+| /bp threshold <0-100> | Will pet to feel it to strongly. |
 
 ### Examples
 
 ```
-/buttplugtriggers connect
-/buttplugtriggers add 20 hello world
-/buttplugtriggers add 0 stop
-/buttplugtriggers add 100 lol
-/buttplugtriggers user Alice           <==== Only names matching "...Alice..." will be able to control you. 
+/bp connect
+/bp add 20 hello world
+/bp add 0 stop
+/bp add 100 lol
+/bp user Alice           <==== Only names matching "...Alice..." will be able to control you. 
+/bp hp_toggle
+/bp threshold 50
 ```
 
 Now open the FFXIV chat texbox, select the /freecompany channel and write: `hello world`.
