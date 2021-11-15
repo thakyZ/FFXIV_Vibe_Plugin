@@ -54,8 +54,12 @@ namespace FFXIV_BP
 
         public string Name => "FFXIV BP";
         private const string commandName = "/bp";
+
+        // Custom variables from Kacie
         private bool buttplugIsConnected = false;
         private int currentIntensity = 0;
+        private int threshold = 100;
+        private bool hp_toggle = false;
 
         private DalamudPluginInterface PluginInterface { get; init; }
         private CommandManager CommandManager { get; init; }
@@ -70,7 +74,7 @@ namespace FFXIV_BP
             [RequiredVersion("1.0")] ClientState clientState)
 
         {
-            
+
             this.PluginInterface = pluginInterface;
             this.CommandManager = commandManager;
             this.clientState = clientState;
@@ -95,25 +99,26 @@ namespace FFXIV_BP
             {
                 Chat.ChatMessage += CheckForTriggers; // XXX: o.o
             }
-            
+
             // Default values
             this.AuthorizedUser = "";
         }
 
-        private readonly XivChatType[] allowedChatTypes = { 
-            XivChatType.Say, XivChatType.Party, 
-            XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, 
-            XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, 
-            XivChatType.FreeCompany, XivChatType.CrossParty, 
-            XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, 
+        private readonly XivChatType[] allowedChatTypes = {
+            XivChatType.Say, XivChatType.Party,
+            XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
+            XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
+            XivChatType.FreeCompany, XivChatType.CrossParty,
+            XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
             XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
-            XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, 
+            XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
             XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 };
 
         private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled)
         {
             string sender = _sender.ToString();
-            if (!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
+            if (!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser)))
+            {
                 return;
             }
             string message = _message.ToString();
@@ -129,7 +134,7 @@ namespace FFXIV_BP
         {
             this.PluginUi.Dispose();
             this.CommandManager.RemoveHandler(commandName);
-            if(this.buttplugClient != null) this.buttplugClient.DisconnectAsync();
+            if (this.buttplugClient != null) this.buttplugClient.DisconnectAsync();
             Chat.ChatMessage -= CheckForTriggers; // XXX: ???
 
         }
@@ -151,11 +156,13 @@ namespace FFXIV_BP
        {command} list
        {command} add <intensity 0-100> <trigger text>
        {command} remove <id>
-       {command} connect [ip[:port]] # defaults to 'localhost:12345', the intiface default
+       {command} connect [ip[:port]]    # defaults to 'localhost:12345', the intiface default
        {command} disconnect
        {command} user [authorized user] # set/clear sender string match
        {command} save [file path]
        {command} load [file path]
+       {command} hp_toggle              # Current: {this.hp_toggle}
+       {command} threshold <0-100>      # Current: {this.threshold}
 
 Example:
        {command} connect
@@ -164,6 +171,8 @@ Example:
        {command} add 75 getting there
        {command} add 100 hey ;)
        {command} user Alice
+       {command} hp_toggle
+       {command} threshold 100 
 
        These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
@@ -207,6 +216,12 @@ Example:
                     case "loa":
                         LoadConfig(args);
                         break;
+                    case "hp_":
+                        ToggleHP();
+                        break;
+                    case "thr":
+                        SetThreshold(args);
+                        break;
                     default:
                         Print($"Unknown subcommand: {args}");
                         break;
@@ -224,16 +239,18 @@ Example:
                 path = args.Split(" ")[1];
                 config = File.ReadAllText(path);
             }
-            catch (Exception) 
+            catch (Exception)
             {
                 PrintError($"Malformed or invalid arguments for [load]: {args}");
                 return;
             }
-            foreach(string line in config.Split("\n")) {
+            foreach (string line in config.Split("\n"))
+            {
                 string[] trigargs = line.Split(" ");
                 int intensity;
                 string toMatch = trigargs[1];
-                if (int.TryParse(trigargs[0], out intensity)) {
+                if (int.TryParse(trigargs[0], out intensity))
+                {
                     Trigger trigger = new(intensity, toMatch);
                     if (!Triggers.Add(trigger))
                     {
@@ -266,7 +283,7 @@ Example:
             {
                 AuthorizedUser = args.Split(" ", 2)[1];
             }
-            catch(IndexOutOfRangeException)
+            catch (IndexOutOfRangeException)
             {
                 Print("Cleared authorized user.");
                 return;
@@ -299,7 +316,7 @@ Example:
             if (args.Contains(" "))
             {
                 hostandport = args.Split(" ", 2)[1];
-                if(!hostandport.Contains(":"))
+                if (!hostandport.Contains(":"))
                 {
                     hostandport += port;
                 }
@@ -309,7 +326,7 @@ Example:
             Print($"Connecting to {hostandport}...");
             Task task = buttplugClient.ConnectAsync(connector);
             task.Wait();
-            if(buttplugClient.Connected)
+            if (buttplugClient.Connected)
             {
                 Print($"Connected!");
             }
@@ -337,8 +354,8 @@ Example:
                 {
                     throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
                 }
-            } 
-            catch(FormatException)
+            }
+            catch (FormatException)
             {
                 PrintError("Malformed argument for [remove]");
                 return; // XXX: exceptional control flow
@@ -346,6 +363,33 @@ Example:
             Trigger removed = Triggers.ElementAt(id);
             Triggers.Remove(removed);
             Print($"Removed Trigger: {removed}");
+        }
+
+        private void ToggleHP()
+        {
+            this.hp_toggle = !this.hp_toggle;
+            if (!this.hp_toggle && this.buttplugIsConnected)
+            {
+                this.sendVibes(0); // Don't be cruel
+            }
+            Print($"HP Togglet set to {this.hp_toggle}");
+        }
+
+        private void SetThreshold(string args)
+        {
+            string[] blafuckcsharp = args.Split(" ", 2);
+            int threshold = 0;
+            try
+            {
+                threshold = int.Parse(blafuckcsharp[1]);
+            }
+            catch (Exception e) when (e is FormatException or IndexOutOfRangeException)
+            {
+                PrintError($"Malformed arguments for [threshold].");
+                return;
+            }
+            this.threshold = threshold;
+            Print($"Threshold set to {threshold}");
         }
 
         private void AddTrigger(string args)
@@ -392,28 +436,42 @@ ID   Intensity   Text Match
         private void DrawUI()
         {
             this.PluginUi.Draw();
-            if(this.clientState != null && this.clientState.LocalPlayer != null)
+            if (this.clientState != null && this.clientState.LocalPlayer != null)
             {
-                int currentHP = (int)this.clientState.LocalPlayer.CurrentHp;
-                int maxHP = (int)this.clientState.LocalPlayer.MaxHp;
-                int percentage = ((100 * currentHP / maxHP) - 100)*-1;
-                if(this.currentIntensity != percentage)
+
+                
+                // Send vibes on HP loss
+                if (this.hp_toggle)
                 {
-                    Print(percentage.ToString());
-                    if (this.buttplugIsConnected && this.buttplugClient != null)
-                    {
-                        buttplugClient.Devices[0].SendVibrateCmd(percentage / 100.0f);
-                    }
-                    this.currentIntensity = percentage;
+                    int currentHP = (int)this.clientState.LocalPlayer.CurrentHp;
+                    int maxHP = (int)this.clientState.LocalPlayer.MaxHp;
+                    int percentage = ((this.threshold * currentHP / maxHP) - this.threshold) * -1;
+                    this.sendVibes(percentage);
                 }
                 
+
             }
-            
+
         }
 
         private void DrawConfigUI()
         {
             this.PluginUi.SettingsVisible = true;
+        }
+
+        private void sendVibes(int intensity)
+        {
+            
+            
+            if (this.currentIntensity != intensity && this.buttplugIsConnected && this.buttplugClient != null)
+            {
+                Print($"FFXIV_BP intensity: {intensity.ToString()}");
+                for (int i = 0; i < buttplugClient.Devices.Length; i++)
+                {
+                    buttplugClient.Devices[i].SendVibrateCmd(intensity / 100.0f);
+                }
+                this.currentIntensity = intensity;
+            }
         }
     }
 }
