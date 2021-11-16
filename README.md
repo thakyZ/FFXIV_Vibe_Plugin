@@ -33,7 +33,7 @@ I have only tried to document the installation process which took me multiple at
 
 Well done ! You have now FFXIV connected to Intiface and your toys. 
 
-![ingame](https://cdn.discordapp.com/attachments/794224288826654780/899748631119282176/PXL_20211018_195852122.MP2.jpg)
+![ingame](./docs/screenshot.png)
 
 ## Quick guide to make it work
 
