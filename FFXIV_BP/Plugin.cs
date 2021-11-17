@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -12,6 +13,10 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
 using Buttplug;
+using System.Timers;
+
+// Experimental
+using static FFXIV_BP.PlayerStats;
 
 namespace FFXIV_BP {
   public sealed class Plugin : IDalamudPlugin {
@@ -52,6 +57,7 @@ namespace FFXIV_BP {
     private bool buttplugIsConnected = false;
     private float currentIntensity = 0;
     private int threshold = 100;
+    private int _currentHPPercentage = 100;
     private bool hp_toggle = false;
 
     private DalamudPluginInterface PluginInterface { get; init; }
@@ -60,6 +66,11 @@ namespace FFXIV_BP {
     private PluginUI PluginUi { get; init; }
     private ClientState clientState;
     private string AuthorizedUser { get; set; }
+
+    private bool firstUpdated = false;
+
+    private DateTime _delay = DateTime.MinValue;
+    private bool vibe = false;
 
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
@@ -91,6 +102,8 @@ namespace FFXIV_BP {
 
       // Default values
       this.AuthorizedUser = "";
+
+
     }
 
     private readonly XivChatType[] allowedChatTypes = {
@@ -116,31 +129,78 @@ namespace FFXIV_BP {
       }
     }
 
-    public void Dispose() {
-      this.PluginUi.Dispose();
-      this.CommandManager.RemoveHandler(commandName);
-      if(this.buttplugClient != null) this.buttplugClient.DisconnectAsync();
-      Chat.ChatMessage -= CheckForTriggers; // XXX: ???
 
+    private void DrawUI() {
+
+      if(!this.firstUpdated) {
+        /*this.firstUpdated = true;
+        Print("Welcome");
+
+
+        // Automatically connects
+        this.ConnectButtplugs("");
+        */
+
+      }
+      this.PluginUi.Draw();
+      if(this.clientState != null && this.clientState.LocalPlayer != null) {
+
+
+        // Send vibes on HP loss
+        if(this.hp_toggle) {
+          float currentHP = (float)this.clientState.LocalPlayer.CurrentHp;
+          float maxHP = (float)this.clientState.LocalPlayer.MaxHp;
+          float percentageHP = this.threshold * currentHP / maxHP;
+          float percentage = ((percentageHP) - this.threshold) * -1;
+          this.sendVibes(percentage);
+        }
+      }
+    }
+
+    private void DrawConfigUI() {
+      this.PluginUi.SettingsVisible = true;
+    }
+
+    public void Dispose() {
+     
+      this.CommandManager.RemoveHandler(commandName);
+      Chat.ChatMessage -= CheckForTriggers; // XXX: ???
+      this.PluginUi.Dispose();
+      Print("Buttplug Disconnects!");
+      if(this.buttplugClient != null) {
+        Print("Buttplug disconnecting...");
+        try {
+          this.buttplugClient.DisconnectAsync();
+          
+        } catch(Exception e) {
+          PrintError("Could not disconnect from buttplug. Was connected?");
+          PrintError(e.ToString());
+          return;
+        }
+      }
+      
     }
 
     private void Print(string message) {
-      Chat.Print(message);
+      Chat.Print($"FFXIV_BP> {message}");
     }
 
     private void PrintError(string error) {
-      Chat.PrintError(error);
+      Chat.PrintError($"FFXIV_BP error> {error}");
     }
 
     private void PrintHelp(string command) {
       string helpMessage =
-          $@"Usage: {command} list
-       {command} chat_list_triggers
-       {command} chat_add <intensity 0-100> <trigger text>
-       {command} remove <id>
+          $@"Usage:
        {command} connect [ip[:port]]    # defaults to 'localhost:12345', the intiface default
        {command} disconnect
-       {command} user [authorized user] # set/clear sender string match
+       {command} stop
+
+       {command} chat_list_triggers
+       {command} chat_add <intensity 0-100> <trigger text>
+       {command} chat_remove <id>
+
+       {command} chat_user [authorized user] # set/clear sender string match
        {command} save [file path]
        {command} load [file path]
        {command} hp_toggle              # Current: {this.hp_toggle}
@@ -168,17 +228,22 @@ Example:
         if(args.StartsWith("test")) {
           this.PluginUi.Visible = true;
         } else if(args.StartsWith("connect")) {
+          
           ConnectButtplugs(args);
+        } else if(args.StartsWith("scan")) {
+          ScanToys();
+        } else if(args.StartsWith("toys_list")) {
+          this.ToysList();
         } else if(args.StartsWith("chat_list_triggers")) {
           this.ListTriggers();
         } else if(args.StartsWith("chat_add")) {
           this.AddTrigger(args);
         } else if(args.StartsWith("chat_remove")) {
           this.RemoveTrigger(args);
+        } else if(args.StartsWith("chat_user")) {
+          this.SetAuthorizedUser(args);
         } else if(args.StartsWith("disconnect")) {
           this.DisconnectButtplugs();
-        } else if(args.StartsWith("user")) {
-          this.SetAuthorizedUser(args);
         } else if(args.StartsWith("save")) {
           SaveConfig(args);
         } else if(args.StartsWith("load")) {
@@ -187,6 +252,8 @@ Example:
           this.ToggleHP();
         } else if(args.StartsWith("threshold")) {
           this.SetThreshold(args);
+        } else if(args.StartsWith("send")) {
+          this.SendIntensity(args);
         } else {
           Print($"Unknown subcommand: {args}");
         }
@@ -230,20 +297,21 @@ Example:
       Print($"Wrote current config to {path}");
     }
 
-    private void DisconnectButtplugs() {
-      Task task = this.buttplugClient.DisconnectAsync();
-      task.Wait();
-      Print("Disconnected! Bye!");
-      this.buttplugIsConnected = false;
-    }
 
     private void ConnectButtplugs(string args) {
+      if(this.buttplugIsConnected) {
+        Print("Disconnecting previous instance...");
+        this.DisconnectButtplugs();
+        Thread.Sleep(2000);
+      }
+      
       try {
         this.buttplugClient = new("buttplugtriggers-dalamud");
       } catch(Exception e) {
         PrintError($"Can't load buttplug.io: {e.Message}");
       }
       buttplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
+      buttplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
       string host = "localhost";
       string port = ":12345";
       string hostandport = host + port;
@@ -253,23 +321,75 @@ Example:
           hostandport += port;
         }
       }
-      var uri = new Uri($"ws://{hostandport}/buttplug");
-      var connector = new ButtplugWebsocketConnectorOptions(uri);
-      Print($"Connecting to {hostandport}...");
-      Task task = buttplugClient.ConnectAsync(connector);
-      task.Wait();
-      if(buttplugClient.Connected) {
-        Print($"Connected!");
-      } else {
-        PrintError("Failed connecting (TODO: Why?");
+
+      try {
+        var uri = new Uri($"ws://{hostandport}/buttplug");
+        var connector = new ButtplugWebsocketConnectorOptions(uri);
+        Print($"Connecting to {hostandport}...");
+        // FIXME: problematic when disconnection of toy occures
+        Task task = buttplugClient.ConnectAsync(connector);
+        task.Wait();
+        Print("Buttplug connected correctly...");
+      } catch(Exception e) {
+        PrintError($"Could not connect to {hostandport}");
       }
+      
+      
+      if(buttplugClient.Connected) {
+        Print($"Buttplug connected!");
+        this.buttplugIsConnected = true;
+      } else {  
+        PrintError("Failed connecting (Intiface server is up?)");
+        return;
+      }
+
+      this.ScanToys();
+    }
+
+    private void ScanToys() {
       Print("Scanning for devices...");
-      buttplugClient.StartScanningAsync();
+      try {
+        buttplugClient.StartScanningAsync();
+      } catch(Exception e) {
+        PrintError("Scanning issue...");
+      }
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
       Print("Added device: " + e.Device.Name);
-      this.buttplugIsConnected = true;
+      /**
+       * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
+       * Therefore, it is important to trigger a zero and some vibes before continuing further.
+       * Don't remove this part unless you want to debug for hours.
+       */
+      this.sendVibes(0, false); // Needed to make sure we can play with the toys again
+      this.sendVibes(0.1f, false);
+      Thread.Sleep(500);
+      this.sendVibes(0f, false);
+    }
+
+    private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
+      Print("Removed device: " + e.Device.Name);
+      this.DisconnectButtplugs();
+    }
+
+    private void DisconnectButtplugs() {
+      try {
+        Task task = this.buttplugClient.DisconnectAsync();
+        task.Wait();
+      } catch(Exception e){
+        // ignore exception, we are trying to do our best
+      }
+      Print("Disconnected! Bye!");
+      this.buttplugIsConnected = false;
+    }
+
+    private void ToysList() {
+      Print("listing toys");
+      for(int i = 0; i < buttplugClient.Devices.Length; i++) {
+        string name = buttplugClient.Devices[i].Name;
+        Print($"{i}: {name}");
+      }
     }
 
     private void RemoveTrigger(string args) {
@@ -352,38 +472,35 @@ ID   Intensity   Text Match
       Chat.Print(message);
     }
 
-    private void DrawUI() {
-      this.PluginUi.Draw();
-      if(this.clientState != null && this.clientState.LocalPlayer != null) {
 
-
-        // Send vibes on HP loss
-        if(this.hp_toggle) {
-          int currentHP = (int)this.clientState.LocalPlayer.CurrentHp;
-          int maxHP = (int)this.clientState.LocalPlayer.MaxHp;
-          int percentage = ((this.threshold * currentHP / maxHP) - this.threshold) * -1;
-          this.sendVibes(percentage);
-        }
-
-
-      }
-
-    }
-
-    private void DrawConfigUI() {
-      this.PluginUi.SettingsVisible = true;
-    }
-
-    private void sendVibes(float intensity) {
-
-
+    /**
+     * Sends an itensity vibe to all of the devices 
+     * @param {float} intensity
+     */
+    private void sendVibes(float intensity, bool log=true) {
       if(this.currentIntensity != intensity && this.buttplugIsConnected && this.buttplugClient != null) {
-        Print($"FFXIV_BP intensity: {intensity.ToString()}");
+        if(log) {
+          Print($"Intensity: {intensity.ToString()}");
+        }
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {
           buttplugClient.Devices[i].SendVibrateCmd(intensity / 100.0f);
         }
         this.currentIntensity = intensity;
       }
+    }
+
+    private void SendIntensity(string args) {
+      string[] blafuckcsharp;
+      float intensity;
+      try {
+        blafuckcsharp = args.Split(" ", 2);
+        intensity = float.Parse(blafuckcsharp[1]);
+        Print($"Send intensity {intensity}");
+      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
+        PrintError($"Malformed arguments for send [intensity].");
+        return;
+      }
+      this.sendVibes(intensity);
     }
   }
 }
