@@ -57,7 +57,7 @@ namespace FFXIV_BP
 
         // Custom variables from Kacie
         private bool buttplugIsConnected = false;
-        private int currentIntensity = 0;
+        private float currentIntensity = 0;
         private int threshold = 100;
         private bool hp_toggle = false;
 
@@ -126,7 +126,7 @@ namespace FFXIV_BP
             if (matchingintensities.Any() && buttplugClient != null)
             {
                 int intensity = matchingintensities.Select(t => t.Intensity).Max();
-                buttplugClient.Devices[0].SendVibrateCmd(intensity / 100.0f);
+                this.sendVibes(intensity);
             }
         }
 
@@ -459,7 +459,7 @@ ID   Intensity   Text Match
             this.PluginUi.SettingsVisible = true;
         }
 
-        private void sendVibes(int intensity)
+        private void sendVibes(float intensity)
         {
             
             
