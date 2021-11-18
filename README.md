@@ -40,11 +40,20 @@ Well done ! You have now FFXIV connected to Intiface and your toys.
 | Command                | Description  |
 |------------------------|--------------|
 | /bp | List all the available commands |
-| /bp list | List all the added words and intensity |
-| /bp add <intensity 0-100> <The words to match> | Add a word that will trigger update the intensity of the toy. |
-| /bp user <UserName> | Triggered only by the define username. |
-| /bp hp_toggler | Will vibe when some HP are missing. |
+| /bp connect [ip[:port]] | Connect to Intiface |
+| /bp disconnect | Disconnect from Intiface |
+| /bp scan | Force re-scanning |
+| /bp toys_list | List all the toys that are connected |
+| /bp save [file path] | Save the current configuration |
+| /bp load [file path] | Load a configuration |
+| /bp chat_list_triggers | List all the added words and intensity. |
+| /bp chat_add <intensity 0-100> <The words to match> | Add a word that will trigger update the intensity of the toy. |
+| /bp chat_remove <id> | Remove a word from the list. |
+| /bp chat_user <username> | Triggered only by the define username. |
+| /bp hp_toggle | Will vibe when some HP are missing. |
+| /bp send <0-100> | Sends some vibes to the toys |
 | /bp threshold <0-100> | Will pet to feel it to strongly. |
+| /bp stop | Stop the toys (basically sending zero intensity). |
 
 ### Examples
 
