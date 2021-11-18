@@ -70,6 +70,14 @@ Well done ! You have now FFXIV connected to Intiface and your toys.
 Now open the FFXIV chat texbox, select the /freecompany channel and write: `hello world`.
 
 Enjoy :)
+                               
+## Tested toys
+                               
+- Lovense Hush
+- Lovense Domi
+- Lovense Ferri
+- Lovense Diamo
+- Lovense Edge 2
 
 # Discord
 
