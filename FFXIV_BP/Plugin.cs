@@ -14,10 +14,10 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
 using Buttplug;
 
-// Experimental
-using static FFXIV_BP.PlayerStats;
 
 namespace FFXIV_BP {
+  
+
   public sealed class Plugin : IDalamudPlugin {
     private class Trigger : IComparable {
 
@@ -45,7 +45,9 @@ namespace FFXIV_BP {
     [PluginService]
     [RequiredVersion("1.0")]
 
+    // Initialize the ChatGui.
     private ChatGui Chat { get; init; }
+
     private Buttplug.ButtplugClient buttplugClient;
     private readonly SortedSet<Trigger> Triggers = new SortedSet<Trigger>();
 
@@ -56,8 +58,9 @@ namespace FFXIV_BP {
     private bool buttplugIsConnected = false;
     private float currentIntensity = 0;
     private int threshold = 100;
-    private int _currentHPPercentage = 100;
-    private bool hp_toggle = false;
+    private bool verbose = true;
+    private bool firstUpdated = false;
+    private PlayerStats playerStats;
 
     private DalamudPluginInterface PluginInterface { get; init; }
     private CommandManager CommandManager { get; init; }
@@ -66,16 +69,11 @@ namespace FFXIV_BP {
     private ClientState clientState;
     private string AuthorizedUser { get; set; }
 
-    private bool firstUpdated = false;
-
-    private DateTime _delay = DateTime.MinValue;
-    private bool vibe = false;
-
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] CommandManager commandManager,
         [RequiredVersion("1.0")] ClientState clientState) {
-
+      
       this.PluginInterface = pluginInterface;
       this.CommandManager = commandManager;
       this.clientState = clientState;
@@ -101,7 +99,12 @@ namespace FFXIV_BP {
 
       // Default values
       this.AuthorizedUser = "";
+
+      this.playerStats = new PlayerStats(this.clientState);
+      playerStats.event_CurrentHpChanged += this._player_currentHPChanged;
+      playerStats.event_MaxHpChanged += this._player_currentHPChanged;
     }
+
 
     private readonly XivChatType[] allowedChatTypes = {
       XivChatType.Say, XivChatType.Party,
@@ -119,7 +122,7 @@ namespace FFXIV_BP {
       if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
         return;
       }
-      string message = _message.ToString();
+      string message = _message.ToString().ToLower();
       var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch));
       if(matchingintensities.Any() && buttplugClient != null) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
@@ -142,20 +145,11 @@ namespace FFXIV_BP {
       }
       this.PluginUi.Draw();
 
-      if(!this.buttplugIsConnected || this.buttplugClient == null) { return;  }
-      if(this.clientState == null || this.clientState.LocalPlayer == null) { return; }
-
-      // Send vibes on HP loss
-      if(this.hp_toggle) {
-        float currentHP = (float)this.clientState.LocalPlayer.CurrentHp;
-        float maxHP = (float)this.clientState.LocalPlayer.MaxHp;
-        float percentageHP = this.threshold * currentHP / maxHP;
-        float percentage = ((percentageHP) - this.threshold) * -1;
-        this.sendVibes(percentage);
-      }  
-
-      
+      // Ask playerStats to update its values.
+      this.playerStats.update();
     }
+
+
 
     private void DrawConfigUI() {
       this.PluginUi.SettingsVisible = true;
@@ -186,6 +180,12 @@ namespace FFXIV_BP {
       Chat.Print($"FFXIV_BP> {message}");
     }
 
+    private void PrintDebug(string message) {
+      if(this.verbose) {
+        Chat.Print($"FFXIV_BP Debug> {message}");
+      }
+    }
+
     private void PrintError(string error) {
       Chat.PrintError($"FFXIV_BP error> {error}");
     }
@@ -214,7 +214,7 @@ New features
       {command} stop
 
 Current values:
-      HP_TOGGLE: {this.hp_toggle} | THRESHOLD: {this.threshold} | USER: {this.AuthorizedUser}
+      HP_TOGGLE: {this.Configuration.HP_TOGGLE} | THRESHOLD: {this.threshold} | USER: {this.AuthorizedUser}
 
 Example:
        {command} connect
@@ -253,7 +253,6 @@ Example:
           this.RemoveTrigger(args);
         } else if(args.StartsWith("chat_user")) {
           this.SetAuthorizedUser(args);
-
         } else if(args.StartsWith("save")) {
           SaveConfig(args);
         } else if(args.StartsWith("load")) {
@@ -264,6 +263,11 @@ Example:
           this.SetThreshold(args);
         } else if(args.StartsWith("send")) {
           this.SendIntensity(args);
+        } else if(args.StartsWith("stop")) {
+          this.sendVibes(0);
+        } else if(args.StartsWith("verbose")) {
+          this.verbose = !this.verbose;
+          Print($"Verbose: {verbose}");
         } else {
           Print($"Unknown subcommand: {args}");
         }
@@ -310,7 +314,7 @@ Example:
 
     private void ConnectButtplugs(string args) {
       if(this.buttplugIsConnected) {
-        Print("Disconnecting previous instance! Waiting 2sec...");
+        PrintDebug("Disconnecting previous instance! Waiting 2sec...");
         this.DisconnectButtplugs();
         Thread.Sleep(200);
       }
@@ -366,7 +370,7 @@ Example:
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
-      Thread.Sleep(2000);
+      Thread.Sleep(500);
       string name = e.Device.Name;
       int index = (int)e.Device.Index;
       Print($"Added device: {index}:{name}" );
@@ -391,9 +395,8 @@ Example:
       try {
         Task task = this.buttplugClient.DisconnectAsync();
         task.Wait();
-        Print("Disconnecting! Waiting 2sec...");
+        Print("Disconnecting! Bye... Waiting 2sec...");
         Thread.Sleep(2000); // Wait a bit before reloading the plugin.
-        Print("Disconnected! Bye!");
       } catch(Exception e){
         // ignore exception, we are trying to do our best
       }
@@ -402,10 +405,10 @@ Example:
     }
 
     private void ToysList() {
-      Print("listing toys");
+      Print("Listing toys");
       for(int i = 0; i < buttplugClient.Devices.Length; i++) {
         string name = buttplugClient.Devices[i].Name;
-        Print($"{i}: {name}");
+        Print($"    {i}: {name}");
       }
     }
 
@@ -417,7 +420,7 @@ Example:
           throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
         }
       } catch(FormatException) {
-        PrintError("Malformed argument for [remove]");
+        PrintError("Malformed argument for [chat_remove]");
         return; // XXX: exceptional control flow
       }
       Trigger removed = Triggers.ElementAt(id);
@@ -437,11 +440,13 @@ Example:
 
 
     private void ToggleHP() {
-      this.hp_toggle = !this.hp_toggle;
-      if(!this.hp_toggle && this.buttplugIsConnected) {
+      bool hp_toggle = !this.Configuration.HP_TOGGLE;
+      this.Configuration.HP_TOGGLE = hp_toggle;
+       if(!hp_toggle && this.buttplugIsConnected) {
         this.sendVibes(0); // Don't be cruel
       }
-      Print($"HP Togglet set to {this.hp_toggle}");
+      Print($"HP Toggle set to {hp_toggle}");
+      this.Configuration.Save();
     }
 
     private void SetThreshold(string args) {
@@ -466,15 +471,15 @@ Example:
         intensity = int.Parse(blafuckcsharp[1]);
         text = blafuckcsharp[2];
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        PrintError($"Malformed arguments for [add].");
+        PrintError($"Malformed arguments for [chat_add].");
         return; // XXX: exceptional control flow
       }
       Trigger newTrigger = new(intensity, text);
-      Print($"Adding Trigger: {newTrigger}...");
+      
       if(Triggers.Add(newTrigger)) {
-        Print("Success!");
+        Print($"Trigger added successfully: {newTrigger}...");
       } else {
-        PrintError($"Failed. Possible duplicate?");
+        PrintError($"Failed. Possible duplicate for intensity {intensity}");
       }
     }
 
@@ -497,10 +502,14 @@ ID   Intensity   Text Match
     private void sendVibes(float intensity, bool log=true) {
       if(this.currentIntensity != intensity && this.buttplugIsConnected && this.buttplugClient != null) {
         if(log) {
-          Print($"Intensity: {intensity.ToString()}");
+          PrintDebug($"Intensity: {intensity.ToString()}");
         }
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {
-          buttplugClient.Devices[i].SendVibrateCmd(intensity / 100.0f);
+          if(intensity == 0) {
+            buttplugClient.Devices[i].SendVibrateCmd(0.0); // Make sure we send a real zero and not a float (eg: 0.01)
+          } else {
+            buttplugClient.Devices[i].SendVibrateCmd(intensity / 100.0f);
+          }
         }
         this.currentIntensity = intensity;
       }
@@ -518,6 +527,19 @@ ID   Intensity   Text Match
         return;
       }
       this.sendVibes(intensity);
+    }
+    private void _player_currentHPChanged(object send, EventArgs e) {
+      float currentHP = this.playerStats.getCurrentHP();
+      float maxHP = this.playerStats.getMaxHP();
+      this.PrintDebug($"CurrentHP: {currentHP} / {maxHP}");
+      if(this.Configuration.HP_TOGGLE) {
+        float percentageHP = this.threshold * currentHP / maxHP;
+        float percentage = ((percentageHP) - this.threshold)*-1;
+        if(percentage == 0) {
+          percentage = 0;
+        }
+        this.sendVibes(percentage);
+      }
     }
   }
 }
