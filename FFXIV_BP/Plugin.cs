@@ -19,6 +19,30 @@ namespace FFXIV_BP {
   
 
   public sealed class Plugin : IDalamudPlugin {
+
+    // Experimental
+    private class SequencerTask {
+      public string command { get; init; }
+      public int duration { get; init; }
+      public int _startedTime = 0;
+
+      public SequencerTask(string cmd, int dur) { 
+        command = cmd;
+        duration = dur;
+      }
+
+      public void play() {
+        this._startedTime = (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
+      }
+      
+    }
+    private List<SequencerTask> sequencerTasks;
+    private bool playSequence = false;
+
+
+
+
+
     private class Trigger : IComparable {
 
       public Trigger(int intensity, string text) {
@@ -57,7 +81,6 @@ namespace FFXIV_BP {
     // Custom variables from Kacie
     private bool buttplugIsConnected = false;
     private float currentIntensity = 0;
-    private int threshold = 100;
     private bool verbose = true;
     private bool firstUpdated = false;
     private PlayerStats playerStats;
@@ -103,6 +126,8 @@ namespace FFXIV_BP {
       this.playerStats = new PlayerStats(this.clientState);
       playerStats.event_CurrentHpChanged += this._player_currentHPChanged;
       playerStats.event_MaxHpChanged += this._player_currentHPChanged;
+
+
     }
 
 
@@ -147,9 +172,30 @@ namespace FFXIV_BP {
 
       // Ask playerStats to update its values.
       this.playerStats.update();
+
+      if(this.playSequence && this.sequencerTasks.Count > 0) {
+        
+        SequencerTask st = this.sequencerTasks[0];
+        if(st._startedTime == 0) {
+          st.play();
+          string[] commandSplit = st.command.Split(':');
+          string operation = commandSplit[0];
+          int intensity = int.Parse(commandSplit[1]);
+          
+          if(operation == "sendVibes") {
+            this.sendVibes(intensity);
+          }
+        }
+
+        if(st._startedTime + st.duration < this.getUnix()) {
+          this.sequencerTasks[0]._startedTime = 0;
+          this.sequencerTasks.RemoveAt(0);
+          if(this.verbose) {
+            PrintDebug("Playing next...");
+          }
+        }
+      }
     }
-
-
 
     private void DrawConfigUI() {
       this.PluginUi.SettingsVisible = true;
@@ -214,7 +260,7 @@ New features
       {command} stop
 
 Current values:
-      HP_TOGGLE: {this.Configuration.HP_TOGGLE} | THRESHOLD: {this.threshold} | USER: {this.AuthorizedUser}
+      HP_TOGGLE: {this.Configuration.HP_TOGGLE} | THRESHOLD: {this.Configuration.THRESHOLD} | USER: {this.AuthorizedUser}
 
 Example:
        {command} connect
@@ -265,6 +311,19 @@ Example:
           this.SendIntensity(args);
         } else if(args.StartsWith("stop")) {
           this.sendVibes(0);
+        } else if(args.StartsWith("play_sequence")) {
+          // Experimental sequencer
+          this.sequencerTasks = new List<SequencerTask>();
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:10", 500));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:29", 2000));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 500));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:20", 1000));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:100", 5000));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 1000));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:20", 2000));
+          this.sequencerTasks.Add(new SequencerTask("sendVibes:0", 1));
+
+          this.playSequence = true;
         } else if(args.StartsWith("verbose")) {
           this.verbose = !this.verbose;
           Print($"Verbose: {verbose}");
@@ -272,7 +331,6 @@ Example:
           Print($"Unknown subcommand: {args}");
         }
       }
-
     }
 
     private void LoadConfig(string args) {
@@ -458,7 +516,8 @@ Example:
         PrintError($"Malformed arguments for [threshold].");
         return;
       }
-      this.threshold = threshold;
+      this.Configuration.THRESHOLD = threshold;
+      this.Configuration.Save();
       Print($"Threshold set to {threshold}");
     }
 
@@ -508,7 +567,8 @@ ID   Intensity   Text Match
           if(intensity == 0) {
             buttplugClient.Devices[i].SendVibrateCmd(0.0); // Make sure we send a real zero and not a float (eg: 0.01)
           } else {
-            buttplugClient.Devices[i].SendVibrateCmd(intensity / 100.0f);
+            // FIXME: should take the threshold in account
+            buttplugClient.Devices[i].SendVibrateCmd(intensity / (100.0f/this.Configuration.THRESHOLD) / 100.0f); 
           }
         }
         this.currentIntensity = intensity;
@@ -533,13 +593,18 @@ ID   Intensity   Text Match
       float maxHP = this.playerStats.getMaxHP();
       this.PrintDebug($"CurrentHP: {currentHP} / {maxHP}");
       if(this.Configuration.HP_TOGGLE) {
-        float percentageHP = this.threshold * currentHP / maxHP;
-        float percentage = ((percentageHP) - this.threshold)*-1;
+        float percentageHP = currentHP / maxHP;
+        float percentage = (1 - percentageHP)*100f;
         if(percentage == 0) {
           percentage = 0;
         }
+        this.PrintDebug($"CurrentPerentage: {percentage}");
         this.sendVibes(percentage);
       }
+    }
+
+    private int getUnix() {
+      return (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
   }
 }
