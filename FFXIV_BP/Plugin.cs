@@ -202,7 +202,6 @@ namespace FFXIV_BP {
           this.sequencerTasks[0]._startedTime = 0;
           this.sequencerTasks.RemoveAt(0);
           PrintDebug("Playing next...");
-          
         }
       }
     }
@@ -292,7 +291,7 @@ Example:
         if(args.StartsWith("config")) {
           this.DisplayConfigUI();
         } else if(args.StartsWith("connect")) {
-          ConnectButtplugs(args);
+          Command_ConnectButtplugs(args);
         } else if(args.StartsWith("disconnect")) {
           this.DisconnectButtplugs();
         } else if(args.StartsWith("scan")) {
@@ -371,7 +370,7 @@ Example:
     }
 
 
-    private void ConnectButtplugs(string args) {
+    public void Command_ConnectButtplugs(string args) {
       if(this.buttplugIsConnected) {
         PrintDebug("Disconnecting previous instance! Waiting 2sec...");
         this.DisconnectButtplugs();
@@ -446,8 +445,6 @@ Example:
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
       Print("Removed device: " + e.Device.Name);
-      PrintDebug("Disconnecting buttplug... (we probably should not)");
-      this.DisconnectButtplugs();
     }
 
     private void DisconnectButtplugs() {
@@ -580,7 +577,7 @@ ID   Intensity   Text Match
       try {
         blafuckcsharp = args.Split(" ", 2);
         intensity = float.Parse(blafuckcsharp[1]);
-        Print($"Send intensity {intensity}");
+        Print($"Command Send intensity {intensity}");
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
         PrintError($"Malformed arguments for send [intensity].");
         return;
