@@ -1,7 +1,7 @@
 # FFXIV Buttplug
 
 <p align="center">
-  <img width="460" height="300" src="./Data/logo.png">
+  <img width="200" height="200" src="./Data/logo.png">
 </p>
 
 A buttplug plugin for FFXIV that will change the intensity of your toys when a word from the /freecompany is matched.
