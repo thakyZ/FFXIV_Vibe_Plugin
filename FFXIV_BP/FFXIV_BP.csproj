@@ -4,8 +4,8 @@
     <Authors></Authors>
     <Company></Company>
     <Version>0.0.0.1</Version>
-    <Description>A buttplug plugin</Description>
-    <Copyright></Copyright>
+    <Description>A buttplug plugin for FFXIV</Description>
+    <Copyright>kacie8989</Copyright>
     <PackageProjectUrl>https://github.com/kacie8989/FFXIV_BP</PackageProjectUrl>
   </PropertyGroup>
 	
@@ -33,7 +33,7 @@
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <PackageIcon>logo.png</PackageIcon>
+    <PackageIcon>logo_128.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
@@ -295,7 +295,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Data\logo.png">
+    <None Include="..\Data\logo_128.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -310,6 +310,12 @@
     <Content Update="C:\Users\Kurog-Desktop\.nuget\packages\buttplugrustffi\2.0.4\build\..\runtimes\win-x64\native\buttplug_rs_ffi.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 
