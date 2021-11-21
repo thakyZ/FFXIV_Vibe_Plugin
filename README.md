@@ -1,5 +1,7 @@
 # FFXIV Buttplug
 
+![logo](./Data/logo.png)
+
 A buttplug plugin for FFXIV that will change the intensity of your toys when a word from the /freecompany is matched.
 
 Credits: I have not done this plugin. It was initialy done by 
@@ -33,7 +35,7 @@ I have only tried to document the installation process which took me multiple at
 
 Well done ! You have now FFXIV connected to Intiface and your toys. 
 
-![ingame](./docs/screenshot.png)
+![ingame](./Docs/screenshot.png)
 
 ## Quick guide to make it work
 
