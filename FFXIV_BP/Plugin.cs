@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
 using Dalamud.Game.Command;
@@ -17,10 +16,9 @@ using Buttplug;
 
 namespace FFXIV_BP {
   
-
   public sealed class Plugin : IDalamudPlugin {
 
-    // Experimental
+    /** Experimental */
     private class SequencerTask {
       public string command { get; init; }
       public int duration { get; init; }
@@ -33,15 +31,11 @@ namespace FFXIV_BP {
 
       public void play() {
         this._startedTime = (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
-      }
-      
+      } 
     }
-    private List<SequencerTask> sequencerTasks;
+
+    private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
     private bool playSequence = false;
-
-
-
-
 
     private class Trigger : IComparable {
 
@@ -105,10 +99,8 @@ namespace FFXIV_BP {
       this.Configuration.Initialize(this.PluginInterface);
 
       // you might normally want to embed resources and load them from the manifest stream
-      var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-      var imagePath = Path.Combine(Path.GetDirectoryName(assemblyLocation)!, "goat.png");
-      var goatImage = this.PluginInterface.UiBuilder.LoadImage(imagePath);
-      this.PluginUi = new PluginUI(this.Configuration, goatImage);
+      
+      this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface);
 
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A simple text triggers to buttplug.io plugin, and more..."
@@ -123,11 +115,10 @@ namespace FFXIV_BP {
       // Default values
       this.AuthorizedUser = "";
 
+      /** Experimental */
       this.playerStats = new PlayerStats(this.clientState);
       playerStats.event_CurrentHpChanged += this._player_currentHPChanged;
       playerStats.event_MaxHpChanged += this._player_currentHPChanged;
-
-
     }
 
 
@@ -170,18 +161,27 @@ namespace FFXIV_BP {
       }
       this.PluginUi.Draw();
 
-      // Ask playerStats to update its values.
       this.playerStats.update();
 
+      this.RunSequencer(this.sequencerTasks);
+
+      
+    }
+
+    private void DrawConfigUI() {
+      this.PluginUi.SettingsVisible = true;
+    }
+
+    private void RunSequencer(List<SequencerTask> sequencerTasks) {
       if(this.playSequence && this.sequencerTasks.Count > 0) {
-        
+
         SequencerTask st = this.sequencerTasks[0];
         if(st._startedTime == 0) {
           st.play();
           string[] commandSplit = st.command.Split(':');
           string operation = commandSplit[0];
           int intensity = int.Parse(commandSplit[1]);
-          
+
           if(operation == "sendVibes") {
             this.sendVibes(intensity);
           }
@@ -195,10 +195,6 @@ namespace FFXIV_BP {
           }
         }
       }
-    }
-
-    private void DrawConfigUI() {
-      this.PluginUi.SettingsVisible = true;
     }
 
     public void Dispose() {
@@ -312,8 +308,6 @@ Example:
         } else if(args.StartsWith("stop")) {
           this.sendVibes(0);
         } else if(args.StartsWith("play_sequence")) {
-          // Experimental sequencer
-          this.sequencerTasks = new List<SequencerTask>();
           this.sequencerTasks.Add(new SequencerTask("sendVibes:10", 500));
           this.sequencerTasks.Add(new SequencerTask("sendVibes:29", 2000));
           this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 500));
@@ -322,8 +316,8 @@ Example:
           this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 1000));
           this.sequencerTasks.Add(new SequencerTask("sendVibes:20", 2000));
           this.sequencerTasks.Add(new SequencerTask("sendVibes:0", 1));
-
           this.playSequence = true;
+
         } else if(args.StartsWith("verbose")) {
           this.verbose = !this.verbose;
           Print($"Verbose: {verbose}");
@@ -589,7 +583,7 @@ ID   Intensity   Text Match
       this.sendVibes(intensity);
     }
     private void _player_currentHPChanged(object send, EventArgs e) {
-      float currentHP = this.playerStats.getCurrentHP();
+      /*float currentHP = this.playerStats.getCurrentHP();
       float maxHP = this.playerStats.getMaxHP();
       this.PrintDebug($"CurrentHP: {currentHP} / {maxHP}");
       if(this.Configuration.HP_TOGGLE) {
@@ -600,7 +594,7 @@ ID   Intensity   Text Match
         }
         this.PrintDebug($"CurrentPerentage: {percentage}");
         this.sendVibes(percentage);
-      }
+      }*/
     }
 
     private int getUnix() {
