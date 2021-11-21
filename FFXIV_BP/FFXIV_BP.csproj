@@ -28,6 +28,7 @@
     <Content Include="..\Data\ffxivbp.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+	<Content Include="..\Data\icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     <Content Include="..\Data\goat.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
