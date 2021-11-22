@@ -138,7 +138,7 @@ namespace FFXIV_BP {
 
         // Checkbox VIBE_HP_TOGGLE
         int config_VIBE_HP_MODE = this.configuration.VIBE_HP_MODE;
-        string[] VIBE_HP_MODES = new string[] { "normal", "shake" };
+        string[] VIBE_HP_MODES = new string[] { "normal", "shake", "mountain" };
         if(ImGui.Combo("Vibe mode.", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
           this.configuration.VIBE_HP_MODE = config_VIBE_HP_MODE;
           this.configuration.Save();

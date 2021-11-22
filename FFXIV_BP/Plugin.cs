@@ -261,7 +261,6 @@ namespace FFXIV_BP {
       
       {command} connect [ip[:port]]
       {command} disconnect
-      {command} scan
       {command} toys_list
       {command} save [file path]
       {command} load [file path]
@@ -310,8 +309,6 @@ Example:
           Command_ConnectButtplugs(args);
         } else if(args.StartsWith("disconnect")) {
           this.DisconnectButtplugs();
-        } else if(args.StartsWith("scan")) {
-          ScanToys();
         } else if(args.StartsWith("toys_list")) {
           this.Command_ToysList();
         } else if(args.StartsWith("chat_list_triggers")) {
@@ -334,12 +331,8 @@ Example:
           this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
           this.buttplug_sendVibe(0);
-        } else if(args.StartsWith("play_sequence")) {
-          this.sequencerTasks.Add(new SequencerTask("nothing", 5000));
-          this.sequencerTasks.Add(new SequencerTask("print_debug:hello world", 1000));
-          /*
-          this.sequencerTasks.Add(new SequencerTask("vibe:10", 1000));
-          this.sequencerTasks.Add(new SequencerTask("vibe:0", 500));*/
+        } else if(args.StartsWith("play_pattern")) {
+          this.play_pattern(args);
         } else if(args.StartsWith("verbose")) {
           this.Configuration.DEBUG_VERBOSE = !this.Configuration.DEBUG_VERBOSE;
           Print($"Verbose: {this.Configuration.DEBUG_VERBOSE}");
@@ -436,6 +429,7 @@ Example:
 
     private void ScanToys() {
       Print("Scanning for devices...");
+     
       try {
         buttplugClient.StartScanningAsync();
       } catch(Exception e) {
@@ -465,6 +459,9 @@ Example:
 
     private void DisconnectButtplugs() {
       try {
+        for(int i = 0; i < buttplugClient.Devices.Length; i++) {
+          buttplugClient.Devices[i].Dispose();
+        }
         Task task = this.buttplugClient.DisconnectAsync();
         task.Wait();
         Print("Disconnecting! Bye... Waiting 2sec...");
@@ -615,15 +612,51 @@ ID   Intensity   Text Match
         if(mode == 0) { // normal
           this.buttplug_sendVibe(percentage);
         } else if(mode == 1) { // shake
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 100));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 2}", 100));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 100));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 4}", 100));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 2}", 100));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 500));
-          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
+          this.play_patternShake(percentage);
+        } else if(mode == 2) { // shake
+          this.play_patternMountain(percentage);
         }
       }
+    }
+
+    private void play_pattern(string args) {
+      try {
+        string[] param = args.Split(" ", 2);
+        string patternName = param[1];
+        Print($"Play pattern {patternName}");
+        if(patternName == "shake") {
+          this.play_patternShake(100);
+        } else if(patternName == "mountain") {
+          this.play_patternMountain(30);
+        }
+      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
+        PrintError($"Malformed arguments for play_pattern [pattern_name] # shake, mountain");
+        return;
+      }
+    }
+
+    private void play_patternShake(float from) {
+      this.sequencerTasks = new List<SequencerTask>();
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 2}", 700));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
+    }
+
+    private void play_patternMountain(float from) {
+      this.sequencerTasks = new List<SequencerTask>();
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 1.5}", 500));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2.5}", 600));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2}", 500));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
+      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
     }
 
     private int getUnix() {
