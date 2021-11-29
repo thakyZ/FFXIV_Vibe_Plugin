@@ -12,7 +12,7 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
 using Buttplug;
-
+using System.Numerics;
 
 namespace FFXIV_BP {
   
@@ -37,28 +37,7 @@ namespace FFXIV_BP {
     private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
     private bool playSequence = true;
 
-    private class Trigger : IComparable {
-
-      public Trigger(int intensity, string text) {
-        Intensity = intensity;
-        ToMatch = text;
-      }
-
-      public int Intensity { get; }
-      public string ToMatch { get; }
-
-      public override string ToString() {
-        return $"Trigger(intensity: {Intensity}, text: '{ToMatch}')";
-      }
-      public string ToConfigString() {
-        return $"{Intensity} {ToMatch}";
-      }
-      public int CompareTo(object? obj) {
-        Trigger? that = obj as Trigger;
-        int thatintensity = that != null ? that.Intensity : 0;
-        return this.Intensity.CompareTo(thatintensity);
-      }
-    }
+   
 
     [PluginService]
     [RequiredVersion("1.0")]
@@ -67,15 +46,15 @@ namespace FFXIV_BP {
     private ChatGui Chat { get; init; }
 
     private Buttplug.ButtplugClient buttplugClient;
-    private readonly SortedSet<Trigger> Triggers = new SortedSet<Trigger>();
+    private readonly SortedSet<ChatTrigger> Triggers = new SortedSet<ChatTrigger>();
 
     public string Name => "FFXIV BP";
     private const string commandName = "/bp";
 
     // Custom variables from Kacie
-    private bool buttplugIsConnected = false;
+    private bool _buttplugIsConnected = false;
     private float currentIntensity = 0;
-    private bool firstUpdated = false;
+    private bool _firstUpdated = false;
     private PlayerStats playerStats;
 
     private DalamudPluginInterface PluginInterface { get; init; }
@@ -96,11 +75,7 @@ namespace FFXIV_BP {
 
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
       this.Configuration.Initialize(this.PluginInterface);
-
-      // you might normally want to embed resources and load them from the manifest stream
-
       this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface, this);
-
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A buttplug plugin for fun..."
       });
@@ -144,9 +119,10 @@ namespace FFXIV_BP {
         return;
       }
       string message = _message.ToString().ToLower();
-      var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch));
+      var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch.ToLower()));
       if(matchingintensities.Any() && buttplugClient != null) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
+        this.PrintDebug($"Sending vibe from chat {message}, {intensity}");
         this.buttplug_sendVibe(intensity);
       }
     }
@@ -165,18 +141,26 @@ namespace FFXIV_BP {
     }
 
     private void draw_firstUpdated() {
-      if(!this.firstUpdated) {
+      if(!this._firstUpdated) {
+        this.firstUpdated();
         this.PrintDebug("First updated");
       }
-      this.firstUpdated = true;
+      this._firstUpdated = true;
+
+      
     }
+    private void firstUpdated() {
+      this.loadTriggersConfig();
+    }
+
+
 
     private void DisplayUI() {
       this.PluginUi.Visible = true;
     }
 
     private void DisplayConfigUI() {
-      this.PluginUi.SettingsVisible = true;
+      this.PluginUi.Visible = true;
     }
 
     private void RunSequencer(List<SequencerTask> sequencerTasks) {
@@ -209,7 +193,6 @@ namespace FFXIV_BP {
           } else {
             PrintDebug($"Sequencer task unknown: {task} {param1}");
           }
-
         }
 
         if(st._startedTime + st.duration < this.getUnix()) {
@@ -217,8 +200,6 @@ namespace FFXIV_BP {
           this.sequencerTasks.RemoveAt(0);
           
         }
-
-
       }
     }
 
@@ -256,7 +237,7 @@ namespace FFXIV_BP {
       Chat.PrintError($"FFXIV_BP error> {error}");
     }
 
-    private void PrintHelp(string command) {
+    public string getHelp(string command) {
       string helpMessage = $@"Usage:
       
       {command} connect [ip[:port]]
@@ -295,6 +276,11 @@ Example:
 
        These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
+      return helpMessage;
+    }
+
+    private void PrintHelp(string command) {
+      string helpMessage = this.getHelp(command);
       Chat.Print(helpMessage);
     }
 
@@ -357,11 +343,25 @@ Example:
         int intensity;
         string toMatch = trigargs[1];
         if(int.TryParse(trigargs[0], out intensity)) {
-          Trigger trigger = new(intensity, toMatch);
+          ChatTrigger trigger = new(intensity, toMatch);
           if(!Triggers.Add(trigger)) {
             Print($"Note: duplicate trigger: {trigger}");
           };
         }
+      }
+      updateTriggersConfig();
+    }
+
+    private void updateTriggersConfig() {
+      this.Configuration.TRIGGERS = this.Triggers;
+      this.Configuration.Save();
+    }
+
+    private void loadTriggersConfig() {
+      SortedSet<ChatTrigger> triggers = this.Configuration.TRIGGERS;
+      this.PrintDebug($"Loading {triggers.Count.ToString()} triggers");
+      foreach(ChatTrigger trigger in triggers) {
+        this.Triggers.Add(new ChatTrigger(trigger.Intensity, trigger.ToMatch));
       }
     }
 
@@ -380,7 +380,7 @@ Example:
 
 
     public void Command_ConnectButtplugs(string args) {
-      if(this.buttplugIsConnected) {
+      if(this._buttplugIsConnected) {
         PrintDebug("Disconnecting previous instance! Waiting 2sec...");
         this.DisconnectButtplugs();
         Thread.Sleep(200);
@@ -418,7 +418,7 @@ Example:
 
       if(buttplugClient.Connected) {
         Print($"Buttplug connected!");
-        this.buttplugIsConnected = true;
+        this._buttplugIsConnected = true;
       } else {  
         PrintError("Failed connecting (Intiface server is up?)");
         return;
@@ -457,7 +457,7 @@ Example:
       Print("Removed device: " + e.Device.Name);
     }
 
-    private void DisconnectButtplugs() {
+    public void DisconnectButtplugs() {
       try {
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {
           buttplugClient.Devices[i].Dispose();
@@ -470,7 +470,7 @@ Example:
         // ignore exception, we are trying to do our best
       }
       
-      this.buttplugIsConnected = false;
+      this._buttplugIsConnected = false;
     }
 
     private void Command_ToysList() {
@@ -494,7 +494,7 @@ Example:
     private void Command_ToggleHP() {
       bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
       this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
-       if(!hp_toggle && this.buttplugIsConnected) {
+       if(!hp_toggle && this._buttplugIsConnected) {
         this.buttplug_sendVibe(0); // Don't be cruel
       }
       Print($"HP Toggle set to {hp_toggle}");
@@ -522,15 +522,16 @@ Example:
       try {
         blafuckcsharp = args.Split(" ", 3);
         intensity = int.Parse(blafuckcsharp[1]);
-        text = blafuckcsharp[2];
+        text = blafuckcsharp[2].ToLower(); ;
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
         PrintError($"Malformed arguments for [chat_add].");
         return; // XXX: exceptional control flow
       }
-      Trigger newTrigger = new(intensity, text);
+      ChatTrigger newTrigger = new(intensity, text);
       
       if(Triggers.Add(newTrigger)) {
         Print($"Trigger added successfully: {newTrigger}...");
+        this.updateTriggersConfig();
       } else {
         PrintError($"Failed. Possible duplicate for intensity {intensity}");
       }
@@ -546,9 +547,10 @@ Example:
         PrintError("Malformed argument for [chat_remove]");
         return; // XXX: exceptional control flow
       }
-      Trigger removed = Triggers.ElementAt(id);
+      ChatTrigger removed = Triggers.ElementAt(id);
       Triggers.Remove(removed);
       Print($"Removed Trigger: {removed}");
+      this.updateTriggersConfig();
     }
 
     private void Command_ListTriggers() {
@@ -567,19 +569,20 @@ ID   Intensity   Text Match
      * Sends an itensity vibe to all of the devices 
      * @param {float} intensity
      */
-    private void buttplug_sendVibe(float intensity) {
-      if(this.currentIntensity != intensity && this.buttplugIsConnected && this.buttplugClient != null) {
+    public void buttplug_sendVibe(float intensity) {
+      
+      if(this.currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
         
-        PrintDebug($"Intensity: {intensity.ToString()}");
+        PrintDebug($"Intensity: {intensity.ToString()} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
         
         // Set min and max limits
         if(intensity < 0) { intensity = 0.0f; }
         else if(intensity > 100) { intensity = 100; }
-
+        var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {  
-          buttplugClient.Devices[i].SendVibrateCmd(intensity / (100.0f/this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f); 
+          buttplugClient.Devices[i].SendVibrateCmd(newIntensity); 
         }
-        this.currentIntensity = intensity;
+        this.currentIntensity = newIntensity;
       }
     }
 
@@ -661,6 +664,10 @@ ID   Intensity   Text Match
 
     private int getUnix() {
       return (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    }
+
+    public bool buttplugIsConnected() {
+      return this._buttplugIsConnected;
     }
   }
 }

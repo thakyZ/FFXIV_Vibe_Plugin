@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\Data\ffxivbp.json">
+    <Content Include="..\Data\ffxivbp.json" Link="Data\ffxivbp.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 	<Content Include="..\Data\logo.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
@@ -295,7 +295,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Data\logo_128.png">
+    <None Include="..\Data\logo_128.png" Link="Data\Images\logo_128.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -313,7 +313,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="logo.png">
+    <None Update="Data\Images\logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
