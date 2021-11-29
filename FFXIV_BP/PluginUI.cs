@@ -101,7 +101,7 @@ namespace FFXIV_BP {
             ImGui.EndTabItem();
           }
           if(ImGui.BeginTabItem("Simulator")) {
-            this.DrawExperimentalUi();
+            this.DrawSimulatorTab();
             ImGui.EndTabItem();
           }
           if(ImGui.BeginTabItem("Help")) {
@@ -150,6 +150,8 @@ namespace FFXIV_BP {
       ImGui.Columns(1);
       ImGui.Spacing();
 
+      if(!this.currentPlugin.buttplugIsConnected()) { return; }
+
       // Checkbox DEBUG_VERBOSE
       bool config_DEBUG_VERBOSE = this.configuration.DEBUG_VERBOSE;
       if(ImGui.Checkbox("Verbose mode to display debug messages. ", ref config_DEBUG_VERBOSE)) {
@@ -189,7 +191,8 @@ namespace FFXIV_BP {
       }
     }
 
-    public void DrawExperimentalUi() {
+    public void DrawSimulatorTab() {
+      if(!this.currentPlugin.buttplugIsConnected()) { return;  }
 
 
       // Test of the vibe
