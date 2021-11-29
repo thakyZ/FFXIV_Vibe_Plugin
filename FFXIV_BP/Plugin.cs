@@ -18,26 +18,16 @@ namespace FFXIV_Vibe_Plugin {
 
   public sealed class Plugin : IDalamudPlugin {
 
-    /** Experimental */
-    private class SequencerTask {
-      public string command { get; init; }
-      public int duration { get; init; }
-      public int _startedTime = 0;
-
-      public SequencerTask(string cmd, int dur) {
-        command = cmd;
-        duration = dur;
-      }
-
-      public void play() {
-        this._startedTime = (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    public class ButtplugDevice {
+      public string Name { get; set; }
+      public int Id { get; set; }
+      public ButtplugDevice(int id, string name) {
+        Name = name;
+        Id= id;
       }
     }
 
-    private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
-    private bool playSequence = true;
-
-
+    public List<ButtplugDevice> ButtplugDevices = new List<ButtplugDevice>();
 
     [PluginService]
     [RequiredVersion("1.0")]
@@ -53,7 +43,7 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _buttplugIsConnected = false;
-    private float currentIntensity = 0;
+    private float currentIntensity = -1;
     private bool _firstUpdated = false;
     private PlayerStats playerStats;
 
@@ -63,6 +53,10 @@ namespace FFXIV_Vibe_Plugin {
     private PluginUI PluginUi { get; init; }
     private ClientState clientState;
     private string AuthorizedUser { get; set; }
+
+    // SequencerTask
+    private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
+    private bool playSequence = true;
 
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
@@ -77,7 +71,7 @@ namespace FFXIV_Vibe_Plugin {
       this.Configuration.Initialize(this.PluginInterface);
       this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface, this);
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
-        HelpMessage = "A buttplug plugin for fun..."
+        HelpMessage = "A vibe plugin for fun..."
       });
 
       this.PluginInterface.UiBuilder.Draw += DrawUI;
@@ -85,6 +79,7 @@ namespace FFXIV_Vibe_Plugin {
       if(Chat != null && CheckForTriggers != null) {
         Chat.ChatMessage += CheckForTriggers; // XXX: o.o
       }
+
 
       // Default values
       this.AuthorizedUser = "";
@@ -225,6 +220,10 @@ namespace FFXIV_Vibe_Plugin {
 
     public void Print(string message) {
       Chat.Print($"FFXIV_BP> {message}");
+    }
+
+    public void Print(int message) {
+      this.Print($"{message}");
     }
 
     private void PrintDebug(string message) {
@@ -449,19 +448,22 @@ party, a (cross) linkshell, or a free company chat.
       string name = e.Device.Name;
       int index = (int)e.Device.Index;
       Print($"Added device: {index}:{name}");
+      this.ButtplugDevices.Add(new ButtplugDevice(index, name));
+
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
        * Therefore, it is important to trigger a zero and some vibes before continuing further.
        * Don't remove this part unless you want to debug for hours.
        */
-      this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
       this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
       this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:1", 500));
       this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-      Print("Removed device: " + e.Device.Name);
+      Print($"Removed device: {e.Device.Name}:{e.Device.Index}");
+      int index = this.ButtplugDevices.FindIndex(device => device.Id == e.Device.Index);
+      this.ButtplugDevices.RemoveAt(index);
     }
 
     public void DisconnectButtplugs() {

@@ -5,6 +5,7 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using System.Collections.Generic;
+using static FFXIV_Vibe_Plugin.Plugin;
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -91,9 +92,6 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * 0.2f, imgLogo.Height * 0.2f));
         ImGui.Unindent(120);
 
-
-
-
         // Experimental
         if(ImGui.BeginTabBar("##ConfigTabBar", ImGuiTabBarFlags.None)) {
           if(ImGui.BeginTabItem("Settings")) {
@@ -104,12 +102,15 @@ namespace FFXIV_Vibe_Plugin {
             this.DrawSimulatorTab();
             ImGui.EndTabItem();
           }
+          if(ImGui.BeginTabItem("Devices")) {
+            this.DrawDevicesTab();
+            ImGui.EndTabItem();
+          }
           if(ImGui.BeginTabItem("Help")) {
-            this.DrawHelpUi();
+            this.DrawHelpTab();
             ImGui.EndTabItem();
           }
         }
-
       }
 
       ImGui.End();
@@ -150,8 +151,6 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.Columns(1);
       ImGui.Spacing();
 
-      if(!this.currentPlugin.buttplugIsConnected()) { return; }
-
       // Checkbox DEBUG_VERBOSE
       bool config_DEBUG_VERBOSE = this.configuration.DEBUG_VERBOSE;
       if(ImGui.Checkbox("Verbose mode to display debug messages. ", ref config_DEBUG_VERBOSE)) {
@@ -165,6 +164,9 @@ namespace FFXIV_Vibe_Plugin {
         this.configuration.AUTO_CONNECT = config_AUTO_CONNECT;
         this.configuration.Save();
       }
+
+      // Shortcut and hide next options
+      if(!this.currentPlugin.buttplugIsConnected()) { return; }
 
       // Checkbox VIBE_HP_TOGGLE
       bool config_VIBE_HP_TOGGLE = this.configuration.VIBE_HP_TOGGLE;
@@ -194,14 +196,17 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawSimulatorTab() {
       if(!this.currentPlugin.buttplugIsConnected()) { return;  }
 
+      ImGui.Text("Send to all:");
 
       // Test of the vibe
       ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("Intensity", ref this.test_sendVibeValue, 0, 100)) { }
+      if(ImGui.SliderInt("Intensity", ref this.test_sendVibeValue, 0, 100)) {
+        this.currentPlugin.buttplug_sendVibe(this.test_sendVibeValue);
+      }
       ImGui.Columns(2, "##SendVibeTest", false);
       ImGui.SetColumnWidth(0, 110);
 
-
+      
       if(ImGui.Button("Send vibe", new Vector2(100, 24))) {
         this.currentPlugin.buttplug_sendVibe(this.test_sendVibeValue);
       }
@@ -212,7 +217,15 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.Columns(1);
     }
 
-    public void DrawHelpUi() {
+    public void DrawDevicesTab() {
+      if(!this.currentPlugin.buttplugIsConnected()) { return; }
+      foreach(ButtplugDevice device in this.currentPlugin.ButtplugDevices) {
+        string deviceEntry = $"{device.Id}:{device.Name}";
+        ImGui.Text(deviceEntry);
+      }
+    }
+
+    public void DrawHelpTab() {
       string help = this.currentPlugin.getHelp(this.currentPlugin.commandName);
       ImGui.Text(help);
       
