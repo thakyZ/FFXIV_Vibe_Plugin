@@ -3,7 +3,7 @@ using Dalamud.Plugin;
 using System;
 using System.Collections.Generic;
 
-namespace FFXIV_BP {
+namespace FFXIV_Vibe_Plugin {
   [Serializable]
   public class Configuration : IPluginConfiguration {
     public int Version { get; set; } = 0;

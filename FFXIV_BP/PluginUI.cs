@@ -6,7 +6,7 @@ using Dalamud.Interface;
 using Dalamud.Plugin;
 using System.Collections.Generic;
 
-namespace FFXIV_BP {
+namespace FFXIV_Vibe_Plugin {
 
   class PluginUI : IDisposable {
 
@@ -82,7 +82,7 @@ namespace FFXIV_BP {
       ImGui.SetNextWindowPos(new Vector2(100, 100), ImGuiCond.Appearing);
       ImGui.SetNextWindowSize(new Vector2(this.WIDTH, this.HEIGHT), ImGuiCond.Appearing);
       ImGui.SetNextWindowSizeConstraints(new Vector2(this.WIDTH, this.HEIGHT), new Vector2(float.MaxValue, float.MaxValue));
-      if(ImGui.Begin("FFXIV_BP Panel", ref this.visible, ImGuiWindowFlags.None)) {
+      if(ImGui.Begin("FFXIV Vibe Plugin", ref this.visible, ImGuiWindowFlags.None)) {
 
         ImGui.Spacing();
 

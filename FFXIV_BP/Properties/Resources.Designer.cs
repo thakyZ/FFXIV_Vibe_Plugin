@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace FFXIV_BP.Properties {
+namespace FFXIV_Vibe_Plugin.Properties {
     using System;
     
     
