@@ -6,19 +6,17 @@ namespace FFXIV_BP {
     
     public ChatTrigger(int intensity, string text) {
         Intensity = intensity;
-        ToMatch = text;
         Text = text;
       }
 
       public int Intensity { get; }
-      public string ToMatch { get; }
       public string Text { get; }
 
       public override string ToString() {
-        return $"Trigger(intensity: {Intensity}, text: '{ToMatch}')";
+        return $"Trigger(intensity: {Intensity}, text: '{Text}')";
       }
       public string ToConfigString() {
-        return $"{Intensity} {ToMatch}";
+        return $"{Intensity} {Text}";
       }
       public int CompareTo(object? obj) {
         ChatTrigger? that = obj as ChatTrigger;
