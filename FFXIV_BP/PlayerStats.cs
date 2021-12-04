@@ -4,11 +4,11 @@ using Dalamud.Game.ClientState;
 namespace FFXIV_Vibe_Plugin {
   
   internal class PlayerStats {
-    Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter localPlayer;
+    readonly Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter? localPlayer;
 
     // EVENTS
-    public event EventHandler event_CurrentHpChanged;
-    public event EventHandler event_MaxHpChanged;
+    public event EventHandler? Event_CurrentHpChanged;
+    public event EventHandler? Event_MaxHpChanged;
 
     // Stats of the player
     private float _CurrentHp, _prevCurrentHp = 0;
@@ -24,23 +24,25 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-    public void update() {
+    public void Update() {
       if(this.localPlayer == null) { return;  }
-      this._updateCurrentHp();
+      this.UpdateCurrentHp();
     }
 
-    private void _updateCurrentHp() {
+    private void UpdateCurrentHp() {
 
       // Updating current values
-      this._CurrentHp = this.localPlayer.CurrentHp;
-      this._MaxHp = this.localPlayer.MaxHp;
+      if(this.localPlayer != null) {
+        this._CurrentHp = this.localPlayer.CurrentHp;
+        this._MaxHp = this.localPlayer.MaxHp;
+      }
 
       // Send events after all value updated
       if(this._CurrentHp != this._prevCurrentHp) {
-        event_CurrentHpChanged?.Invoke(this, EventArgs.Empty);
+        Event_CurrentHpChanged?.Invoke(this, EventArgs.Empty);
       }
       if(this._MaxHp != this._prevMaxHp) {
-        event_MaxHpChanged?.Invoke(this, EventArgs.Empty);
+        Event_MaxHpChanged?.Invoke(this, EventArgs.Empty);
       }
 
       // Save previous values
@@ -50,11 +52,11 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     /***** PUBLIC API ******/
-    public float getCurrentHP() {
+    public float GetCurrentHP() {
       return this._CurrentHp;
     }
 
-    public float getMaxHP() {
+    public float GetMaxHP() {
       return this._MaxHp;
     }
   }

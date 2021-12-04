@@ -11,11 +11,11 @@ namespace FFXIV_Vibe_Plugin {
 
   class PluginUI : IDisposable {
 
-    private DalamudPluginInterface PluginInterface;
-    private Configuration configuration;
+    private readonly DalamudPluginInterface PluginInterface;
+    private readonly Configuration configuration;
 
     // Images
-    private Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new Dictionary<string, ImGuiScene.TextureWrap>();
+    private readonly Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new();
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
@@ -30,7 +30,7 @@ namespace FFXIV_Vibe_Plugin {
     // The value to send as a test for vibes.
     private int test_sendVibeValue = 0;
 
-    private Plugin currentPlugin;
+    private readonly Plugin currentPlugin;
 
     // passing in the image here just for simplicity
     public PluginUI(Configuration configuration, DalamudPluginInterface pluginInterface, Plugin currentPlugin) {
@@ -38,15 +38,15 @@ namespace FFXIV_Vibe_Plugin {
       this.PluginInterface = pluginInterface;
       this.currentPlugin = currentPlugin;
 
-      this.loadImages();
+      this.LoadImages();
     }
 
     /**
      * Function that will load all the images so that they are usable.
      * Don't forget to add the image into the project file.
      */
-    private void loadImages() {
-      List<string> images = new List<string>();
+    private void LoadImages() {
+      List<string> images = new();
       images.Add("logo.png");
 
       string assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
@@ -138,7 +138,7 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       ImGui.NextColumn();
-      if(!this.currentPlugin.buttplugIsConnected()) {
+      if(!this.currentPlugin.ButtplugIsConnected()) {
         if(ImGui.Button("Connect", new Vector2(100, 24))) {
           this.currentPlugin.Command_ConnectButtplugs("");
         }
@@ -166,7 +166,7 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       // Shortcut and hide next options
-      if(!this.currentPlugin.buttplugIsConnected()) { return; }
+      if(!this.currentPlugin.ButtplugIsConnected()) { return; }
 
       // Checkbox VIBE_HP_TOGGLE
       bool config_VIBE_HP_TOGGLE = this.configuration.VIBE_HP_TOGGLE;
@@ -194,31 +194,31 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawSimulatorTab() {
-      if(!this.currentPlugin.buttplugIsConnected()) { return;  }
+      if(!this.currentPlugin.ButtplugIsConnected()) { return;  }
 
       ImGui.Text("Send to all:");
 
       // Test of the vibe
       ImGui.SetNextItemWidth(200);
       if(ImGui.SliderInt("Intensity", ref this.test_sendVibeValue, 0, 100)) {
-        this.currentPlugin.buttplug_sendVibe(this.test_sendVibeValue);
+        this.currentPlugin.Buttplug_sendVibe(this.test_sendVibeValue);
       }
       ImGui.Columns(2, "##SendVibeTest", false);
       ImGui.SetColumnWidth(0, 110);
 
       
       if(ImGui.Button("Send vibe", new Vector2(100, 24))) {
-        this.currentPlugin.buttplug_sendVibe(this.test_sendVibeValue);
+        this.currentPlugin.Buttplug_sendVibe(this.test_sendVibeValue);
       }
       ImGui.NextColumn();
       if(ImGui.Button("Stop vibe", new Vector2(100, 24))) {
-        this.currentPlugin.buttplug_sendVibe(0);
+        this.currentPlugin.Buttplug_sendVibe(0);
       }
       ImGui.Columns(1);
     }
 
     public void DrawDevicesTab() {
-      if(!this.currentPlugin.buttplugIsConnected()) { return; }
+      if(!this.currentPlugin.ButtplugIsConnected()) { return; }
       foreach(ButtplugDevice device in this.currentPlugin.ButtplugDevices) {
         string deviceEntry = $"{device.Id}:{device.Name}";
         ImGui.Text(deviceEntry);
@@ -226,7 +226,7 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawHelpTab() {
-      string help = this.currentPlugin.getHelp(this.currentPlugin.commandName);
+      string help = Plugin.GetHelp(this.currentPlugin.commandName);
       ImGui.Text(help);
       
     }
