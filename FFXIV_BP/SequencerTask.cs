@@ -3,13 +3,13 @@
 namespace FFXIV_Vibe_Plugin {
 
   public class SequencerTask {
-    public string command { get; init; }
-    public int duration { get; init; }
+    public string Command { get; init; }
+    public int Duration { get; init; }
     public int _startedTime = 0;
 
     public SequencerTask(string cmd, int dur) {
-      command = cmd;
-      duration = dur;
+      Command = cmd;
+      Duration = dur;
     }
 
     public void play() {
