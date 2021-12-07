@@ -6,6 +6,7 @@ using Dalamud.Interface;
 using Dalamud.Plugin;
 using System.Collections.Generic;
 using static FFXIV_Vibe_Plugin.Plugin;
+using System.Threading;
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -98,14 +99,17 @@ namespace FFXIV_Vibe_Plugin {
             this.DrawSettingsTab();
             ImGui.EndTabItem();
           }
-          if(ImGui.BeginTabItem("Simulator")) {
-            this.DrawSimulatorTab();
-            ImGui.EndTabItem();
+          if(this.currentPlugin.ButtplugIsConnected()) {
+            if(ImGui.BeginTabItem("Simulator")) {
+              this.DrawSimulatorTab();
+              ImGui.EndTabItem();
+            }
+            if(ImGui.BeginTabItem("Devices")) {
+              this.DrawDevicesTab();
+              ImGui.EndTabItem();
+            }
           }
-          if(ImGui.BeginTabItem("Devices")) {
-            this.DrawDevicesTab();
-            ImGui.EndTabItem();
-          }
+        
           if(ImGui.BeginTabItem("Help")) {
             this.DrawHelpTab();
             ImGui.EndTabItem();
@@ -151,14 +155,7 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.Columns(1);
       ImGui.Spacing();
 
-      // Checkbox DEBUG_VERBOSE
-      bool config_DEBUG_VERBOSE = this.configuration.DEBUG_VERBOSE;
-      if(ImGui.Checkbox("Verbose mode to display debug messages. ", ref config_DEBUG_VERBOSE)) {
-        this.configuration.DEBUG_VERBOSE = config_DEBUG_VERBOSE;
-        this.configuration.Save();
-      }
-
-      // Checkbox DEBUG_VERBOSE
+      // Checkbox AUTO_CONNECT
       bool config_AUTO_CONNECT = this.configuration.AUTO_CONNECT;
       if(ImGui.Checkbox("Automatically connects. ", ref config_AUTO_CONNECT)) {
         this.configuration.AUTO_CONNECT = config_AUTO_CONNECT;
@@ -196,6 +193,10 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawSimulatorTab() {
       if(!this.currentPlugin.ButtplugIsConnected()) { return;  }
 
+      if(ImGui.Button("Scan toys", new Vector2(100, 24))) {
+        this.currentPlugin.ScanToys();
+      }
+
       ImGui.Text("Send to all:");
 
       // Test of the vibe
@@ -203,16 +204,8 @@ namespace FFXIV_Vibe_Plugin {
       if(ImGui.SliderInt("Intensity", ref this.test_sendVibeValue, 0, 100)) {
         this.currentPlugin.Buttplug_sendVibe(this.test_sendVibeValue);
       }
-      ImGui.Columns(2, "##SendVibeTest", false);
-      ImGui.SetColumnWidth(0, 110);
-
-      
-      if(ImGui.Button("Send vibe", new Vector2(100, 24))) {
-        this.currentPlugin.Buttplug_sendVibe(this.test_sendVibeValue);
-      }
-      ImGui.NextColumn();
       if(ImGui.Button("Stop vibe", new Vector2(100, 24))) {
-        this.currentPlugin.Buttplug_sendVibe(0);
+        this.test_sendVibeValue = 0;
       }
       ImGui.Columns(1);
     }

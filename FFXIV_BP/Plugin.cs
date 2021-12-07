@@ -29,7 +29,7 @@ namespace FFXIV_Vibe_Plugin {
 
 
     // Custom variables from Kacie
-    private readonly Logger Log;
+    private readonly Logger Logger;
     private bool _buttplugIsConnected = false;
     private float currentIntensity = -1;
     private bool _firstUpdated = false;
@@ -104,7 +104,7 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       // Initialize the logger
-      this.Log = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
+      this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
     }
 
 
@@ -128,7 +128,7 @@ namespace FFXIV_Vibe_Plugin {
       var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
       if(matchingintensities.Any() && buttplugClient != null) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
-        this.Log.Debug($"Sending vibe from chat {message}, {intensity}");
+        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
         this.Buttplug_sendVibe(intensity);
       }
     }
@@ -149,7 +149,7 @@ namespace FFXIV_Vibe_Plugin {
     private void Draw_firstUpdated() {
       if(!this._firstUpdated) {
         this.FirstUpdated();
-        this.Log.Debug("First updated");
+        this.Logger.Debug("First updated");
       }
       this._firstUpdated = true;
 
@@ -178,24 +178,24 @@ namespace FFXIV_Vibe_Plugin {
         SequencerTask st = this.sequencerTasks[0];
 
         if(st._startedTime == 0) {
-          st.play();
+          st.Play();
           string[] commandSplit = st.Command.Split(':', 2);
           string task = commandSplit[0];
           string param1 = commandSplit.Length > 1 ? commandSplit[1] : "";
-          this.Log.Debug($"Playing sequence: {task} {param1}");
+          this.Logger.Debug($"Playing sequence: {task} {param1}");
           if(task == "connect") {
             this.Command_ConnectButtplugs("connect");
           } else if(task == "buttplug_sendVibe") {
             float intensity = float.Parse(param1);
             this.Buttplug_sendVibe(intensity);
           } else if(task == "print") {
-            this.Log.Chat(param1);
+            this.Logger.Chat(param1);
           } else if(task == "print_debug") {
-            this.Log.Debug(param1);
+            this.Logger.Debug(param1);
           } else if(task == "nothing") {
             // do nothing
           } else {
-            this.Log.Debug($"Sequencer task unknown: {task} {param1}");
+            this.Logger.Debug($"Sequencer task unknown: {task} {param1}");
           }
         }
 
@@ -207,22 +207,22 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void Dispose() {
+      this.Logger.Debug("Plugin dispose...");
+
       this.CommandManager.RemoveHandler(commandName);
       if(DalamudChat != null) {
         DalamudChat.ChatMessage -= CheckForTriggers;
       }
       
       this.PluginUi.Dispose();
-      this.Log.Chat("Plugin dispose...");
-
+      
       // Check for buttplugClient
-      if(this.buttplugClient != null) {
-        this.Log.Chat("Buttplug disconnecting...");
+      if(this.buttplugClient != null && this.buttplugClient.Connected) {
+        this.Logger.Debug("Buttplug disconnecting...");
         try {
           this.buttplugClient.DisconnectAsync();
-
         } catch(Exception e) {
-          this.Log.Error("Could not disconnect from buttplug. Was connected?", e);
+          this.Logger.Error("Could not disconnect from buttplug. Was connected?", e);
           return;
         }
       }
@@ -271,7 +271,7 @@ party, a (cross) linkshell, or a free company chat.
     }
 
     private void PrintHelp() {
-      this.Log.Chat("Please go to the configuration menu under 'help'");
+      this.Logger.Chat("Please go to the configuration menu under 'help'");
     }
 
     private void OnCommand(string command, string args) {
@@ -280,7 +280,7 @@ party, a (cross) linkshell, or a free company chat.
         this.DisplayUI();
       } else {
         if(args.StartsWith("help")) {
-          this.Log.Chat(GetHelp($"/{ShortName}"));
+          this.Logger.Chat(GetHelp($"/{ShortName}"));
         } else if(args.StartsWith("config")) {
           this.DisplayConfigUI();
         } else if(args.StartsWith("connect")) {
@@ -311,11 +311,8 @@ party, a (cross) linkshell, or a free company chat.
           this.Buttplug_sendVibe(0);
         } else if(args.StartsWith("play_pattern")) {
           this.Play_pattern(args);
-        } else if(args.StartsWith("verbose")) {
-          this.Configuration.DEBUG_VERBOSE = !this.Configuration.DEBUG_VERBOSE;
-          this.Log.Chat($"Verbose: {this.Configuration.DEBUG_VERBOSE}");
         } else {
-          this.Log.Chat($"Unknown subcommand: {args}");
+          this.Logger.Chat($"Unknown subcommand: {args}");
         }
       }
     }
@@ -326,7 +323,7 @@ party, a (cross) linkshell, or a free company chat.
         string path = args.Split(" ")[1];
         config = File.ReadAllText(path);
       } catch(Exception e) {
-        this.Log.Error($"Malformed or invalid arguments for [load]: {args}", e);
+        this.Logger.Error($"Malformed or invalid arguments for [load]: {args}", e);
         return;
       }
       foreach(string line in config.Split("\n")) {
@@ -335,7 +332,7 @@ party, a (cross) linkshell, or a free company chat.
         if(int.TryParse(trigargs[0], out int intensity)) {
           ChatTrigger trigger = new(intensity, toMatch);
           if(!Triggers.Add(trigger)) {
-            this.Log.Chat($"Note: duplicate trigger: {trigger}");
+            this.Logger.Chat($"Note: duplicate trigger: {trigger}");
           };
         }
       }
@@ -349,7 +346,7 @@ party, a (cross) linkshell, or a free company chat.
 
     private void LoadTriggersConfig() {
       SortedSet<ChatTrigger> triggers = this.Configuration.TRIGGERS;
-      this.Log.Debug($"Loading {triggers.Count} triggers");
+      this.Logger.Debug($"Loading {triggers.Count} triggers");
       this.Triggers = new SortedSet<ChatTrigger>();
       foreach(ChatTrigger trigger in triggers) {
         this.Triggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
@@ -363,16 +360,16 @@ party, a (cross) linkshell, or a free company chat.
         path = args.Split(" ")[1];
         File.WriteAllText(path, config);
       } catch(Exception e) {
-        this.Log.Error($"Malformed or invalid arguments for [save]: {args}", e);
+        this.Logger.Error($"Malformed or invalid arguments for [save]: {args}", e);
         return;
       }
-      this.Log.Chat($"Wrote current config to {path}");
+      this.Logger.Chat($"Wrote current config to {path}");
     }
 
 
     public void Command_ConnectButtplugs(string args) {
       if(this._buttplugIsConnected) {
-        this.Log.Debug("Disconnecting previous instance! Waiting 2sec...");
+        this.Logger.Debug("Disconnecting previous instance! Waiting 2sec...");
         this.DisconnectButtplugs();
         Thread.Sleep(200);
       }
@@ -380,7 +377,7 @@ party, a (cross) linkshell, or a free company chat.
       try {
         this.buttplugClient = new("buttplugtriggers-dalamud");
       } catch(Exception e) {
-        this.Log.Error($"Can't load buttplug.io.", e);
+        this.Logger.Error($"Can't load buttplug.io.", e);
         return;
       }
       buttplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
@@ -399,20 +396,20 @@ party, a (cross) linkshell, or a free company chat.
       try {
         var uri = new Uri($"ws://{hostandport}/buttplug");
         var connector = new ButtplugWebsocketConnectorOptions(uri);
-        this.Log.Chat($"Connecting to {hostandport}.");
+        this.Logger.Chat($"Connecting to {hostandport}.");
         Task task = buttplugClient.ConnectAsync(connector);
         task.Wait();
       } catch(Exception e) {
-        this.Log.Error($"Could not connect to {hostandport}.", e);
+        this.Logger.Error($"Could not connect to {hostandport}.", e);
       }
 
       Thread.Sleep(200);
 
       if(buttplugClient.Connected) {
-        this.Log.Chat($"Buttplug connected!");
+        this.Logger.Chat($"Buttplug connected!");
         this._buttplugIsConnected = true;
       } else {
-        this.Log.Error("Failed connecting (Intiface server is up?)");
+        this.Logger.Error("Failed connecting (Intiface server is up?)");
         return;
       }
 
@@ -420,18 +417,18 @@ party, a (cross) linkshell, or a free company chat.
     }
 
     private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
-      this.Log.Chat("Server disconnected");
+      this.Logger.Debug("Server disconnected");
       this.DisconnectButtplugs();
-      this._buttplugIsConnected = false;
+      
     }
 
-    private void ScanToys() {
-      this.Log.Chat("Scanning for devices...");
+    public void ScanToys() {
+      this.Logger.Chat("Scanning for devices...");
       if(buttplugClient != null) {
         try {
           buttplugClient.StartScanningAsync();
         } catch(Exception e) {
-          this.Log.Error("Scanning issue...", e);
+          this.Logger.Error("Scanning issue...", e);
         }
       }
     }
@@ -440,7 +437,7 @@ party, a (cross) linkshell, or a free company chat.
       Thread.Sleep(500); // Make sure we are connected by waiting a bit
       string name = e.Device.Name;
       int index = (int)e.Device.Index;
-      this.Log.Chat($"Added device: {index}:{name}");
+      this.Logger.Chat($"Added device: {index}:{name}");
       this.ButtplugDevices.Add(new ButtplugDevice(index, name));
 
       /**
@@ -454,35 +451,41 @@ party, a (cross) linkshell, or a free company chat.
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-      this.Log.Chat($"Removed device: {e.Device.Name}:{e.Device.Index}");
+      this.Logger.Log($"Removed device: {e.Device.Name}:{e.Device.Index}");
       int index = this.ButtplugDevices.FindIndex(device => device.Id == e.Device.Index);
       this.ButtplugDevices.RemoveAt(index);
     }
 
     public void DisconnectButtplugs() {
-      if(buttplugClient == null) { return;  }
+      if(buttplugClient == null || !buttplugClient.Connected) {
+        this._buttplugIsConnected = false;
+        return;  }
       try {
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {
+          this.Logger.Log($"Disconnecting device {i} {buttplugClient.Devices[i].Name}");
           buttplugClient.Devices[i].Dispose();
         }
-        Task task = this.buttplugClient.DisconnectAsync();
-        task.Wait();
-        this.Log.Chat("Disconnecting! Bye... Waiting 2sec...");
-        Thread.Sleep(2000); // Wait a bit before reloading the plugin.
+      } catch(Exception e) {
+        this.Logger.Error("Error while disconnecting device", e);
+      }
+      try {
+        Thread.Sleep(1000);
+        this.buttplugClient.DisconnectAsync();
+        this.Logger.Log("Disconnecting! Bye... Waiting 2sec...");
       } catch(Exception e) {
         // ignore exception, we are trying to do our best
-        this.Log.Error("Error while disconnecting", e);
+        this.Logger.Error("Error while disconnecting client", e);
       }
 
       this._buttplugIsConnected = false;
+      this.buttplugClient = null;
     }
 
     private void Command_ToysList() {
       if(buttplugClient == null) { return; }
-      this.Log.Info("Listing toys");
       for(int i = 0; i < buttplugClient.Devices.Length; i++) {
         string name = buttplugClient.Devices[i].Name;
-        this.Log.Chat($"    {i}: {name}");
+        this.Logger.Chat($"    {i}: {name}");
       }
     }
 
@@ -490,10 +493,10 @@ party, a (cross) linkshell, or a free company chat.
       try {
         AuthorizedUser = args.Split(" ", 2)[1];
       } catch(IndexOutOfRangeException) {
-        this.Log.Chat("Cleared authorized user.");
+        this.Logger.Chat("Cleared authorized user.");
         return;
       }
-      this.Log.Chat($"Authorized user set to '{AuthorizedUser}'");
+      this.Logger.Chat($"Authorized user set to '{AuthorizedUser}'");
     }
 
     private void Command_ToggleHP() {
@@ -502,7 +505,7 @@ party, a (cross) linkshell, or a free company chat.
       if(!hp_toggle && this._buttplugIsConnected) {
         this.Buttplug_sendVibe(0); // Don't be cruel
       }
-      this.Log.Chat($"HP Toggle set to {hp_toggle}");
+      this.Logger.Chat($"HP Toggle set to {hp_toggle}");
       this.Configuration.Save();
     }
 
@@ -512,12 +515,12 @@ party, a (cross) linkshell, or a free company chat.
       try {
         threshold = int.Parse(blafuckcsharp[1]);
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Log.Error($"Malformed arguments for [threshold].", e);
+        this.Logger.Error($"Malformed arguments for [threshold].", e);
         return;
       }
       this.Configuration.MAX_VIBE_THRESHOLD = threshold;
       this.Configuration.Save();
-      this.Log.Chat($"Threshold set to {threshold}");
+      this.Logger.Chat($"Threshold set to {threshold}");
     }
 
     private void Command_AddTrigger(string args) {
@@ -529,16 +532,16 @@ party, a (cross) linkshell, or a free company chat.
         intensity = int.Parse(blafuckcsharp[1]);
         text = blafuckcsharp[2].ToLower(); ;
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Log.Error($"Malformed arguments for [chat_add].", e);
+        this.Logger.Error($"Malformed arguments for [chat_add].", e);
         return; // XXX: exceptional control flow
       }
       ChatTrigger newTrigger = new(intensity, text);
 
       if(Triggers.Add(newTrigger)) {
-        this.Log.Chat($"Trigger added successfully: {newTrigger}...");
+        this.Logger.Chat($"Trigger added successfully: {newTrigger}...");
         this.UpdateTriggersConfig();
       } else {
-        this.Log.Error($"Failed. Possible duplicate for intensity {intensity}");
+        this.Logger.Error($"Failed. Possible duplicate for intensity {intensity}");
       }
     }
     private void Command_RemoveTrigger(string args) {
@@ -549,12 +552,12 @@ party, a (cross) linkshell, or a free company chat.
           throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
         }
       } catch(FormatException e) {
-        this.Log.Error("Malformed argument for [chat_remove]", e);
+        this.Logger.Error("Malformed argument for [chat_remove]", e);
         return; // XXX: exceptional control flow
       }
       ChatTrigger removed = Triggers.ElementAt(id);
       Triggers.Remove(removed);
-      this.Log.Chat($"Removed Trigger: {removed}");
+      this.Logger.Chat($"Removed Trigger: {removed}");
       this.UpdateTriggersConfig();
     }
 
@@ -566,7 +569,7 @@ ID   Intensity   Text Match
       for(int i = 0; i < Triggers.Count; ++i) {
         message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).Text}\n";
       }
-      this.Log.Chat(message);
+      this.Logger.Chat(message);
     }
 
 
@@ -575,10 +578,8 @@ ID   Intensity   Text Match
      * @param {float} intensity
      */
     public void Buttplug_sendVibe(float intensity) {
-
       if(this.currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
-
-        this.Log.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
 
         // Set min and max limits
         if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
@@ -596,9 +597,9 @@ ID   Intensity   Text Match
       try {
         blafuckcsharp = args.Split(" ", 2);
         intensity = float.Parse(blafuckcsharp[1]);
-        this.Log.Chat($"Command Send intensity {intensity}");
+        this.Logger.Chat($"Command Send intensity {intensity}");
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Log.Error($"Malformed arguments for send [intensity].", e);
+        this.Logger.Error($"Malformed arguments for send [intensity].", e);
         return;
       }
       this.Buttplug_sendVibe(intensity);
@@ -606,14 +607,14 @@ ID   Intensity   Text Match
     private void Player_currentHPChanged(object? send, EventArgs e) {
       float currentHP = this.playerStats.GetCurrentHP();
       float maxHP = this.playerStats.GetMaxHP();
-      this.Log.Debug($"CurrentHP: {currentHP} / {maxHP}");
+      this.Logger.Debug($"CurrentHP: {currentHP} / {maxHP}");
       if(this.Configuration.VIBE_HP_TOGGLE) {
         float percentageHP = currentHP / maxHP * 100f;
         float percentage = 100 - percentageHP;
         if(percentage == 0) {
           percentage = 0;
         }
-        this.Log.Debug($"CurrentPercentage: {percentage}");
+        this.Logger.Debug($"CurrentPercentage: {percentage}");
 
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal
@@ -630,14 +631,14 @@ ID   Intensity   Text Match
       try {
         string[] param = args.Split(" ", 2);
         string patternName = param[1];
-        this.Log.Chat($"Play pattern {patternName}");
+        this.Logger.Chat($"Play pattern {patternName}");
         if(patternName == "shake") {
           this.Play_patternShake(100);
         } else if(patternName == "mountain") {
           this.Play_patternMountain(30);
         }
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Log.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
+        this.Logger.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
         return;
       }
     }

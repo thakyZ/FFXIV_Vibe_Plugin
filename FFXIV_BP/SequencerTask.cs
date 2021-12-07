@@ -12,7 +12,7 @@ namespace FFXIV_Vibe_Plugin {
       Duration = dur;
     }
 
-    public void play() {
+    public void Play() {
       this._startedTime = (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
   }
