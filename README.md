@@ -79,5 +79,5 @@ Enjoy :)
 
 
 # Discord
-- [This plugin discord](https://discord.gg/CPbuGv6y) 
+- [This plugin discord](https://discord.gg/JnCGxa3gGa) 
 - [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
