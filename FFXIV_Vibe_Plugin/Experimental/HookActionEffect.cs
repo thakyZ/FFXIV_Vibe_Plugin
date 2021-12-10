@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 using Dalamud.Game;
 using Dalamud.Hooking;
 using Dalamud.Game.ClientState;
@@ -103,8 +105,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
 
         ftGui.FlyTextCreated += OnFlyTextCreated;*/
       } catch(Exception e) {
-        this.Logger.Info($"Encountered an error loading DamageInfoPlugin: {e.Message}");
-        this.Logger.Info("Plugin will not be loaded.");
+        this.Logger.Warn($"Encountered an error loading HookActionEffect: {e.Message}. Disabling it...");
 
         receiveActionEffectHook?.Disable();
         receiveActionEffectHook?.Dispose();
@@ -122,48 +123,108 @@ namespace FFXIV_Vibe_Plugin.Experimental {
 
 
     unsafe private void ReceiveActionEffect(int sourceId, IntPtr sourceCharacter, IntPtr pos, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail) {
-      this.Logger.Info("ReciveActionEffect");
       try {
         uint id = *((uint*)effectHeader.ToPointer() + 0x2);
         uint animId = *((ushort*)effectHeader.ToPointer() + 0xE);
         ushort op = *((ushort*)effectHeader.ToPointer() - 0x7);
         byte targetCount = *(byte*)(effectHeader + 0x21);
         string charName = GetCharacterNameFromSourceId(sourceId);
-        this.Logger.Log($"--- {charName}: action id {id}, anim id {animId}, opcode: {op:X} numTargets: {targetCount} ---");
-        this.EffectArray(targetCount, effectArray);
-        this.EffectTrail(targetCount, effectTrail);
-        this.LuminaGet(id);
+        String spellName = this.GetSpellName(id, true);
+        String allTargets = this.GetAllTarget(targetCount, effectTrail);
+        String type = this.GetSpellType(targetCount, effectArray);
+        int amount = this.GetAmount(targetCount, effectArray);
+        this.Logger.Log($"{charName} cast '{spellName}' (type:{type}) targetting '{allTargets}' (Number of targets: {targetCount})");
+        // DEBUG: this.Logger.Log($"--- {charName}: action id {id}, anim id {animId}, opcode: {op:X} numTargets: {targetCount} ---");
+
       } catch(Exception e) {
         this.Logger.Log($"{e.Message} {e.StackTrace}");
-      }      
+      }
+      receiveActionEffectHook.Original(sourceId, sourceCharacter, pos, effectHeader, effectArray, effectTrail);
     }
 
     private void RestoreOriginalHook(int sourceId, IntPtr sourceCharacter, IntPtr pos, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail) {
       receiveActionEffectHook.Original(sourceId, sourceCharacter, pos, effectHeader, effectArray, effectTrail);
     }
 
-    unsafe private void EffectArray(byte count, IntPtr effectArray) {
-      var effect = *(EffectEntry*)(effectArray);
-      this.Logger.Log($"{count} {effect.type}");
+    unsafe private int GetAmount(byte count, IntPtr effectArray) {
+      int targetCount = (int)count;
+      this.Logger.Info($"TARGET_COUNT: {targetCount}");
+      int effectsEntries = 0;
+      int targetEntries = 1;
+      if(targetCount == 0) {
+        effectsEntries = 0;
+        targetEntries = 1;
+      } else if(targetCount == 1) {
+        effectsEntries = 8;
+        targetEntries = 1;
+      } else if(targetCount <= 8) {
+        effectsEntries = 64;
+        targetEntries = 8;
+      } else if(targetCount <= 16) {
+        effectsEntries = 128;
+        targetEntries = 16;
+      } else if(targetCount <= 24) {
+        effectsEntries = 192;
+        targetEntries = 24;
+      } else if(targetCount <= 32) {
+        effectsEntries = 256;
+        targetEntries = 32;
+      }
+
+      List<EffectEntry> entries = new List<EffectEntry>(effectsEntries);
+
+      for(int i = 0; i < effectsEntries; i++) {
+        entries.Add(*(EffectEntry*)(effectArray + i * 8));
+      }
+
+      for(int i = 0; i < entries.Count; i++) {
+        if(i % 8 == 0) { // Value of dmg is located every 8
+          uint tDmg = entries[i].value;
+          if(entries[i].mult != 0) {
+            tDmg += ((uint)ushort.MaxValue + 1) * entries[i].mult;
+          }
+          this.Logger.Log($"Testing effectentry: {tDmg}");
+        }
+      }
+
+
+      
+      return 0;
     }
 
-    unsafe private void EffectTrail(byte count, IntPtr effectTrail) {
+    unsafe private string GetSpellType(byte count, IntPtr effectArray) {
+      var effect = *(EffectEntry*)(effectArray);
+      return effect.type.ToString();
+    }
+
+    unsafe private string GetAllTarget(byte count, IntPtr effectTrail) {
+      List<String> names = new List<String>();
       if((int)count >= 1) {
         ulong[] targets = new ulong[(int)count];
         for(int i=0; i < count; i++) {
           targets[i] = *(ulong*)(effectTrail + i * 8);
           var charName = this.GetCharacterNameFromSourceId((int)targets[i]);
-          this.Logger.Log($"Targetting: {charName}");
+          names.Add(charName);
         }
       }
+      return String.Join(",", names);
       
     }
  
-    private void LuminaGet(uint actionId) {
+    private string GetSpellName(uint actionId, bool withId) {
       var row = this.LuminaActionSheet.GetRow(actionId);
-      if(row.Name != null) {
-        this.Logger.Log($"--- Spell triggered: {row.Name} (action id: {row.RowId})");
+      var spellName = "";
+      if(row != null) { 
+        if(withId) {
+          spellName = $"{row.RowId}:";
+        }
+        if(row.Name != null) {
+          spellName += $"{row.Name}";
+        }
+      } else {
+        spellName = "!Unknown Spell Name!";
       }
+      return spellName;
     }
 
     private string GetCharacterNameFromSourceId(int sourceId) {
