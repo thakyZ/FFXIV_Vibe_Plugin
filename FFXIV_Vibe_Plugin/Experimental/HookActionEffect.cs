@@ -177,6 +177,8 @@ namespace FFXIV_Vibe_Plugin.Experimental {
         entries.Add(*(EffectEntry*)(effectArray + i * 8));
       }
 
+
+      // Experimental way to sum up all the damange values when doing AOE spells
       for(int i = 0; i < entries.Count; i++) {
         if(i % 8 == 0) { // Value of dmg is located every 8
           uint tDmg = entries[i].value;
