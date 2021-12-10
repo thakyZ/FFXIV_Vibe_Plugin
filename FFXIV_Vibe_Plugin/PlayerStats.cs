@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud.Game.ClientState;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace FFXIV_Vibe_Plugin {
   
