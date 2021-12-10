@@ -33,14 +33,18 @@
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <PackageIcon>logo_128.png</PackageIcon>
+    <PackageIcon>logo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Buttplug" Version="2.0.5" />
     <PackageReference Include="DalamudPackager" Version="2.1.5" />
+    <PackageReference Include="Lumina" Version="3.5.1" />
+    <PackageReference Include="Lumina.Excel" Version="6.0.1" />
+    <PackageReference Include="Lumina.Generated" Version="5.30.2" />
     <Reference Include="0Harmony">
       <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\0Harmony.dll</HintPath>
     </Reference>
@@ -291,15 +295,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\Kurog-Desktop\.nuget\packages\buttplugrustffi\2.0.4\build\..\runtimes\win-x64\native\buttplug_rs_ffi.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\Data\logo_128.png" Link="Data\Images\logo_128.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -317,10 +312,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-
-
-
-
-
 </Project>
