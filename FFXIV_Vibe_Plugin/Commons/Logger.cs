@@ -14,8 +14,8 @@ namespace FFXIV_Vibe_Plugin.Commons {
     // Initialize the Dalamud.Gui system.
     private readonly Dalamud.Game.Gui.ChatGui? DalamudChatGui;
 
-    // Name used as prefix.
-    private readonly string name;
+    // Logger name.
+    private readonly string name = "";
 
     // Current log level.
     private readonly LogLevel log_level = LogLevel.DEBUG;
@@ -123,10 +123,10 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
 
     private string FormatMessage(LogLevel type, string msg) {
-      return $"{this.name} {type} {this.prefix} {msg}";
+      return $"{(name != "" ? name + " " : "")}{type} {this.prefix} {msg}";
     }
     private string FormatMessage(LogLevel type, string msg, Exception e) {
-      return $"{this.name} {type} {this.prefix} {e.Message}\\n{msg}";
+      return $"{(name != "" ? name+" " : "")}{type} {this.prefix} {e.Message}\\n{msg}";
     }
   }
 }
