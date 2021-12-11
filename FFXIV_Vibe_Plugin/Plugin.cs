@@ -145,6 +145,11 @@ namespace FFXIV_Vibe_Plugin {
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
       this.experiment_hookActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
+      this.experiment_hookActionEffect.ReceivedEvent += SpellWasTriggered;
+    }
+
+    private void SpellWasTriggered(object sender, HookActionEffects_ReceivedEventArgs args) {
+      this.Logger.Info(args.Spell.ToString());
     }
 
 

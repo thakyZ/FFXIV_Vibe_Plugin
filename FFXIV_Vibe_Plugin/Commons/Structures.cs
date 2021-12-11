@@ -23,6 +23,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       ApplyStatusEffectTarget = 15,
       ApplyStatusEffectSource = 16,
       StatusNoEffect = 20,
+      Taunt = 24,
       StartActionCombo = 27,
       ComboSucceed = 28,
       Knockback = 33,
@@ -93,7 +94,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
             targetsString = "*no target*";
           }
         }
-        return $"{player} casts {name} {type} on: {targetsString}. Avg: {amountAverage}";
+        return $"{player} casts {name}#{type} on: {targetsString}. Avg: {amountAverage}";
       }
     }
   }
