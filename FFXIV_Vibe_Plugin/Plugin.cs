@@ -24,6 +24,7 @@ using Buttplug;
 
 #region FFXIV_Vibe_Plugin deps
 using FFXIV_Vibe_Plugin.Commons;
+using FFXIV_Vibe_Plugin.Hooks;
 using FFXIV_Vibe_Plugin.Experimental;
 #endregion
 
@@ -35,18 +36,16 @@ namespace FFXIV_Vibe_Plugin {
     public static readonly string ShortName = "FVP";
     public readonly string commandName = "/fvp";
 
-
     // Custom variables from Kacie
     private readonly Logger Logger;
     private readonly PlayerStats PlayerStats;
     private bool _buttplugIsConnected = false;
     private float _currentIntensity = -1;
     private bool _firstUpdated = false;
-    
+    private readonly FFXIV_Vibe_Plugin.Hooks.ActionEffect hook_ActionEffect;
 
     // Experiments
     private readonly FFXIV_Vibe_Plugin.Experimental.NetworkCapture experiment_networkCapture;
-    private readonly FFXIV_Vibe_Plugin.Experimental.HookActionEffect experiment_hookActionEffect;
 
     // Buttplug
     public class ButtplugDevice {
@@ -142,13 +141,18 @@ namespace FFXIV_Vibe_Plugin {
       // Initialize the logger
       this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
 
+      // Initialize Hook ActionEffect
+      this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
+      this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
+
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
-      this.experiment_hookActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
-      this.experiment_hookActionEffect.ReceivedEvent += SpellWasTriggered;
+      
+      
+      
     }
 
-    private void SpellWasTriggered(object sender, HookActionEffects_ReceivedEventArgs args) {
+    private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
       this.Logger.Info(args.Spell.ToString());
     }
 
@@ -161,9 +165,11 @@ namespace FFXIV_Vibe_Plugin {
         DalamudChat.ChatMessage -= CheckForTriggers;
       }
 
-      // Experiments cleaning
+      // Cleaning hooks
+      this.hook_ActionEffect.Dispose();
+
+      // Cleaning experimentations
       this.experiment_networkCapture.Dispose();
-      this.experiment_hookActionEffect.Dispose();
 
       this.PluginUi.Dispose();
 

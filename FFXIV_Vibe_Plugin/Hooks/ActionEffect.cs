@@ -13,8 +13,8 @@ using Dalamud.Data;
 using FFXIV_Vibe_Plugin.Commons;
 #endregion
 
-namespace FFXIV_Vibe_Plugin.Experimental {
-  internal class HookActionEffect {
+namespace FFXIV_Vibe_Plugin.Hooks {
+  internal class ActionEffect {
     // Constructor params
     private readonly DataManager? DataManager;
     private readonly Logger Logger;
@@ -33,7 +33,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
     public event EventHandler<HookActionEffects_ReceivedEventArgs>? ReceivedEvent;
 
     // Constructor
-    public HookActionEffect(DataManager dataManager, Logger logger, SigScanner scanner, ClientState clientState, ObjectTable gameObjects) {
+    public ActionEffect(DataManager dataManager, Logger logger, SigScanner scanner, ClientState clientState, ObjectTable gameObjects) {
       this.DataManager = dataManager;
       this.Logger = logger;
       this.Scanner = scanner;
