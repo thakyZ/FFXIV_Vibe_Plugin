@@ -13,20 +13,17 @@ using FFXIV_Vibe_Plugin.Commons;
 using Buttplug;
 #endregion
 
-
-
 namespace FFXIV_Vibe_Plugin.Device{
   internal class Controller {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
     
     // Buttplug related
-    private Buttplug.ButtplugClient? ButtplugClient;
-    private List<ButtplugDevice> ButtplugDevices = new();
+    private ButtplugClient? ButtplugClient;
+    private readonly List<Device> Devices = new();
 
     // Internal variables
     private float _currentIntensity = -1;
-    
 
     public Controller(Logger logger, Configuration configuration) {
       this.Logger = logger;
@@ -34,16 +31,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void Dispose() {
-      if(this.ButtplugClient != null && this.ButtplugClient.Connected) {
-        this.Logger.Debug("Buttplug disconnecting...");
-        try {
-          this.ButtplugClient.DisconnectAsync();
-          this.ButtplugClient = null;
-        } catch(Exception e) {
-          this.Logger.Error("Could not disconnect from buttplug. Was connected?", e);
-          return;
-        }
-      }
+      this.Disconnect();
     }
 
     public void Connect(String host, int port) {
@@ -102,6 +90,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void ScanToys() {
+      if(this.ButtplugClient == null) { return;  }
       this.Logger.Chat("Scanning for devices...");
       if(this.IsConnected()) {
         try {
@@ -111,12 +100,14 @@ namespace FFXIV_Vibe_Plugin.Device{
         }
       }
     }
-    private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
+
+    private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
       Thread.Sleep(500); // Make sure we are connected by waiting a bit
-      string name = e.Device.Name;
-      int index = (int)e.Device.Index;
-      this.Logger.Chat($"Added device: {index}:{name}");
-      this.ButtplugDevices.Add(new ButtplugDevice(index, name));
+      ButtplugClientDevice buttplugClientDevice = arg.Device;
+      Device device = new(buttplugClientDevice);
+      device.IsConnected = true;
+      this.Devices.Add(device);
+      this.Logger.Chat($"Added {device})");
 
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
@@ -131,13 +122,15 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-      this.Logger.Log($"Removed device: {e.Device.Name}:{e.Device.Index}");
-      int index = this.ButtplugDevices.FindIndex(device => device.Id == e.Device.Index);
-      this.ButtplugDevices.RemoveAt(index);
+      int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
+      Device device = Devices[index];
+      device.IsConnected = false;
+      this.Logger.Log($"Removed {Devices[index]}");
+      this.Devices.RemoveAt(index);
     }
 
     public void Disconnect() {
-      if(this.ButtplugClient == null && !this.IsConnected()) {
+      if(this.ButtplugClient == null || !this.IsConnected()) {
         return;
       }
       try {
