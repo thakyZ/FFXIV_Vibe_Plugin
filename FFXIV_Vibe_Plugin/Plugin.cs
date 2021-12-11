@@ -5,23 +5,27 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 
-/** Dalamud */
-using Dalamud.Game;
-using Dalamud.Game.Command;
+#region Dalamud deps
 using Dalamud.IoC;
+using Dalamud.Data;
 using Dalamud.Plugin;
+using Dalamud.Game;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.Network;
+using Dalamud.Game.Command;
+using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Objects;
+#endregion
 
-/** Others */
+#region Other deps
 using Buttplug;
+#endregion
 
-/** Internal */
+#region FFXIV_Vibe_Plugin deps
 using FFXIV_Vibe_Plugin.Commons;
 using FFXIV_Vibe_Plugin.Experimental;
+#endregion
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -34,10 +38,11 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private readonly Logger Logger;
+    private readonly PlayerStats PlayerStats;
     private bool _buttplugIsConnected = false;
-    private float currentIntensity = -1;
+    private float _currentIntensity = -1;
     private bool _firstUpdated = false;
-    private readonly PlayerStats playerStats;
+    
 
     // Experiments
     private readonly FFXIV_Vibe_Plugin.Experimental.NetworkCapture experiment_networkCapture;
@@ -66,9 +71,10 @@ namespace FFXIV_Vibe_Plugin {
     private Configuration Configuration { get; init; }
     private PluginUI PluginUi { get; init; }
     private GameNetwork GameNetwork { get; init; }
+    private DataManager DataManager { get; init; }
 
     // Others
-    private readonly ClientState clientState;
+    private readonly ClientState ClientState;
     private string AuthorizedUser = "";
 
     // SequencerTask
@@ -93,14 +99,16 @@ namespace FFXIV_Vibe_Plugin {
         [RequiredVersion("1.0")] ClientState clientState,
         [RequiredVersion("1.0")] GameNetwork gameNetwork,
         [RequiredVersion("1.0")] SigScanner scanner,
-        [RequiredVersion("1.0")] ObjectTable gameObjects
+        [RequiredVersion("1.0")] ObjectTable gameObjects,
+        [RequiredVersion("1.0")] DataManager dataManager
         )
     {
 
       this.PluginInterface = pluginInterface;
       this.CommandManager = commandManager;
       this.GameNetwork = gameNetwork;
-      this.clientState = clientState;
+      this.ClientState = clientState;
+      this.DataManager = dataManager;
 
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
       this.Configuration.Initialize(this.PluginInterface);
@@ -120,10 +128,10 @@ namespace FFXIV_Vibe_Plugin {
       this.AuthorizedUser = "";
 
       /** Experimental */
-      this.playerStats = new PlayerStats(this.clientState);
+      this.PlayerStats = new PlayerStats(this.ClientState);
       
-      playerStats.Event_CurrentHpChanged += this.Player_currentHPChanged;
-      playerStats.Event_MaxHpChanged += this.Player_currentHPChanged;
+      PlayerStats.Event_CurrentHpChanged += this.Player_currentHPChanged;
+      PlayerStats.Event_MaxHpChanged += this.Player_currentHPChanged;
 
       /** Experimental auto connect */
       if(this.Configuration.AUTO_CONNECT) {
@@ -136,7 +144,7 @@ namespace FFXIV_Vibe_Plugin {
 
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
-      this.experiment_hookActionEffect = new(this.Logger, scanner, clientState, gameObjects);
+      this.experiment_hookActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
     }
 
 
@@ -172,7 +180,7 @@ namespace FFXIV_Vibe_Plugin {
 
       this.PluginUi.Draw();
 
-      this.playerStats.Update();
+      this.PlayerStats.Update();
 
       this.RunSequencer(this.sequencerTasks);
 
@@ -612,7 +620,7 @@ ID   Intensity   Text Match
      * @param {float} intensity
      */
     public void Buttplug_sendVibe(float intensity) {
-      if(this.currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
+      if(this._currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
         this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
 
         // Set min and max limits
@@ -621,7 +629,7 @@ ID   Intensity   Text Match
         for(int i = 0; i < buttplugClient.Devices.Length; i++) {
           buttplugClient.Devices[i].SendVibrateCmd(newIntensity);
         }
-        this.currentIntensity = newIntensity;
+        this._currentIntensity = newIntensity;
       }
     }
 
@@ -639,16 +647,16 @@ ID   Intensity   Text Match
       this.Buttplug_sendVibe(intensity);
     }
     private void Player_currentHPChanged(object? send, EventArgs e) {
-      float currentHP = this.playerStats.GetCurrentHP();
-      float maxHP = this.playerStats.GetMaxHP();
-      this.Logger.Debug($"CurrentHP: {currentHP} / {maxHP}");
+      float currentHP = this.PlayerStats.GetCurrentHP();
+      float maxHP = this.PlayerStats.GetMaxHP();
+      
       if(this.Configuration.VIBE_HP_TOGGLE) {
         float percentageHP = currentHP / maxHP * 100f;
         float percentage = 100 - percentageHP;
         if(percentage == 0) {
           percentage = 0;
         }
-        this.Logger.Debug($"CurrentPercentage: {percentage}");
+        this.Logger.Debug($"Current: HP={currentHP} MaxHP={maxHP} Percentage={percentage}");
 
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal

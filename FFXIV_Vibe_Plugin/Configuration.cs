@@ -6,7 +6,9 @@ using System.Collections.Generic;
 namespace FFXIV_Vibe_Plugin {
   [Serializable]
   public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 0;
+
+    public int Version { get; set; } = 0; // TODO: remove me ?
+
     public bool VIBE_HP_TOGGLE { get; set; } = false;
     public int VIBE_HP_MODE { get; set; } = 0;
     public int MAX_VIBE_THRESHOLD { get; set; } = 100;
