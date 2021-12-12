@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FFXIV_Vibe_Plugin {
+namespace FFXIV_Vibe_Plugin.Triggers {
   [Serializable]
   public class ChatTrigger : IComparable {
     

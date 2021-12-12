@@ -20,6 +20,7 @@ using Dalamud.Game.ClientState.Objects;
 
 #region FFXIV_Vibe_Plugin deps
 using FFXIV_Vibe_Plugin.Commons;
+using FFXIV_Vibe_Plugin.Triggers;
 using FFXIV_Vibe_Plugin.Hooks;
 using FFXIV_Vibe_Plugin.Experimental;
 #endregion
@@ -50,7 +51,8 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private string AuthorizedUser = "";
-    private SortedSet<ChatTrigger> Triggers = new();
+    private SortedSet<Triggers.Trigger> Triggers = new();
+    private SortedSet<Triggers.ChatTrigger> ChatTriggers = new();
 
     // Experiments
     private readonly NetworkCapture experiment_networkCapture;
@@ -258,11 +260,16 @@ These commands let anyone whose name contains 'Alice' control all your connected
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
       Structures.Spell spell = args.Spell;
       this.Logger.Debug(spell.ToString());
-      
-      if(spell.name != null && spell.name.StartsWith("Tranchant")) {
-        this.DeviceController.SendVibeToAll(1);
+
+      if(spell.name != null) {
+        // Experimentation
+        if(spell.name.StartsWith("16141:Tranchage")) {
+          this.DeviceController.SendVibeToAll(10);
+        }
+        if(spell.name.StartsWith("16149:Massacre")) {
+          this.DeviceController.SendVibeToAll(0);
+        }
       }
-      
     }
 
 
@@ -294,7 +301,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
         return;
       }
       string message = _message.ToString().ToLower();
-      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
+      var matchingintensities = this.ChatTriggers.Where(t => message.Contains(t.Text.ToLower()));
       if(matchingintensities.Any() && this.DeviceController.IsConnected()) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
         this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
@@ -318,7 +325,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
         string toMatch = trigargs[1];
         if(int.TryParse(trigargs[0], out int intensity)) {
           ChatTrigger trigger = new(intensity, toMatch);
-          if(!Triggers.Add(trigger)) {
+          if(!ChatTriggers.Add(trigger)) {
             this.Logger.Chat($"Note: duplicate trigger: {trigger}");
           };
         }
@@ -327,22 +334,22 @@ These commands let anyone whose name contains 'Alice' control all your connected
     }
 
     private void UpdateTriggersConfig() {
-      this.Configuration.TRIGGERS = this.Triggers;
+      this.Configuration.TRIGGERS = this.ChatTriggers;
       this.Configuration.Save();
     }
 
     private void LoadTriggersConfig() {
       SortedSet<ChatTrigger> triggers = this.Configuration.TRIGGERS;
       this.Logger.Debug($"Loading {triggers.Count} triggers");
-      this.Triggers = new SortedSet<ChatTrigger>();
+      this.ChatTriggers = new SortedSet<ChatTrigger>();
       foreach(ChatTrigger trigger in triggers) {
-        this.Triggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
+        this.ChatTriggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
       }
     }
 
     private void Command_SaveConfig(string args) {
       string path;
-      var config = string.Join("\n", Triggers.Select(t => t.ToString()));
+      var config = string.Join("\n", ChatTriggers.Select(t => t.ToString()));
       try {
         path = args.Split(" ")[1];
         File.WriteAllText(path, config);
@@ -377,7 +384,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
       }
       ChatTrigger newTrigger = new(intensity, text);
 
-      if(Triggers.Add(newTrigger)) {
+      if(ChatTriggers.Add(newTrigger)) {
         this.Logger.Chat($"Trigger added successfully: {newTrigger}...");
         this.UpdateTriggersConfig();
       } else {
@@ -395,8 +402,8 @@ These commands let anyone whose name contains 'Alice' control all your connected
         this.Logger.Error("Malformed argument for [chat_remove]", e);
         return; // XXX: exceptional control flow
       }
-      ChatTrigger removed = Triggers.ElementAt(id);
-      Triggers.Remove(removed);
+      ChatTrigger removed = ChatTriggers.ElementAt(id);
+      ChatTriggers.Remove(removed);
       this.Logger.Chat($"Removed Trigger: {removed}");
       this.UpdateTriggersConfig();
     }
@@ -406,8 +413,8 @@ These commands let anyone whose name contains 'Alice' control all your connected
           @"Configured triggers:
 ID   Intensity   Text Match
 ";
-      for(int i = 0; i < Triggers.Count; ++i) {
-        message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).Text}\n";
+      for(int i = 0; i < ChatTriggers.Count; ++i) {
+        message += $"[{i}] | {ChatTriggers.ElementAt(i).Intensity} | {ChatTriggers.ElementAt(i).Text}\n";
       }
       this.Logger.Chat(message);
     }
