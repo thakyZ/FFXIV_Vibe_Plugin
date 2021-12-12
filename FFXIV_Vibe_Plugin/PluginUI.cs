@@ -317,14 +317,14 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawTriggersTab() {
-      if(ImGui.BeginChild("left", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
-        if(ImGui.Selectable("Dmg", this.selectedTrigger == 0)) {
+      if(ImGui.BeginChild("left", new Vector2(150, -ImGui.GetFrameHeightWithSpacing()), true)) {
+        if(ImGui.Selectable("/ Dmg", this.selectedTrigger == 0)) {
           this.selectedTrigger = 0;
         }
-        if(ImGui.Selectable("Heal", this.selectedTrigger == 1)) {
+        if(ImGui.Selectable("+ Heal", this.selectedTrigger == 1)) {
           this.selectedTrigger = 1;
         }
-        if(ImGui.Selectable("Chat", this.selectedTrigger == 2)) {
+        if(ImGui.Selectable("- Chat", this.selectedTrigger == 2)) {
           this.selectedTrigger = 2;
         }
         ImGui.EndChild();
