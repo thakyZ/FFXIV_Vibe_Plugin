@@ -288,7 +288,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
       if(matchingintensities.Any() && this.DeviceController.IsConnected()) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
         this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
-        this.DeviceController.SendVibe(intensity);
+        this.DeviceController.SendVibeToAll(intensity);
       }
     }
 
@@ -357,7 +357,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
       bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
       this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
       if(!hp_toggle && this.DeviceController.IsConnected()) {
-        this.DeviceController.SendVibe(0); // Don't be cruel
+        this.DeviceController.SendVibeToAll(0); // Don't be cruel
       }
       this.Logger.Chat($"HP Toggle set to {hp_toggle}");
       this.Configuration.Save();
@@ -440,7 +440,7 @@ ID   Intensity   Text Match
 
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal
-          this.DeviceController.SendVibe(percentage);
+          this.DeviceController.SendVibeToAll((int)percentage);
         } else if(mode == 1) { // shake
           this.DeviceController.Play_PatternShake(percentage);
         } else if(mode == 2) { // shake
