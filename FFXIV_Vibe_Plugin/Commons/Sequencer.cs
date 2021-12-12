@@ -31,10 +31,10 @@ namespace FFXIV_Vibe_Plugin.Commons {
           string param1 = commandSplit.Length > 1 ? commandSplit[1] : "";
           this.Logger.Debug($"Playing sequence: {task} {param1}");
           if(task == "connect") {
-            // TODO: this.Command_DeviceController_Connect();
+            //this.DeviceController.Connect();
           } else if(task == "buttplug_sendVibe") {
-            float intensity = float.Parse(param1);
-            // TODO: this.Buttplug_sendVibe(intensity);
+            /*float intensity = float.Parse(param1);
+            this.DeviceController.SendVibeToAll(intensity);*/
           } else if(task == "print") {
             this.Logger.Chat(param1);
           } else if(task == "print_debug") {

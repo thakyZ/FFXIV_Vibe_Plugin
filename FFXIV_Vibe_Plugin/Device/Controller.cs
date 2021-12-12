@@ -23,8 +23,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     private readonly List<Device> Devices = new();
 
     // Internal variables
-    private static Mutex mut = new Mutex();
-    private float _currentIntensity = -1;
+    private readonly static Mutex mut = new();
 
     public Controller(Logger logger, Configuration configuration) {
       this.Logger = logger;
@@ -180,67 +179,32 @@ namespace FFXIV_Vibe_Plugin.Device{
      */
     public void SendVibeToAll(int intensity) {
       if(this.IsConnected() && this.ButtplugClient != null) {
-        // Clamp value
-        if(intensity < 0) { intensity = 0; } else if(intensity > 100) { intensity = 100; }
-
-        // Compute intensity using the threshold
-        int newIntensity = (int)(intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD));
-        this.Logger.Debug($"Intensity: {newIntensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
         foreach(Device device in this.Devices) {
-          device.SendVibrate(newIntensity);
-          device.SendRotate(newIntensity);
+          device.SendVibrate(intensity, -1, this.Configuration.MAX_VIBE_THRESHOLD);
+          device.SendRotate(intensity, true, -1 , this.Configuration.MAX_VIBE_THRESHOLD);
+          device.SendLinear(intensity, 500, -1, this.Configuration.MAX_VIBE_THRESHOLD);
         }
       }
     }
 
+    public void SendVibrate(Device device, int intensity, int motorId=-1) {
+      device.SendVibrate(intensity, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+    }
 
+    public void SendRotate(Device device, int intensity, bool clockwise=true, int motorId = -1) {
+      device.SendRotate(intensity, clockwise, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+    }
+
+    public void SendLinear(Device device, int intensity, int duration = 500, int motorId = -1) {
+      device.SendLinear(intensity, duration, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+    }
 
 
 
 
 
     /************ LEGACY ************/
-
-
-    private void Command_ToysList() {
-      if(this.ButtplugClient == null) { return; }
-      for(int i = 0; i < this.ButtplugClient.Devices.Length; i++) {
-        string name = this.ButtplugClient.Devices[i].Name;
-        this.Logger.Chat($"    {i}: {name}");
-      }
-    }
-
-
-    private void Command_SendIntensity(string args) {
-      string[] blafuckcsharp;
-      int intensity;
-      try {
-        blafuckcsharp = args.Split(" ", 2);
-        intensity = int.Parse(blafuckcsharp[1]);
-        this.Logger.Chat($"Command Send intensity {intensity}");
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for send [intensity].", e);
-        return;
-      }
-      this.SendVibeToAll(intensity);
-    }
-    
-
-    private void Play_pattern(string args) {
-      try {
-        string[] param = args.Split(" ", 2);
-        string patternName = param[1];
-        this.Logger.Chat($"Play pattern {patternName}");
-        if(patternName == "shake") {
-          this.Play_PatternShake(100);
-        } else if(patternName == "mountain") {
-          this.Play_PatternMountain(30);
-        }
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
-        return;
-      }
-    }
 
     public void Play_PatternShake(float from) {
       /* TODO:PatternShake

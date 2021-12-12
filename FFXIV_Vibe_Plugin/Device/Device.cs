@@ -4,30 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using FFXIV_Vibe_Plugin.Commons;
+
 using Buttplug;
 
 namespace FFXIV_Vibe_Plugin.Device {
   public class Device {
-    private ButtplugClientDevice ButtplugClientDevice;
+    private readonly ButtplugClientDevice ButtplugClientDevice;
     public int Id { get; set; }
     public string Name { get; set; }
     public bool CanVibrate = false;
     public int VibrateMotors = -1;
-    public uint[] VibrateSteps = { };
+    public uint[] VibrateSteps = Array.Empty<uint>();
     public bool CanRotate = false;
     public int RotateMotors = -1;
-    public uint[] RotateSteps = { };
+    public uint[] RotateSteps = Array.Empty<uint>();
     public bool CanLinear = false;
     public int LinearMotors = -1;
-    public uint[] LinearSteps = { };
+    public uint[] LinearSteps = Array.Empty<uint>();
     public bool CanBattery = false;
     public bool CanStop = false;    
     public bool IsConnected = false;
     public double BatteryLevel = -1;
 
-    public int[] CurrentVibrateIntensity;
-    public int[] CurrentRotateIntensity;
-    public int[] CurrentLinearIntensity;
+    public int[] CurrentVibrateIntensity = Array.Empty<int>();
+    public int[] CurrentRotateIntensity = Array.Empty<int>();
+    public int[] CurrentLinearIntensity = Array.Empty<int>();
 
     public Device(ButtplugClientDevice buttplugClientDevice) {
       this.ButtplugClientDevice = buttplugClientDevice;
@@ -122,38 +124,38 @@ namespace FFXIV_Vibe_Plugin.Device {
       ResetMotors();
     }
 
-    public void SendVibrate(int intensity, int motorId=-1) {
+    public void SendVibrate(int intensity, int motorId=-1, int threshold=100) {
       if(!CanVibrate) return;
       Dictionary<uint, double> motorIntensity = new();
       for(int i=0; i < this.VibrateMotors; i++) {
         if(motorId == -1 || motorId == i) {
           this.CurrentVibrateIntensity[i] = intensity;
-          motorIntensity.Add((uint)i, intensity / 100.0);
+          motorIntensity.Add((uint)i, Helpers.ClampIntensity(intensity, threshold) / 100.0);
         }
       }
       this.ButtplugClientDevice.SendVibrateCmd(motorIntensity);
     }
 
-    public void SendRotate(int intensity, bool clockWise=true, int motorId=-1) {
+    public void SendRotate(int intensity, bool clockWise=true, int motorId=-1, int threshold = 100) {
       if(!CanRotate) return;
       Dictionary<uint, (double, bool)> motorIntensity = new();
       for(int i = 0; i < this.RotateMotors; i++) {
         if(motorId == -1 || motorId == i) {
           this.CurrentRotateIntensity[i] = intensity;
-          (double, bool) values = (intensity/100.0, clockWise);
+          (double, bool) values = (Helpers.ClampIntensity(intensity, threshold) / 100.0, clockWise);
           motorIntensity.Add((uint)i, values);
         }
       }
       this.ButtplugClientDevice.SendRotateCmd(motorIntensity);
     }
 
-    public void SendLinear(int intensity, int duration=500, int motorId = -1) {
+    public void SendLinear(int intensity, int duration=500, int motorId = -1, int threshold = 100) {
       if(!CanLinear) return;
       Dictionary<uint, (uint, double)> motorIntensity = new();
       for(int i = 0; i < this.LinearMotors; i++) {
         if(motorId == -1 || motorId == i) {
           this.CurrentLinearIntensity[i] = intensity;
-          (uint, double) values = ((uint)duration, intensity / 100.0);
+          (uint, double) values = ((uint)duration, Helpers.ClampIntensity(intensity, threshold) / 100.0);
           motorIntensity.Add((uint)i, values);
         }
       }

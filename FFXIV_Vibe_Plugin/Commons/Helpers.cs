@@ -11,5 +11,11 @@ namespace FFXIV_Vibe_Plugin.Commons {
     public static int GetUnix() {
       return (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
+
+
+    public static int ClampIntensity(int intensity, int threshold) {
+      if(intensity < 0) { intensity = 0; } else if(intensity > 100) { intensity = 100; }
+      return (int)(intensity / (100.0f / threshold));
+    }
   }
 }

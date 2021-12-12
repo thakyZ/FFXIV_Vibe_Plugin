@@ -182,18 +182,14 @@ namespace FFXIV_Vibe_Plugin {
       {command} save [file path]
       {command} load [file path]
 
-Chat features
+Chat features:
       {command} chat_list_triggers
       {command} chat_add <intensity 0-100> <trigger text>
       {command} chat_remove <id>
       {command} chat_user <authorized user>
 
-Player features
-      {command} hp_toggle 
-
-New features
-      {command} send <0-100>
-      {command} threshold <0-100>
+Vibes:
+      {command} send <0-100> # BROKEN
       {command} stop
 
 Example:
@@ -203,16 +199,10 @@ Example:
        {command} chat_add 75 getting there
        {command} chat_add 100 hey ;)
        {command} user Alice
-       {command} hp_toggle
-       {command} threshold 90
 
 These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
       return helpMessage;
-    }
-
-    private void PrintHelp() {
-      this.Logger.Chat("Please go to the configuration menu under 'help'");
     }
 
     private void OnCommand(string command, string args) {
@@ -239,16 +229,12 @@ These commands let anyone whose name contains 'Alice' control all your connected
           Command_SaveConfig(args);
         } else if(args.StartsWith("load")) {
           Command_LoadConfig(args);
-        } else if(args.StartsWith("hp_toggle")) {
-          this.Command_ToggleHP();
-        } else if(args.StartsWith("threshold")) {
-          this.Command_SetThreshold(args);
         } else if(args.StartsWith("send")) {
-          // this.Command_SendIntensity(args);
+          this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
-          // this.Buttplug_sendVibe(0);
+          this.DeviceController.SendVibeToAll(0);
         } else if(args.StartsWith("play_pattern")) {
-          // this.Play_pattern(args);
+          this.Play_pattern(args);
         } else if(args.StartsWith("exp_network_start")) {
           this.experiment_networkCapture.StartNetworkCapture();
         } else if(args.StartsWith("exp_network_stop")) {
@@ -269,13 +255,37 @@ These commands let anyone whose name contains 'Alice' control all your connected
       this.DeviceController.Disconnect();
     }
 
-
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
-      this.Logger.Info(args.Spell.ToString());
+      Structures.Spell spell = args.Spell;
+      this.Logger.Debug(spell.ToString());
+      
+      if(spell.name != null && spell.name.StartsWith("Tranchant")) {
+        this.DeviceController.SendVibeToAll(1);
+      }
+      
     }
+
+
+
 
     /** LEGACY CODE IS BELLOW */
 
+
+    private void Play_pattern(string args) {
+      try {
+        string[] param = args.Split(" ", 2);
+        string patternName = param[1];
+        this.Logger.Chat($"Play pattern {patternName}");
+        if(patternName == "shake") {
+          this.DeviceController.Play_PatternShake(100);
+        } else if(patternName == "mountain") {
+          this.DeviceController.Play_PatternMountain(30);
+        }
+      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
+        this.Logger.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
+        return;
+      }
+    }
 
 
     private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
@@ -353,30 +363,6 @@ These commands let anyone whose name contains 'Alice' control all your connected
       this.Logger.Chat($"Authorized user set to '{AuthorizedUser}'");
     }
 
-    private void Command_ToggleHP() {
-      bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
-      this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
-      if(!hp_toggle && this.DeviceController.IsConnected()) {
-        this.DeviceController.SendVibeToAll(0); // Don't be cruel
-      }
-      this.Logger.Chat($"HP Toggle set to {hp_toggle}");
-      this.Configuration.Save();
-    }
-
-    private void Command_SetThreshold(string args) {
-      string[] blafuckcsharp = args.Split(" ", 2);
-      int threshold;
-      try {
-        threshold = int.Parse(blafuckcsharp[1]);
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for [threshold].", e);
-        return;
-      }
-      this.Configuration.MAX_VIBE_THRESHOLD = threshold;
-      this.Configuration.Save();
-      this.Logger.Chat($"Threshold set to {threshold}");
-    }
-
     private void Command_AddTrigger(string args) {
       string[] blafuckcsharp;
       int intensity;
@@ -443,10 +429,24 @@ ID   Intensity   Text Match
           this.DeviceController.SendVibeToAll((int)percentage);
         } else if(mode == 1) { // shake
           this.DeviceController.Play_PatternShake(percentage);
-        } else if(mode == 2) { // shake
+        } else if(mode == 2) { // mountain
           this.DeviceController.Play_PatternMountain(percentage);
         }
       }
+    }
+
+    private void Command_SendIntensity(string args) {
+      string[] blafuckcsharp;
+      int intensity;
+      try {
+        blafuckcsharp = args.Split(" ", 2);
+        intensity = int.Parse(blafuckcsharp[1]);
+        this.Logger.Chat($"Command Send intensity {intensity}");
+      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
+        this.Logger.Error($"Malformed arguments for send [intensity].", e);
+        return;
+      }
+      this.DeviceController.SendVibeToAll(intensity);
     }
 
 
