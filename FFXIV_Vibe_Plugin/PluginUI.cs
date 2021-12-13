@@ -321,9 +321,10 @@ namespace FFXIV_Vibe_Plugin {
       List<Triggers.Trigger> triggers = this.CurrentPlugin.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
       if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
-        ImGui.Text($"{triggers.Count}");
+        ImGui.Text($"--- Number of triggers {triggers.Count} ---");
         foreach(Triggers.Trigger trigger in triggers) {
-          if(ImGui.Selectable($"{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
+          string enabled = trigger.Enabled ? "" : "[disabled]";
+          if(ImGui.Selectable($"{enabled}{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
             this.SelectedTrigger = trigger;
             this.triggersViewMode = "edit";
           }
@@ -346,9 +347,17 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.Text($"TriggerID:");
             ImGui.NextColumn();
             ImGui.Text($"{this.SelectedTrigger.Id}");
-
-            // Displaying the trigger name field
             ImGui.NextColumn();
+
+            // TRIGGER ENABLED
+            ImGui.Text("Enabled:");
+            ImGui.NextColumn();
+            if(ImGui.Checkbox("###TRIGGER_ENABLED", ref this.SelectedTrigger.Enabled)){
+              this.Configuration.Save();
+            };
+            ImGui.NextColumn();
+
+            // TRIGGER NAME
             ImGui.Text("Trigger Name:");
             ImGui.NextColumn();
             if(ImGui.InputText("###TRIGGER_NAME", ref this.SelectedTrigger.Name, 99)) {
@@ -359,50 +368,50 @@ namespace FFXIV_Vibe_Plugin {
             };
             ImGui.NextColumn();
 
-            // Display KIND
+            // TRIGGER KIND
             ImGui.Text("Kind:");
             ImGui.NextColumn();
             string[] TRIGGER_KIND = System.Enum.GetNames( typeof(Triggers.KIND));
-            int currentKind = (int)this.SelectedTrigger.kind;
+            int currentKind = (int)this.SelectedTrigger.Kind;
             if(ImGui.Combo("###TRIGGER_FORM_KIND", ref currentKind, TRIGGER_KIND, TRIGGER_KIND.Length)) {
-              this.SelectedTrigger.kind = currentKind;
+              this.SelectedTrigger.Kind = currentKind;
               this.Configuration.Save();
             }
             ImGui.NextColumn();
 
 
-            // KIND:CHAT OPTIONS
-            if(this.SelectedTrigger.kind == (int)Triggers.KIND.Chat) {
+            // TRIGGER KIND:CHAT OPTIONS
+            if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Chat) {
               ImGui.Text("Chat text:");
               ImGui.NextColumn();
-              if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.chatText, 250)) {
+              if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.ChatText, 250)) {
                 this.Configuration.Save();
               };
               ImGui.NextColumn();
             }
-            
 
-            // KIND:SPELL OPTIONS
-            if(this.SelectedTrigger.kind == (int)Triggers.KIND.Spell) {
 
-              // Display TRIGGER
+            // TRIGGER KIND:SPELL OPTIONS
+            if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Spell) {
+
+              // TRIGGER EVENT
               ImGui.Text("Trigger:");
               ImGui.NextColumn();
               string[] TRIGGER = System.Enum.GetNames(typeof(Triggers.TRIGGER));
-              int currentTrigger = (int)this.SelectedTrigger.trigger;
-              if(ImGui.Combo("###TRIGGER_FORM_TRIGGER", ref currentTrigger, TRIGGER, TRIGGER.Length)) {
-                this.SelectedTrigger.trigger = currentTrigger;
+              int currentEvent = (int)this.SelectedTrigger.Event;
+              if(ImGui.Combo("###TRIGGER_FORM_TRIGGER", ref currentEvent, TRIGGER, TRIGGER.Length)) {
+                this.SelectedTrigger.Event = currentEvent;
                 this.Configuration.Save();
               }
               ImGui.NextColumn();
 
-              // Display TRIGGER
+              //TRIGGER DIRECTION
               ImGui.Text("Direction:");
               ImGui.NextColumn();
               string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
-              int currentDirection = (int)this.SelectedTrigger.direction;
+              int currentDirection = (int)this.SelectedTrigger.Direction;
               if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
-                this.SelectedTrigger.direction = currentDirection;
+                this.SelectedTrigger.Direction = currentDirection;
                 this.Configuration.Save();
               }
               ImGui.NextColumn();

@@ -30,13 +30,14 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     // First idea
 
     // General
+    public bool Enabled = true;
     public int SortOder = -1;
     public readonly string Id = "";
     public string Name = "";
-    public int kind = (int)KIND.Chat;
-    public int trigger = (int)TRIGGER.Damage;
-    public int direction = (int)DIRECTION.Incoming;
-    public string chatText = "";
+    public int Kind = (int)KIND.Chat;
+    public int Event = (int)TRIGGER.Damage;
+    public int Direction = (int)DIRECTION.Incoming;
+    public string ChatText = "";
 
     // Device
     public Device.Device? Device = null;
