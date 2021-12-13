@@ -318,12 +318,12 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawTriggersTab() {
-      SortedSet<Triggers.Trigger> triggers = this.CurrentPlugin.GetTriggers();
+      List<Triggers.Trigger> triggers = this.CurrentPlugin.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
-      if(ImGui.BeginChild("###TriggersSelector", new Vector2(150, -ImGui.GetFrameHeightWithSpacing()), true)) {
-
+      if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
+        ImGui.Text($"{triggers.Count}");
         foreach(Triggers.Trigger trigger in triggers) {
-          if(ImGui.Selectable($"{trigger.Name}", selectedId == trigger.Id)) {
+          if(ImGui.Selectable($"{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
             this.SelectedTrigger = trigger;
             this.triggersViewMode = "edit";
           }
@@ -342,20 +342,24 @@ namespace FFXIV_Vibe_Plugin {
            
             // Displaying the trigger ID
             ImGui.Text($"TriggerID:");
+            ImGui.SameLine();
             ImGui.Text($"{this.SelectedTrigger.Id}");
 
             // Displaying the trigger name field
             ImGui.Text("Trigger Name:");
             ImGui.SameLine();
             if(ImGui.InputText("##TriggerFieldName", ref this.SelectedTrigger.Name, 99)) {
+              if(this.SelectedTrigger.Name == "") {
+                this.SelectedTrigger.Name = "no_name";
+              }
               this.Configuration.Save();
             };
             
             // Display create button
             if(ImGui.Button("Create")) {
-              // TODO: check if exist !
               this.CurrentPlugin.AddTrigger(this.SelectedTrigger);
               this.SaveTriggers();
+              this.Configuration.Save();
             }
 
             // Display save button
@@ -368,12 +372,15 @@ namespace FFXIV_Vibe_Plugin {
           ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
           if(ImGui.Button("Yes")) {
             if(this.SelectedTrigger != null) {
-              // TODO: delete the trigger from the list
+              this.CurrentPlugin.RemoveTrigger(this.SelectedTrigger);
+              this.SelectedTrigger = null;
+              this.Configuration.Save();
             }
-            this.SelectedTrigger = null;
             this.triggersViewMode = "default";
           };
+          ImGui.SameLine();
           if(ImGui.Button("No")) {
+            
             this.SelectedTrigger = null;
             this.triggersViewMode = "default";
           };
@@ -384,7 +391,9 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       if(ImGui.Button("Add")) {
-        this.SelectedTrigger = new Triggers.Trigger("New Trigger");
+        Triggers.Trigger trigger = new("New Trigger");
+        this.CurrentPlugin.AddTrigger(trigger);
+        this.SelectedTrigger = trigger;
         this.triggersViewMode = "edit";
       };
       ImGui.SameLine();
