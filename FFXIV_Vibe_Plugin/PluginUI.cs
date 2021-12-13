@@ -3,12 +3,9 @@ using System;
 using System.IO;
 using System.Numerics;
 using Dalamud.Plugin;
-using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using System.Collections.Generic;
-using static FFXIV_Vibe_Plugin.Plugin;
-using System.Threading;
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -29,13 +26,15 @@ namespace FFXIV_Vibe_Plugin {
       set { this.visible = value; }
     }
 
-    private readonly int WIDTH = 400;
+    private readonly int WIDTH = 550;
     private readonly int HEIGHT = 700;
 
     // The value to send as a test for vibes.
     private int simulator_currentAllIntensity = 0;
 
-    private int selectedTrigger = 0;
+    // Trigger
+    private Triggers.Trigger? SelectedTrigger = null;
+    private string triggersViewMode = "default"; // default|edit|delete;
 
     /** Constructor */
     public PluginUI(
@@ -97,17 +96,22 @@ namespace FFXIV_Vibe_Plugin {
 
         ImGui.Spacing();
 
-        ImGui.Indent(120);
+
+
         ImGuiScene.TextureWrap imgLogo = this.loadedImages["logo.png"];
-        ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * 0.2f, imgLogo.Height * 0.2f));
+        ImGui.Columns(2, "###main_header", false);
+        float logoScale = 0.2f;
+        ImGui.SetColumnWidth(0, (int)(imgLogo.Width * logoScale+20));
+        ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * logoScale, imgLogo.Height * logoScale));
+        ImGui.NextColumn();
         if(this.DeviceController.IsConnected()) {
+          int nbrDevices = this.DeviceController.GetDevices().Count;
           ImGui.TextColored(ImGuiColors.ParsedGreen, "Your are connected!");
+          ImGui.Text($"Number of device(s): {nbrDevices}");
         } else {
-          ImGui.Unindent(20);
           ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
-          ImGui.Indent(20);
         }
-        ImGui.Unindent(120);
+        ImGui.Columns(1);
 
 
 
@@ -187,11 +191,8 @@ namespace FFXIV_Vibe_Plugin {
           this.Configuration.AUTO_CONNECT = config_AUTO_CONNECT;
           this.Configuration.Save();
         }
-
-
       }
       ImGui.EndChild();
-
 
       ImGui.TextColored(ImGuiColors.DalamudViolet, "Others");
       ImGui.BeginChild("###Main_Others", new Vector2(-1, 40f), true);
@@ -317,29 +318,79 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawTriggersTab() {
-      if(ImGui.BeginChild("left", new Vector2(150, -ImGui.GetFrameHeightWithSpacing()), true)) {
-        if(ImGui.Selectable("/ Dmg", this.selectedTrigger == 0)) {
-          this.selectedTrigger = 0;
-        }
-        if(ImGui.Selectable("+ Heal", this.selectedTrigger == 1)) {
-          this.selectedTrigger = 1;
-        }
-        if(ImGui.Selectable("- Chat", this.selectedTrigger == 2)) {
-          this.selectedTrigger = 2;
+      SortedSet<Triggers.Trigger> triggers = this.CurrentPlugin.GetTriggers();
+      string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
+      if(ImGui.BeginChild("###TriggersSelector", new Vector2(150, -ImGui.GetFrameHeightWithSpacing()), true)) {
+
+        foreach(Triggers.Trigger trigger in triggers) {
+          if(ImGui.Selectable($"{trigger.Name}", selectedId == trigger.Id)) {
+            this.SelectedTrigger = trigger;
+            this.triggersViewMode = "edit";
+          }
         }
         ImGui.EndChild();
       }
 
       ImGui.SameLine();
-      if(ImGui.BeginChild("rightSide", new Vector2(0, -ImGui.GetFrameHeightWithSpacing()), true)) {
-        ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
-        ImGui.Text($"Working on triggers {this.selectedTrigger}");
+      if(ImGui.BeginChild("###TriggerViewerPanel", new Vector2(0, -ImGui.GetFrameHeightWithSpacing()), true)) {
+        if(this.triggersViewMode == "default") {
+          ImGui.Text("Please select or add a trigger");
+        } else if(this.triggersViewMode == "edit") {
+          if(this.SelectedTrigger != null) {
+            ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
+
+           
+            // Displaying the trigger ID
+            ImGui.Text($"TriggerID:");
+            ImGui.Text($"{this.SelectedTrigger.Id}");
+
+            // Displaying the trigger name field
+            ImGui.Text("Trigger Name:");
+            ImGui.SameLine();
+            if(ImGui.InputText("##TriggerFieldName", ref this.SelectedTrigger.Name, 99)) {
+              this.Configuration.Save();
+            };
+            
+            // Display create button
+            if(ImGui.Button("Create")) {
+              // TODO: check if exist !
+              this.CurrentPlugin.AddTrigger(this.SelectedTrigger);
+              this.SaveTriggers();
+            }
+
+            // Display save button
+            ImGui.SameLine();
+            if(ImGui.Button("Save")) {
+              this.SaveTriggers();
+            }
+          }
+        } else if(this.triggersViewMode == "delete") {
+          ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
+          if(ImGui.Button("Yes")) {
+            if(this.SelectedTrigger != null) {
+              // TODO: delete the trigger from the list
+            }
+            this.SelectedTrigger = null;
+            this.triggersViewMode = "default";
+          };
+          if(ImGui.Button("No")) {
+            this.SelectedTrigger = null;
+            this.triggersViewMode = "default";
+          };
+
+        }
+        
         ImGui.EndChild();
       }
 
-      ImGui.Button("Add");
+      if(ImGui.Button("Add")) {
+        this.SelectedTrigger = new Triggers.Trigger("New Trigger");
+        this.triggersViewMode = "edit";
+      };
       ImGui.SameLine();
-      ImGui.Button("Delete");
+      if(ImGui.Button("Delete")) {
+        this.triggersViewMode = "delete";
+      }
 
     }
 
@@ -347,6 +398,11 @@ namespace FFXIV_Vibe_Plugin {
       string help = Plugin.GetHelp(this.CurrentPlugin.commandName);
       ImGui.TextWrapped(help);
 
+    }
+
+    private void SaveTriggers() {
+      this.Configuration.TRIGGERS = this.CurrentPlugin.GetTriggers();
+      this.Configuration.Save();
     }
   }
 }

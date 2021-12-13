@@ -7,11 +7,22 @@ using System.Threading.Tasks;
 using FFXIV_Vibe_Plugin.Device;
 
 namespace FFXIV_Vibe_Plugin.Triggers {
-  internal class Trigger {
+  public class Trigger : IComparable<Trigger> {
     // First idea
+
+    // General
+    public int SortOder = -1;
+    public readonly string Id = "";
+    public string Name = "";
+
+    // Device
+    public Device.Device? Device = null;
+    private int motorId = -1;
+
+
     private string kind = "Spell|Chat";
     private string trigger = "SpellDamage|SpellHeal|DamageRecieved|Miss|Mount";
-    private string name = "any";
+    
     private bool incoming = false;
     private bool outgoing = true;
     private int minValue = 0;
@@ -26,11 +37,22 @@ namespace FFXIV_Vibe_Plugin.Triggers {
      * If it's heal, then check average overtime.
      */
 
-    private Device.Device device = null;
-    private int motorId = -1;
+    
+    
 
-    public Trigger(Device.Device device) {
-      this.device = device;
+    public Trigger(string name) {
+      this.Id = Guid.NewGuid().ToString();
+      this.Name = name;
+    }
+
+    public int CompareTo(Trigger other) {
+      if(this.SortOder < other.SortOder) {
+        return 1;
+      } else if(this.SortOder > other.SortOder){
+        return -1;
+      } else {
+        return 0;
+      }
     }
   }
 }

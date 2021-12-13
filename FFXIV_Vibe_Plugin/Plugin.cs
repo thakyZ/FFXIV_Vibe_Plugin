@@ -336,15 +336,16 @@ These commands let anyone whose name contains 'Alice' control all your connected
     }
 
     private void UpdateTriggersConfig() {
-      this.Configuration.TRIGGERS = this.ChatTriggers;
+      this.Configuration.CHAT_TRIGGERS = this.ChatTriggers;
       this.Configuration.Save();
     }
 
     private void LoadTriggersConfig() {
-      SortedSet<ChatTrigger> triggers = this.Configuration.TRIGGERS;
-      this.Logger.Debug($"Loading {triggers.Count} triggers");
+      this.Triggers = this.Configuration.TRIGGERS;
+      SortedSet<ChatTrigger> chatTriggers = this.Configuration.CHAT_TRIGGERS;
+      this.Logger.Debug($"Loading {chatTriggers.Count} triggers");
       this.ChatTriggers = new SortedSet<ChatTrigger>();
-      foreach(ChatTrigger trigger in triggers) {
+      foreach(ChatTrigger trigger in chatTriggers) {
         this.ChatTriggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
       }
     }
@@ -458,6 +459,12 @@ ID   Intensity   Text Match
       this.DeviceController.SendVibeToAll(intensity);
     }
 
+    public SortedSet<Trigger> GetTriggers() {
+      return this.Triggers;
+    }
 
+    public void AddTrigger(Trigger trigger) {
+      this.Triggers.Add(trigger);
+    }
   }
 }
