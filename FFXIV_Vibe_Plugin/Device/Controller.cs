@@ -104,10 +104,11 @@ namespace FFXIV_Vibe_Plugin.Device{
       mut.WaitOne();
       ButtplugClientDevice buttplugClientDevice = arg.Device;
       Device device = new(buttplugClientDevice);
-      device.IsConnected = true;
       this.Devices.Add(device);
-      this.Logger.Debug($"Added {device})");
       mut.ReleaseMutex();
+      device.IsConnected = true;
+      this.Logger.Debug($"Added {device})");
+      
 
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
@@ -125,10 +126,10 @@ namespace FFXIV_Vibe_Plugin.Device{
       mut.WaitOne();
       int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
       Device device = Devices[index];
-      device.IsConnected = false;
-      this.Logger.Debug($"Removed {Devices[index]}");
       this.Devices.RemoveAt(index);
       mut.ReleaseMutex();
+      this.Logger.Debug($"Removed {Devices[index]}");
+      device.IsConnected = false;
     }
 
     public void Disconnect() {
