@@ -66,7 +66,8 @@ namespace FFXIV_Vibe_Plugin {
       XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
       XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
       XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
-      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
+      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8,
+      XivChatType.StandardEmote, XivChatType.CustomEmote
     };
 
     public Plugin(
@@ -90,8 +91,8 @@ namespace FFXIV_Vibe_Plugin {
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A vibe plugin for fun..."
       });
-      if(DalamudChat != null && CheckForTriggers != null) {
-        DalamudChat.ChatMessage += CheckForTriggers; // XXX: o.o
+      if(DalamudChat != null) {
+        DalamudChat.ChatMessage += CheckForTriggers_oldChat; 
       }
 
       // Initialize the logger
@@ -133,7 +134,7 @@ namespace FFXIV_Vibe_Plugin {
       // Cleaning chat triggers.
       this.CommandManager.RemoveHandler(commandName);
       if(DalamudChat != null) {
-        DalamudChat.ChatMessage -= CheckForTriggers;
+        DalamudChat.ChatMessage -= CheckForTriggers_oldChat;
       }
 
       // Cleaning hooks
@@ -275,6 +276,14 @@ These commands let anyone whose name contains 'Alice' control all your connected
       }
     }
 
+    public void CheckTriggers_Chat() {
+      foreach(Trigger trigger in this.Triggers) {
+        if(trigger.Kind == (int)FFXIV_Vibe_Plugin.Triggers.KIND.Chat) {
+          this.Logger.Log("....");
+        }
+      }
+    }
+
 
 
 
@@ -298,7 +307,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
     }
 
 
-    private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
+    private void CheckForTriggers_oldChat(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
       string sender = _sender.ToString();
       if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
         return;
