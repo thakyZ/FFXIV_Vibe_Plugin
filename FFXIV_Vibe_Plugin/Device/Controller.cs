@@ -133,6 +133,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void Disconnect() {
+      this.Devices.Clear();
       if(this.ButtplugClient == null || !this.IsConnected()) {
         return;
       }
@@ -164,6 +165,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         this.Logger.Error("Error while disconnecting client", e);
       }
       this.ButtplugClient = null;
+ 
     }
 
     public List<Device> GetDevices() {

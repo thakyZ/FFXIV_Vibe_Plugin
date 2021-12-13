@@ -7,6 +7,25 @@ using System.Threading.Tasks;
 using FFXIV_Vibe_Plugin.Device;
 
 namespace FFXIV_Vibe_Plugin.Triggers {
+  enum KIND {
+    Chat,
+    Spell
+  }
+
+  enum TRIGGER {
+    Damage,
+    Heal,
+    SpellDamage,
+    SpellHeal,
+    Miss,
+    SelfMount
+  }
+
+  enum DIRECTION {
+    Incoming,
+    Outgoing,
+  }
+
   public class Trigger : IComparable<Trigger> {
     // First idea
 
@@ -14,17 +33,15 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int SortOder = -1;
     public readonly string Id = "";
     public string Name = "";
+    public int kind = (int)KIND.Chat;
+    public int trigger = (int)TRIGGER.Damage;
+    public int direction = (int)DIRECTION.Incoming;
+    public string chatText = "";
 
     // Device
     public Device.Device? Device = null;
     private int motorId = -1;
-
-
-    private string kind = "Spell|Chat";
-    private string trigger = "SpellDamage|SpellHeal|DamageRecieved|Miss|Mount";
     
-    private bool incoming = false;
-    private bool outgoing = true;
     private int minValue = 0;
     private int maxValue = 0;
     private string fromName = "me";
