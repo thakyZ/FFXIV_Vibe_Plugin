@@ -431,13 +431,6 @@ namespace FFXIV_Vibe_Plugin {
               }
               ImGui.NextColumn();
             }
-
-
-            // Display save button
-            if(ImGui.Button("Save")) {
-              this.SaveTriggers();
-              this.Configuration.Save();
-            }
           }
         } else if(this.triggersViewMode == "delete") {
           ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
