@@ -311,7 +311,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
       if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
         return;
       }
-      this.CheckTriggers_Chat(_message.ToString()); // NEW
+      this.CheckTriggers_Chat(_message.TextValue); // NEW
       /* DEPRECATED
       string message = _message.ToString().ToLower();
       

@@ -387,13 +387,11 @@ namespace FFXIV_Vibe_Plugin {
             if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Chat) {
               ImGui.Text("Chat text:");
               ImGui.NextColumn();
-              if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.ChatText, 250)) {
+              string currentChatText = this.SelectedTrigger.ChatText;
+              if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref currentChatText, 250)) {
+                this.SelectedTrigger.ChatText = currentChatText.ToLower(); // ChatMsg is always lower
                 this.Configuration.Save();
               };
-              ImGui.SameLine();
-              if(ImGui.Checkbox("Insensitive", ref this.SelectedTrigger.caseInsensitive)) {
-                this.Configuration.Save();
-              }
               ImGui.NextColumn();
 
               ImGui.Text("Intensity:");
@@ -443,7 +441,7 @@ namespace FFXIV_Vibe_Plugin {
               }
               ImGui.NextColumn();
 
-              ImGui.Text("Intensity:");
+                            ImGui.Text("Intensity:");
               ImGui.NextColumn();
               if(ImGui.SliderInt("###TRIGGER_CHAT_INTENSITY", ref this.SelectedTrigger.Intensity, 0, 100)) {
                 this.Configuration.Save();
