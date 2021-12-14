@@ -32,13 +32,17 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Triggers.Remove(trigger);
     }
 
-    public Trigger? CheckTrigger_Chat(string msg) {
+    public Trigger? CheckTrigger_Chat(string ChatMsg) {
       Trigger? triggerFound = null;
-      Logger.Log(msg);
       foreach(Trigger trigger in this.Triggers) {
         if(trigger.Kind == (int)KIND.Chat) {
           string triggerChatText = trigger.ChatText;
-          if(triggerChatText.Contains(msg)){
+          if(!trigger.caseInsensitive) {
+            ChatMsg = ChatMsg.ToLower();
+            triggerChatText = triggerChatText.ToLower();
+          }
+          if(ChatMsg.Contains(triggerChatText)){
+            Logger.Log($"{ChatMsg} {triggerChatText}");
             Logger.Log(trigger.Name);
             triggerFound = trigger;
           }

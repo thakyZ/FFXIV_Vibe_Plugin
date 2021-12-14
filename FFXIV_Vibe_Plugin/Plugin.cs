@@ -317,6 +317,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
         return;
       }
       this.CheckTriggers_Chat(_message.ToString()); // NEW
+      /* DEPRECATED
       string message = _message.ToString().ToLower();
       
       var matchingintensities = this.ChatTriggers.Where(t => message.Contains(t.Text.ToLower()));
@@ -324,7 +325,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
         this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
         this.DeviceController.SendVibeToAll(intensity);
-      }
+      }*/
     }
 
 
