@@ -393,7 +393,6 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               if(ImGui.Checkbox("Insensitive", ref this.SelectedTrigger.caseInsensitive)) {
                 this.Configuration.Save();
-
               }
               ImGui.NextColumn();
 
@@ -404,7 +403,6 @@ namespace FFXIV_Vibe_Plugin {
               };
               ImGui.NextColumn();
             }
-
 
             // TRIGGER KIND:SPELL OPTIONS
             if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Spell) {
@@ -430,6 +428,27 @@ namespace FFXIV_Vibe_Plugin {
                 this.Configuration.Save();
               }
               ImGui.NextColumn();
+
+              //TRIGGER DIRECTION
+              ImGui.Text("Spell Text:");
+              ImGui.NextColumn();
+              string SPELL_TEXT = this.SelectedTrigger.SpellText;
+              if(ImGui.InputText("###TRIGGER_FORM_SPELLNAME", ref SPELL_TEXT, 100)){
+                this.SelectedTrigger.SpellText = SPELL_TEXT;
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              if(ImGui.Checkbox("Insensitive", ref this.SelectedTrigger.caseInsensitive)) {
+                this.Configuration.Save();
+              }
+              ImGui.NextColumn();
+
+              ImGui.Text("Intensity:");
+              ImGui.NextColumn();
+              if(ImGui.SliderInt("###TRIGGER_CHAT_INTENSITY", ref this.SelectedTrigger.Intensity, 0, 100)) {
+                this.Configuration.Save();
+              };
+              ImGui.NextColumn();
             }
           }
         } else if(this.triggersViewMode == "delete") {
@@ -450,7 +469,6 @@ namespace FFXIV_Vibe_Plugin {
           };
 
         }
-        
         ImGui.EndChild();
       }
 

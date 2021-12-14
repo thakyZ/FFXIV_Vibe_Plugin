@@ -265,24 +265,19 @@ These commands let anyone whose name contains 'Alice' control all your connected
 
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
       Structures.Spell spell = args.Spell;
-      this.Logger.Debug(spell.ToString());
-
-      if(spell.name != null) {
-        // Experimentation
-        return;
-        if(spell.name.StartsWith("16141:Tranchage")) {
-          this.DeviceController.SendVibeToAll(10);
-        }
-        if(spell.name.StartsWith("16149:Massacre")) {
-          this.DeviceController.SendVibeToAll(0);
-        }
+      Triggers.Trigger trigger = this.TriggersController.CheckTrigger_Spell(spell);
+      if(trigger != null) {
+        this.Logger.Log($"SPELL_TRIGGER Intensitiy:{trigger.Intensity}");
+        this.DeviceController.SendVibeToAll(trigger.Intensity);
       }
+
+
     }
 
     public void CheckTriggers_Chat(string message) {
        Triggers.Trigger trigger = this.TriggersController.CheckTrigger_Chat(message);
       if(trigger != null) {
-        this.Logger.Log($"Intensity:{trigger.Intensity}");
+        this.Logger.Log($"CHAT_TRIGGER Intensitiy:{trigger.Intensity}");
         this.DeviceController.SendVibeToAll(trigger.Intensity);
       }
 
