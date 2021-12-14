@@ -39,7 +39,6 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           string triggerChatText = trigger.ChatText;
           // WARNING: ChatMessage is always lowercase !
           triggerChatText = triggerChatText.ToLower();
-          Logger.Log($"{trigger.Name}:{ChatMsg} {triggerChatText}");
           if(ChatMsg.Contains(triggerChatText)){
             triggerFound = trigger;
           }
@@ -53,11 +52,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       string spellName = spell.name;
       foreach(Trigger trigger in this.Triggers) {
         if(trigger.Kind == (int)KIND.Spell) {
-          string triggerSpellText = trigger.SpellText;
-          if(trigger.caseInsensitive) {
-            spellName = spellName.ToLower();
-            triggerSpellText = triggerSpellText.ToLower();
-          }
+          spellName = spellName.ToLower();
+          string triggerSpellText = trigger.SpellText.ToLower();
           if(spellName.Contains(triggerSpellText)) {
             Logger.Log($"{trigger.Name}:{spellName} {triggerSpellText}");
             triggerFound = trigger;
