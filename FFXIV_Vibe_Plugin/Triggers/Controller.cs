@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using FFXIV_Vibe_Plugin.Triggers;
 using FFXIV_Vibe_Plugin.Commons;
+using System.Text.RegularExpressions;
 
 namespace FFXIV_Vibe_Plugin.Triggers {
   internal class Controller {
@@ -40,10 +41,15 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Contains(trigger.FromPlayerName);
         // Check if the KIND of the trigger is a chat and if the author is authorized
         if(trigger.Kind == (int)KIND.Chat && isAuthorized) {
-          string triggerChatText = trigger.ChatText; // WARNING: ChatMessage is always lowercase !
-          triggerChatText = triggerChatText.ToLower();
-          if(ChatMsg.Contains(triggerChatText)){
-            triggers.Add(trigger);
+          // WARNING: ChatMessage received from hook is always lowercase !
+          string pattern = String.Concat(@"", trigger.ChatText);
+          try {
+            Match m = Regex.Match(ChatMsg, pattern, RegexOptions.IgnoreCase);
+            if(m.Success) {
+              triggers.Add(trigger);
+            }
+          } catch(Exception) {
+            this.Logger.Error($"Probably a wrong REGEXP for {trigger.ChatText}");
           }
         }
       }
