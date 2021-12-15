@@ -21,6 +21,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Buttplug related
     private ButtplugClient? ButtplugClient;
     private readonly List<Device> Devices = new();
+    private readonly Dictionary<String, Device> VisitedDevice = new();
     private bool isScanning = false;
 
     // Internal variables
@@ -122,7 +123,6 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_OnScanComplete(object? sender, EventArgs e) {
-      
       // FIXME: this is not working, buttplug client emit the trigger instantly. Let's ignore for the moment.
       // this.isScanning = false;
     }
@@ -133,6 +133,9 @@ namespace FFXIV_Vibe_Plugin.Device{
         ButtplugClientDevice buttplugClientDevice = arg.Device;
         Device device = new(buttplugClientDevice);
         this.Devices.Add(device);
+        if(!this.VisitedDevice.ContainsKey(device.Name)) {
+          this.VisitedDevice[device.Name] = device;
+        }
         this.Logger.Debug($"Added {device})");
         device.IsConnected = true;
       } finally {
@@ -156,11 +159,12 @@ namespace FFXIV_Vibe_Plugin.Device{
       try {
         mut.WaitOne();
         int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
-
-        Device device = Devices[index];
-        this.Logger.Debug($"Removed {Devices[index]}");
-        this.Devices.RemoveAt(index);
-        device.IsConnected = false;
+        if(index > -1) {
+          this.Logger.Debug($"Removed {Devices[index]}");
+          Device device = Devices[index];
+          this.Devices.RemoveAt(index);
+          device.IsConnected = false;
+        }
 
       } finally {
         mut.ReleaseMutex();
@@ -207,6 +211,10 @@ namespace FFXIV_Vibe_Plugin.Device{
       return this.Devices;
     }
 
+    public Dictionary<String, Device> GetVisitedDevices() {
+      return this.VisitedDevice;
+    }
+
     public void UpdateAllBatteryLevel() {
       foreach(Device device in this.GetDevices()) {
         device.UpdateBatteryLevel();
@@ -244,6 +252,34 @@ namespace FFXIV_Vibe_Plugin.Device{
 
     public void SendLinear(Device device, int intensity, int duration = 500, int motorId = -1) {
       device.SendLinear(intensity, duration, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+    }
+
+    public static void SendStop(Device device) {
+      device.Stop();
+    }
+
+    /**
+     * Send a command to a foundable device using a text string as identifier.
+     * It will try to guess to which device to send. 
+     * To send to a second device that has the same name use the following format "device name:number".
+     */
+    public void Send(String textOfDevice, UsableCommand command) {
+      this.Logger.Log("GENERIC SEND FUNCTION NOT IMPLEMENTED(TODO)");
+
+      switch(command) {
+        case UsableCommand.Vibrate:
+          // TODO
+          break;
+        case UsableCommand.Rotate:
+          // TODO: this.SendRotate(deviceFound)
+          break;
+        case UsableCommand.Linear:
+          // TODO: this.SendLinear(deviceFound)
+          break;
+        case UsableCommand.Stop:
+          // TODO: this.SendStop(deviceFound)
+          break;
+      }
     }
 
 
