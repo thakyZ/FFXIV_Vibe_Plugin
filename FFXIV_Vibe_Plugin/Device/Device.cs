@@ -40,7 +40,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     public int[] CurrentLinearIntensity = Array.Empty<int>();
 
     public Device(ButtplugClientDevice buttplugClientDevice) {
-      if(this.ButtplugClientDevice != null) {
+      if(buttplugClientDevice != null) {
         this.ButtplugClientDevice = buttplugClientDevice;
         Id = (int)buttplugClientDevice.Index;
         Name = buttplugClientDevice.Name;

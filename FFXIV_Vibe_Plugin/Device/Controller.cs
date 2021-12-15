@@ -132,6 +132,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         mut.WaitOne();
         ButtplugClientDevice buttplugClientDevice = arg.Device;
         Device device = new(buttplugClientDevice);
+        this.Logger.Log($"{arg.Device.Name}, {buttplugClientDevice.Name}");
         this.Devices.Add(device);
         if(!this.VisitedDevice.ContainsKey(device.Name)) {
           this.VisitedDevice[device.Name] = device;
@@ -225,6 +226,37 @@ namespace FFXIV_Vibe_Plugin.Device{
       foreach(Device device in this.GetDevices()) {
         device.Stop();
       }
+    }
+
+    public void SendTrigger(Triggers.Trigger trigger) {
+      this.Logger.Log($"Sending trigger {trigger}");
+      foreach(Triggers.TriggerDevice triggerDevice in trigger.Devices) {
+        Device? device = this.FindDevice(triggerDevice.Name);
+        if(device != null) {
+          
+          if(triggerDevice.ShouldVibrate) {
+            for(int motorId = 0; motorId < triggerDevice.SelectedVibrateMotors.Length; motorId++) {
+              
+              bool motorEnabled = triggerDevice.SelectedVibrateMotors[motorId];
+              int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
+              if(motorEnabled) {
+                this.Logger.Log($"Sending vibration to {motorId} {motorIntensitiy}!");
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /** Search for a device with the corresponding text */
+    public Device? FindDevice(string text) {
+      Device? foundDevice = null;
+      foreach(Device device in this.Devices) {
+        if(device.Name.Contains(text) && device != null) {
+          foundDevice = device;
+        }
+      }
+      return foundDevice;
     }
 
     /**

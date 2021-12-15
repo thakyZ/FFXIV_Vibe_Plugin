@@ -51,7 +51,6 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private readonly Triggers.Controller TriggersController;
-    private string AuthorizedUser = "";
     private SortedSet<Triggers.ChatTrigger> ChatTriggers = new();
 
     // Experiments
@@ -92,7 +91,7 @@ namespace FFXIV_Vibe_Plugin {
         HelpMessage = "A vibe plugin for fun..."
       });
       if(DalamudChat != null) {
-        DalamudChat.ChatMessage += CheckForTriggers_oldChat; 
+        DalamudChat.ChatMessage += ChatWasTriggered; 
       }
 
       // Initialize the logger
@@ -137,7 +136,7 @@ namespace FFXIV_Vibe_Plugin {
       // Cleaning chat triggers.
       this.CommandManager.RemoveHandler(commandName);
       if(DalamudChat != null) {
-        DalamudChat.ChatMessage -= CheckForTriggers_oldChat;
+        DalamudChat.ChatMessage -= ChatWasTriggered;
       }
 
       // Cleaning hooks
@@ -194,7 +193,6 @@ Chat features:
       {command} chat_list_triggers
       {command} chat_add <intensity 0-100> <trigger text>
       {command} chat_remove <id>
-      {command} chat_user <authorized user>
 
 Vibes:
       {command} send <0-100> # BROKEN
@@ -231,8 +229,6 @@ These commands let anyone whose name contains 'Alice' control all your connected
           this.Command_AddTrigger(args);
         } else if(args.StartsWith("chat_remove")) {
           this.Command_RemoveTrigger(args);
-        } else if(args.StartsWith("chat_user")) {
-          this.Command_SetAuthorizedUser(args);
         } else if(args.StartsWith("save")) {
           Command_SaveConfig(args);
         } else if(args.StartsWith("load")) {
@@ -270,23 +266,33 @@ These commands let anyone whose name contains 'Alice' control all your connected
         this.Logger.Log($"SPELL_TRIGGER {trigger.SpellText}");
         this.DeviceController.SendVibeToAll(0);
       }
-
-
     }
 
-    public void CheckTriggers_Chat(string message) {
-       Triggers.Trigger? trigger = this.TriggersController.CheckTrigger_Chat(message);
-      if(trigger != null) {
-        this.Logger.Log($"CHAT_TRIGGER:{trigger.ChatText}");
-        this.DeviceController.SendVibeToAll(0);
+    private void ChatWasTriggered(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
+      string fromPlayerName = _sender.ToString();
+      if(allowedChatTypes == null) {
+        this.Logger.Warn("Chat hook not ready, ignoring chat trigger");
+        return;
+      }
+      if(this.TriggersController == null) {
+        this.Logger.Warn("TriggersController not init yet, ignoring chat...");
+        return;
       }
 
+      if(!allowedChatTypes.Any(ct => ct == type)) {
+        return;
+      }
+
+      List<Trigger> triggers = this.TriggersController.CheckTrigger_Chat(fromPlayerName, _message.TextValue);
+      foreach(Trigger trigger in triggers) {
+        this.DeviceController.SendTrigger(trigger);
+      }
     }
 
 
-
-
+    /**************************/
     /** LEGACY CODE IS BELLOW */
+    /**************************/
 
     private void Play_pattern(string args) {
       try {
@@ -304,24 +310,6 @@ These commands let anyone whose name contains 'Alice' control all your connected
       }
     }
 
-
-    private void CheckForTriggers_oldChat(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
-      
-      string sender = _sender.ToString();
-      if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
-        return;
-      }
-      this.CheckTriggers_Chat(_message.TextValue); // NEW
-      /* DEPRECATED
-      string message = _message.ToString().ToLower();
-      
-      var matchingintensities = this.ChatTriggers.Where(t => message.Contains(t.Text.ToLower()));
-      if(matchingintensities.Any() && this.DeviceController.IsConnected()) {
-        int intensity = matchingintensities.Select(t => t.Intensity).Max();
-        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
-        this.DeviceController.SendVibeToAll(intensity);
-      }*/
-    }
 
 
 
@@ -354,7 +342,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
 
     private void LoadTriggersConfig() {
       //TODO: enable me to save triggers configuration
-      this.TriggersController.Set(this.Configuration.TRIGGERS_NEW_2);
+      this.TriggersController.Set(this.Configuration.TRIGGERS);
       SortedSet<ChatTrigger> chatTriggers = this.Configuration.CHAT_TRIGGERS;
       this.Logger.Debug($"Loading {chatTriggers.Count} triggers");
       this.ChatTriggers = new SortedSet<ChatTrigger>();
@@ -374,16 +362,6 @@ These commands let anyone whose name contains 'Alice' control all your connected
         return;
       }
       this.Logger.Chat($"Wrote current config to {path}");
-    }
-
-    private void Command_SetAuthorizedUser(string args) {
-      try {
-        AuthorizedUser = args.Split(" ", 2)[1];
-      } catch(IndexOutOfRangeException) {
-        this.Logger.Chat("Cleared authorized user.");
-        return;
-      }
-      this.Logger.Chat($"Authorized user set to '{AuthorizedUser}'");
     }
 
     private void Command_AddTrigger(string args) {
