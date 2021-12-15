@@ -73,7 +73,11 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           try {
             Match m = Regex.Match(spellName, pattern, RegexOptions.IgnoreCase);
             if(m.Success) {
-              triggers.Add(trigger);
+              
+              if(trigger.AmountMinValue <= spell.AmountAverage && spell.AmountAverage <= trigger.AmountMaxValue) {
+                this.Logger.Log($"{trigger.AmountMinValue} {trigger.AmountMaxValue} {spell.AmountAverage}");
+                triggers.Add(trigger);
+              }
             }
           } catch(Exception) {
             this.Logger.Error($"Probably a wrong REGEXP for {trigger.SpellText}");
