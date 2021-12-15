@@ -132,13 +132,13 @@ namespace FFXIV_Vibe_Plugin.Device{
         mut.WaitOne();
         ButtplugClientDevice buttplugClientDevice = arg.Device;
         Device device = new(buttplugClientDevice);
+        device.IsConnected = true;
         this.Logger.Log($"{arg.Device.Name}, {buttplugClientDevice.Name}");
         this.Devices.Add(device);
         if(!this.VisitedDevice.ContainsKey(device.Name)) {
           this.VisitedDevice[device.Name] = device;
         }
         this.Logger.Debug($"Added {device})");
-        device.IsConnected = true;
       } finally {
         mut.ReleaseMutex();
       }
@@ -240,11 +240,39 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.SelectedVibrateMotors[motorId];
                 int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
                 if(motorEnabled) {
-                  this.Logger.Log($"Sending vibration to {motorId} {motorIntensitiy}!");
+                  this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
                   this.SendVibrate(device, motorIntensitiy, motorId);
                 }
               }
             }
+          }
+          if(triggerDevice.ShouldRotate) {
+            for(int motorId = 0; motorId < triggerDevice.SelectedRotateMotors?.Length; motorId++) {
+              if(triggerDevice.SelectedRotateMotors != null && triggerDevice.RotateMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.SelectedRotateMotors[motorId];
+                int motorIntensitiy = triggerDevice.RotateMotorsIntensity[motorId];
+                if(motorEnabled) {
+                  this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
+                  this.SendRotate(device, motorIntensitiy, motorId);
+                }
+              }
+            }
+          }
+          if(triggerDevice.ShouldLinear) {
+            for(int motorId = 0; motorId < triggerDevice.SelectedLinearMotors?.Length; motorId++) {
+              if(triggerDevice.SelectedLinearMotors != null && triggerDevice.LinearMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.SelectedLinearMotors[motorId];
+                int motorIntensitiy = triggerDevice.LinearMotorsIntensity[motorId];
+                if(motorEnabled) {
+                  this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}!");
+                  this.SendLinear(device, motorIntensitiy, motorId);
+                }
+              }
+            }
+          }
+          if(triggerDevice.ShouldStop) {
+            this.Logger.Debug($"Sending stop to {device.Name}!");
+            Controller.SendStop(device);
           }
         }
       }
@@ -280,7 +308,7 @@ namespace FFXIV_Vibe_Plugin.Device{
       device.SendVibrate(intensity, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 
-    public void SendRotate(Device device, int intensity, bool clockwise=true, int motorId = -1) {
+    public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
       device.SendRotate(intensity, clockwise, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 

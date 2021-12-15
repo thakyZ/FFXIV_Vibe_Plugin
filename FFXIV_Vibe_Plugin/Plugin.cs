@@ -260,24 +260,28 @@ These commands let anyone whose name contains 'Alice' control all your connected
     }
 
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
+      if(this.TriggersController == null) {
+        this.Logger.Warn("SpellWasTriggered: TriggersController not init yet, ignoring spell...");
+        return;
+      }
+
       Structures.Spell spell = args.Spell;
-      Triggers.Trigger? trigger = this.TriggersController.CheckTrigger_Spell(spell);
-      if(trigger != null) {
-        this.Logger.Log($"SPELL_TRIGGER {trigger.SpellText}");
-        this.DeviceController.SendVibeToAll(0);
+      List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
+      foreach(Trigger trigger in triggers) {
+        this.DeviceController.SendTrigger(trigger);
       }
     }
 
     private void ChatWasTriggered(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
-      string fromPlayerName = _sender.ToString();
       if(allowedChatTypes == null) {
-        this.Logger.Warn("Chat hook not ready, ignoring chat trigger");
+        this.Logger.Warn("ChatWasTriggered: Chat hook not ready, ignoring chat trigger");
         return;
       }
       if(this.TriggersController == null) {
-        this.Logger.Warn("TriggersController not init yet, ignoring chat...");
+        this.Logger.Warn("ChatWasTriggered: TriggersController not init yet, ignoring chat...");
         return;
       }
+      string fromPlayerName = _sender.ToString();
 
       if(!allowedChatTypes.Any(ct => ct == type)) {
         return;

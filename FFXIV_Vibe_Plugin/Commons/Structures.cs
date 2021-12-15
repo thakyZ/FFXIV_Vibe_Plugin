@@ -59,42 +59,42 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
 
     public struct Player {
-      public int id;
-      public string name;
-      public string? info;
+      public int Id;
+      public string Name;
+      public string? Info;
       public Player(int id, string name, string? info=null) {
-        this.id = id;
-        this.name = name;
-        this.info = info;
+        this.Id = id;
+        this.Name = name;
+        this.Info = info;
       }
 
       public override string ToString() {
-        if(this.info != null) {
-          return $"{name}({id}) [info:{this.info}]";
+        if(this.Info != null) {
+          return $"{Name}({Id}) [info:{this.Info}]";
         }
-        return $"{name}({id})";
+        return $"{Name}({Id})";
       }
     }
 
     public struct Spell {
-      public int id;
-      public string? name;
-      public Player player;
-      public int[]? amounts;
-      public float amountAverage;
-      public List<Player>? targets;
-      public DamageType damageType = 0;
-      public ActionEffectType type;
+      public int Id;
+      public string Name = "Undefined_Spell_Name";
+      public Player Player;
+      public int[]? Amounts;
+      public float AmountAverage;
+      public List<Player>? Targets;
+      public DamageType DamageType = 0;
+      public ActionEffectType Type;
       public override string ToString() {
         string targetsString = "";
-        if(targets != null) {
-          if(targets.Count > 0) {
-            targetsString = String.Join(",", this.targets);
+        if(Targets != null) {
+          if(Targets.Count > 0) {
+            targetsString = String.Join(",", this.Targets);
           } else {
             targetsString = "*no target*";
           }
         }
-        return $"{player} casts {name}#{type} on: {targetsString}. Avg: {amountAverage}";
+        return $"{Player} casts {Name}#{Type} on: {targetsString}. Avg: {AmountAverage}";
       }
     }
   }
