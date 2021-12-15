@@ -370,7 +370,6 @@ namespace FFXIV_Vibe_Plugin {
 
             ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
 
-
             // Init table
             int COLUMN0_WIDTH = 120;
             ImGui.BeginTable("###TRIGGER_FORM_TABLE_GENERAL", 2);
@@ -421,8 +420,6 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.EndTable();
 
             ImGui.Separator();
-
-
 
 
             // TRIGGER KIND:CHAT OPTIONS
@@ -541,7 +538,8 @@ namespace FFXIV_Vibe_Plugin {
             if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
               if(this.TRIGGER_CURRENT_SELECTED_DEVICE >= 0) {
                 Device.Device device = visitedDevice[devicesStrings[this.TRIGGER_CURRENT_SELECTED_DEVICE]];
-                Triggers.TriggerDevice newTriggerDevice = new(device);
+                Triggers.TriggerDevice newTriggerDevice = new();
+                newTriggerDevice.Set(device);
                 triggerDevices.Add(newTriggerDevice);
                 this.Configuration.Save();
               }
@@ -582,12 +580,14 @@ namespace FFXIV_Vibe_Plugin {
                           if(!triggerDevice.SelectedVibrateMotors[motorId]) {
                             triggerDevice.VibrateMotorsIntensity[motorId] = 0;
                           }
+                          this.Configuration.Save();
                         }
                         ImGui.SameLine();
                         if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_INTENSITY", ref triggerDevice.VibrateMotorsIntensity[motorId], 0, 100)) {
                           if(triggerDevice.VibrateMotorsIntensity[motorId] > 0) {
                             triggerDevice.SelectedVibrateMotors[motorId] = true;
                           }
+                          this.Configuration.Save();
                         }
                       }
                       ImGui.Indent(-10);

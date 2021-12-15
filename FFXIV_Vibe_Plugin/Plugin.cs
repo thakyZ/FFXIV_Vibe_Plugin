@@ -354,7 +354,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
 
     private void LoadTriggersConfig() {
       //TODO: enable me to save triggers configuration
-      //this.TriggersController.Set(this.Configuration.TRIGGERS);
+      this.TriggersController.Set(this.Configuration.TRIGGERS_NEW_2);
       SortedSet<ChatTrigger> chatTriggers = this.Configuration.CHAT_TRIGGERS;
       this.Logger.Debug($"Loading {chatTriggers.Count} triggers");
       this.ChatTriggers = new SortedSet<ChatTrigger>();
