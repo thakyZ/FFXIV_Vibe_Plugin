@@ -28,7 +28,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   }
 
   public class Trigger : IComparable<Trigger> {
-    // First idea
+    private static readonly int _initAmountMinValue = -1;
+    private static readonly int _initAmountMaxValue = 10000000;
 
     // General
     public bool Enabled = true;
@@ -40,8 +41,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int Direction = (int)DIRECTION.Outgoing;
     public string ChatText = "";
     public string SpellText = "";
-    public int AmountMinValue = -1;
-    public int AmountMaxValue = 1000000;
+    public int AmountMinValue = Trigger._initAmountMinValue;
+    public int AmountMaxValue = Trigger._initAmountMaxValue;
     public string FromPlayerName = "";
     public string ToPlayerName = "";
 
@@ -80,6 +81,11 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     public string GetShortID() {
       return this.Id[..13];
+    }
+
+    public void Reset() {
+      this.AmountMaxValue = Trigger._initAmountMaxValue;
+      this.AmountMinValue = Trigger._initAmountMinValue;
     }
   }
 
