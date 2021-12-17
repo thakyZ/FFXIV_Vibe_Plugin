@@ -23,7 +23,6 @@ namespace FFXIV_Vibe_Plugin {
     public int BUTTPLUG_SERVER_PORT { get; set; } = 12345;
 
     public List<Triggers.Trigger> TRIGGERS { get; set; } = new();
-    public SortedSet<ChatTrigger> CHAT_TRIGGERS { get; set; } = new SortedSet<ChatTrigger>();
 
     public Dictionary<string, FFXIV_Vibe_Plugin.Device.Device> VISITED_DEVICES = new();
     
