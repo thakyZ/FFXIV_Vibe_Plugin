@@ -244,15 +244,16 @@ namespace FFXIV_Vibe_Plugin {
         this.Configuration.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
         this.Configuration.Save();
       }
-      ImGuiComponents.HelpMarker("Maximum threshold for vibes (will overrid every devices).");
+      ImGuiComponents.HelpMarker("Maximum threshold for vibes (will override every devices).");
 
       // Checkbox VIBE_HP_TOGGLE
       bool config_VIBE_HP_TOGGLE = this.Configuration.VIBE_HP_TOGGLE;
-      if(ImGui.Checkbox("Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
+      ImGui.Text("Vibe on HP Change: ");
+      ImGui.SameLine();
+      if(ImGui.Checkbox("###Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
         this.Configuration.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
         this.Configuration.Save();
       }
-      ImGui.SameLine();
 
       // Checkbox VIBE_HP_MODE
       ImGui.SameLine();
@@ -263,13 +264,18 @@ namespace FFXIV_Vibe_Plugin {
         this.Configuration.VIBE_HP_MODE = config_VIBE_HP_MODE;
         this.Configuration.Save();
       }
-      ImGuiComponents.HelpMarker("The more you are missing HP, the more it vibes.");
+      ImGui.SameLine();
+      ImGuiComponents.HelpMarker("The more you loose HP, the more it will vibe all toys");
+
 
       // Checkbox OPTION_VERBOSE_SPELL
+      ImGui.Text("Log casted spells:");
+      ImGui.SameLine();
       if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL.", ref this.Configuration.VERBOSE_SPELL)) {
         this.Configuration.Save();
       }
-
+      ImGui.SameLine();
+      ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better ingame performance.");
     }
 
     public void DrawDevicesTab() {

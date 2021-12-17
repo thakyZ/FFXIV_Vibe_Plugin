@@ -75,7 +75,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         uint ptr_animId = *((ushort*)effectHeader.ToPointer() + 0xE);
         ushort ptr_op = *((ushort*)effectHeader.ToPointer() - 0x7);
         byte ptr_targetCount = *(byte*)(effectHeader + 0x21);
-        var effect = *(Structures.EffectEntry*)(effectArray);
+        Structures.EffectEntry effect = *(Structures.EffectEntry*)(effectArray);
 
         // Get more info from data structure
         string playerName = GetCharacterNameFromSourceId(sourceId);
@@ -93,7 +93,14 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         spell.AmountAverage = amountAverage;
         spell.Targets = targets;
         spell.DamageType = Structures.DamageType.Unknown;
-        spell.ActionEffectType = effect.type;
+
+        // WARNING: if there is no target, some information will be wrong !
+        // It is needed to avoid effect type if there is no target.
+        if(targets.Count == 0) { 
+          spell.ActionEffectType = Structures.ActionEffectType.Nothing;
+        } else {
+          spell.ActionEffectType = effect.type;
+        }
         this.DispatchReceivedEvent(spell);
       } catch(Exception e) {
         this.Logger.Log($"{e.Message} {e.StackTrace}");
