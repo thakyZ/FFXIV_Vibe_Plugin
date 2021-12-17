@@ -51,6 +51,7 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private readonly Triggers.Controller TriggersController;
+    private readonly Sequencer Sequencer; // TODO: complete me
 
     // Experiments
     private readonly NetworkCapture experiment_networkCapture;
@@ -98,8 +99,8 @@ namespace FFXIV_Vibe_Plugin {
 
       // Initialize player stats monitoring.
       this.PlayerStats = new PlayerStats(this.ClientState);
-      PlayerStats.Event_CurrentHpChanged += this.Player_currentHPChanged;
-      PlayerStats.Event_MaxHpChanged += this.Player_currentHPChanged;
+      PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
+      PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
       // Initialize the devices Controller
       this.DeviceController = new Device.Controller(this.Logger, this.Configuration);
@@ -231,6 +232,25 @@ namespace FFXIV_Vibe_Plugin {
       this.DeviceController.Disconnect();
     }
 
+
+    private void Command_SendIntensity(string args) {
+      string[] blafuckcsharp;
+      int intensity;
+      try {
+        blafuckcsharp = args.Split(" ", 2);
+        intensity = int.Parse(blafuckcsharp[1]);
+        this.Logger.Chat($"Command Send intensity {intensity}");
+      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
+        this.Logger.Error($"Malformed arguments for send [intensity].", e);
+        return;
+      }
+      this.DeviceController.SendVibeToAll(intensity);
+    }
+
+    /************************************
+    *         LISTEN TO EVENTS          *
+    ************************************/
+
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
       if(this.TriggersController == null) {
         this.Logger.Warn("SpellWasTriggered: TriggersController not init yet, ignoring spell...");
@@ -274,6 +294,8 @@ namespace FFXIV_Vibe_Plugin {
     /**************************/
 
     private void Play_pattern(string args) {
+      this.Logger.Warn("Play_pattern is disabled temporary");
+      return;
       try {
         string[] param = args.Split(" ", 2);
         string patternName = param[1];
@@ -289,8 +311,7 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-
-    private void Player_currentHPChanged(object? send, EventArgs e) {
+    private void PlayerCurrentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
 
@@ -313,19 +334,6 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-    private void Command_SendIntensity(string args) {
-      string[] blafuckcsharp;
-      int intensity;
-      try {
-        blafuckcsharp = args.Split(" ", 2);
-        intensity = int.Parse(blafuckcsharp[1]);
-        this.Logger.Chat($"Command Send intensity {intensity}");
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for send [intensity].", e);
-        return;
-      }
-      this.DeviceController.SendVibeToAll(intensity);
-    }
 
     
 
