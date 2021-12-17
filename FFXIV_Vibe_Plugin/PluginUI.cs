@@ -441,7 +441,7 @@ namespace FFXIV_Vibe_Plugin {
               this.Configuration.Save();
             };
             ImGui.SameLine();
-            ImGuiComponents.HelpMarker("You can use RegExp.");
+            ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any.");
             ImGui.TableNextRow();
 
             // TRIGGER START_AFTER
@@ -492,7 +492,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGuiComponents.HelpMarker("You can use RegExp.");
               ImGui.TableNextRow();
 
-             
+              // END OF TABLE
               ImGui.EndTable();
             }
 
@@ -505,48 +505,55 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
               ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL2", ImGuiTableColumnFlags.WidthStretch);
 
-              // TRIGGER EVENT
+              // TRIGGER TYPE
               ImGui.TableNextColumn();
-              ImGui.Text("Event:");
+              ImGui.Text("Type:");
               ImGui.TableNextColumn();
-              string[] TRIGGER = System.Enum.GetNames(typeof(Triggers.EVENT));
-              int currentEvent = (int)this.SelectedTrigger.Event;
-              if(ImGui.Combo("###TRIGGER_FORM_EVENT", ref currentEvent, TRIGGER, TRIGGER.Length)) {
-                this.SelectedTrigger.Event = currentEvent;
+              string[] TRIGGER = System.Enum.GetNames(typeof(FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType));
+              int currentEffectType = (int)this.SelectedTrigger.ActionEffectType;
+              if(ImGui.Combo("###TRIGGER_FORM_EVENT", ref currentEffectType, TRIGGER, TRIGGER.Length)) {
+                this.SelectedTrigger.ActionEffectType = currentEffectType;
                 this.SelectedTrigger.Reset();
                 this.Configuration.Save();
               }
               ImGui.TableNextRow();
 
-              if(this.SelectedTrigger.Event != (int)Triggers.EVENT.Any) { 
+              //TRIGGER SPELL TEXT
+              ImGui.TableNextColumn();
+              ImGui.Text("Spell Text:");
+              ImGui.TableNextColumn();
+              if(ImGui.InputText("###TRIGGER_FORM_SPELLNAME", ref this.SelectedTrigger.SpellText, 100)) {
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("You can use RegExp.");
+              ImGui.TableNextRow();
 
-                //TRIGGER SPELL TEXT
-                ImGui.TableNextColumn();
-                ImGui.Text("Spell Text:");
-                ImGui.TableNextColumn();
-                if(ImGui.InputText("###TRIGGER_FORM_SPELLNAME", ref this.SelectedTrigger.SpellText, 100)) {
-                  this.Configuration.Save();
-                }
-                ImGui.SameLine();
-                ImGuiComponents.HelpMarker("You can use RegExp.");
-                ImGui.TableNextRow();
+              //TRIGGER DIRECTION
+              ImGui.TableNextColumn();
+              ImGui.Text("Direction:");
+              ImGui.TableNextColumn();
+              string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
+              int currentDirection = (int)this.SelectedTrigger.Direction;
+              if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
+                this.SelectedTrigger.Direction = currentDirection;
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("Warning: Hitting no target will result to self as if you cast on yourself");
+              ImGui.TableNextRow();
 
-                if(currentEvent != (int)Triggers.EVENT.SelfMount && currentEvent != (int)Triggers.EVENT.Miss) {
+              if(this.SelectedTrigger.ActionEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Nothing) { 
+                if(currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Mount &&
+                  currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Miss &&
+                  currentEffectType != (int)Structures.ActionEffectType.Transport &&
+                  currentEffectType != (int)Structures.ActionEffectType.Unknown_0
+                ) {
 
-                  //TRIGGER DIRECTION
-                  ImGui.TableNextColumn();
-                  ImGui.Text("Direction:");
-                  ImGui.TableNextColumn();
-                  string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
-                  int currentDirection = (int)this.SelectedTrigger.Direction;
-                  if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
-                    this.SelectedTrigger.Direction = currentDirection;
-                    this.Configuration.Save();
-                  }
-                  ImGui.TableNextRow();
+
 
                   // Min/Max amount values
-                  if(this.SelectedTrigger.Event == (int)Triggers.EVENT.DamageAmount || this.SelectedTrigger.Event == (int)Triggers.EVENT.HealAmount) {
+                  if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage || this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
                     // TRIGGER MIN_VALUE
                     ImGui.TableNextColumn();
                     ImGui.Text("Minimum value:");

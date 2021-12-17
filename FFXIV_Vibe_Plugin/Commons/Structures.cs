@@ -84,7 +84,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       public float AmountAverage;
       public List<Player>? Targets;
       public DamageType DamageType = 0;
-      public ActionEffectType Type;
+      public ActionEffectType ActionEffectType = 0;
       public override string ToString() {
         string targetsString = "";
         if(Targets != null) {
@@ -94,7 +94,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
             targetsString = "*no target*";
           }
         }
-        return $"{Player} casts {Name}#{Type} on: {targetsString}. Avg: {AmountAverage}";
+        return $"{Player} casts {Name}#{ActionEffectType} on: {targetsString}. Avg: {AmountAverage}";
       }
     }
   }

@@ -73,19 +73,20 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           
           if(!this.RegExpMatch(spellName, trigger.SpellText)) { continue; }
 
-          if(trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.HealAmount || trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.DamageAmount) {
-            if(trigger.AmountMinValue > spell.AmountAverage) { continue; }
-            if(trigger.AmountMaxValue < spell.AmountAverage) { continue; }
+          if(trigger.ActionEffectType != (int)Structures.ActionEffectType.Nothing && trigger.ActionEffectType != (int)spell.ActionEffectType) {
+            continue;
+          }
+
+          if(trigger.ActionEffectType == (int)Structures.ActionEffectType.Heal || trigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
+            if(trigger.AmountMinValue >= spell.AmountAverage) { continue; }
+            if(trigger.AmountMaxValue <= spell.AmountAverage) { continue; }
           }
 
           FFXIV_Vibe_Plugin.Triggers.DIRECTION direction = this.GetSpellDirection(spell);
-          this.Logger.Warn($"{trigger.Name} {spellName} ==> Direction: {direction}");
-          /*
-          if() {
-            this.Logger.Warn("Bad direction");
-            continue;
-          }*/
 
+          if(trigger.Direction != (int)FFXIV_Vibe_Plugin.Triggers.DIRECTION.Any && (int)direction != trigger.Direction) { continue;}
+
+          this.Logger.Debug($"Sending trigger \"{trigger.Name}\"");
           triggers.Add(trigger);
         }
       }
