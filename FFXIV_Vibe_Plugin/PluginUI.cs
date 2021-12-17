@@ -26,6 +26,9 @@ namespace FFXIV_Vibe_Plugin {
     // Images
     private readonly Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new();
 
+    // Patterns
+    private readonly Patterns Patterns;
+
     private readonly string DonationLink = "http://paypal.me/kaciedev";
 
     // this extra bool exists for ImGui, since you can't ref a property
@@ -55,7 +58,8 @@ namespace FFXIV_Vibe_Plugin {
       Configuration configuration,
       Plugin currentPlugin,
       Device.Controller deviceController,
-      Triggers.Controller triggersController
+      Triggers.Controller triggersController,
+      Patterns Patterns
     ) {
       this.Logger = logger;
       this.Configuration = configuration;
@@ -601,7 +605,7 @@ namespace FFXIV_Vibe_Plugin {
             if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
               if(this.TRIGGER_CURRENT_SELECTED_DEVICE >= 0) {
                 Device.Device device = visitedDevice[devicesStrings[this.TRIGGER_CURRENT_SELECTED_DEVICE]];
-                Triggers.TriggerDevice newTriggerDevice = new();
+                Triggers.TriggerDevice newTriggerDevice = new(device);
                 newTriggerDevice.Set(device);
                 triggerDevices.Add(newTriggerDevice);
                 this.Configuration.Save();
@@ -632,18 +636,18 @@ namespace FFXIV_Vibe_Plugin {
                       for(int motorId = 0; motorId < triggerDevice.Device.VibrateMotors; motorId++) {
                         ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.SelectedVibrateMotors[motorId])) {
-                          if(!triggerDevice.SelectedVibrateMotors[motorId]) {
-                            triggerDevice.VibrateMotorsIntensity[motorId] = 0;
-                          }
+                        // Display Vibrate Motor checkbox
+                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.VibrateSelectedMotors[motorId])) {
                           this.Configuration.Save();
                         }
-                        ImGui.SameLine();
-                        if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.VibrateMotorsIntensity[motorId], 0, 100)) {
-                          if(triggerDevice.VibrateMotorsIntensity[motorId] > 0) {
-                            triggerDevice.SelectedVibrateMotors[motorId] = true;
+                        if(triggerDevice.VibrateSelectedMotors[motorId]) {
+                          ImGui.SameLine();
+                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.VibrateMotorsIntensity[motorId], 0, 100)) {
+                            if(triggerDevice.VibrateMotorsIntensity[motorId] > 0) {
+                              triggerDevice.VibrateSelectedMotors[motorId] = true;
+                            }
+                            this.Configuration.Save();
                           }
-                          this.Configuration.Save();
                         }
                       }
                       ImGui.Indent(-20);
@@ -661,18 +665,17 @@ namespace FFXIV_Vibe_Plugin {
                       for(int motorId = 0; motorId < triggerDevice.Device.RotateMotors; motorId++) {
                         ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}", ref triggerDevice.SelectedRotateMotors[motorId])) {
-                          if(!triggerDevice.SelectedRotateMotors[motorId]) {
-                            triggerDevice.RotateMotorsIntensity[motorId] = 0;
-                          }
+                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}", ref triggerDevice.RotateSelectedMotors[motorId])) {
                           this.Configuration.Save();
                         }
-                        ImGui.SameLine();
-                        if(ImGui.SliderInt($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.RotateMotorsIntensity[motorId], 0, 100)) {
-                          if(triggerDevice.RotateMotorsIntensity[motorId] > 0) {
-                            triggerDevice.SelectedRotateMotors[motorId] = true;
+                        if(triggerDevice.RotateSelectedMotors[motorId]) {
+                          ImGui.SameLine();
+                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.RotateMotorsIntensity[motorId], 0, 100)) {
+                            if(triggerDevice.RotateMotorsIntensity[motorId] > 0) {
+                              triggerDevice.RotateSelectedMotors[motorId] = true;
+                            }
+                            this.Configuration.Save();
                           }
-                          this.Configuration.Save();
                         }
                       }
                       ImGui.Indent(-20);
@@ -690,23 +693,22 @@ namespace FFXIV_Vibe_Plugin {
                       for(int motorId = 0; motorId < triggerDevice.Device.LinearMotors; motorId++) {
                         ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}", ref triggerDevice.SelectedLinearMotors[motorId])) {
-                          if(!triggerDevice.SelectedLinearMotors[motorId]) {
-                            triggerDevice.LinearMotorsIntensity[motorId] = 0;
-                          }
+                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}", ref triggerDevice.LinearSelectedMotors[motorId])) {
                           this.Configuration.Save();
                         }
-                        ImGui.SameLine();
-                        if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_INTENSITY", ref triggerDevice.LinearMotorsIntensity[motorId], 0, 100)) {
-                          if(triggerDevice.LinearMotorsIntensity[motorId] > 0) {
-                            triggerDevice.SelectedLinearMotors[motorId] = true;
-                          }
-                          this.Configuration.Save();
-                        }
-                        if(ImGui.InputInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_DURATION", ref triggerDevice.LinearMotorsDuration[motorId])){
-                          if(!triggerDevice.SelectedLinearMotors[motorId]) {
-                            triggerDevice.LinearMotorsDuration[motorId] = 0;
+                        if(triggerDevice.LinearSelectedMotors[motorId]) {
+                          ImGui.SameLine();
+                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_INTENSITY", ref triggerDevice.LinearMotorsIntensity[motorId], 0, 100)) {
+                            if(triggerDevice.LinearMotorsIntensity[motorId] > 0) {
+                              triggerDevice.LinearSelectedMotors[motorId] = true;
+                            }
                             this.Configuration.Save();
+                          }
+                          if(ImGui.InputInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_DURATION", ref triggerDevice.LinearMotorsDuration[motorId])) {
+                            if(!triggerDevice.LinearSelectedMotors[motorId]) {
+                              triggerDevice.LinearMotorsDuration[motorId] = 0;
+                              this.Configuration.Save();
+                            }
                           }
                         }
                       }

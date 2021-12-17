@@ -33,6 +33,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     public bool CanStop = false;    
     public bool IsConnected = false;
     public double BatteryLevel = -1;
+    // TODO: use that ?
     public List<UsableCommand> UsableCommands = new();
 
     public int[] CurrentVibrateIntensity = Array.Empty<int>();
