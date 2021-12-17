@@ -266,6 +266,9 @@ These commands let anyone whose name contains 'Alice' control all your connected
       }
 
       Structures.Spell spell = args.Spell;
+      if(this.Configuration.VERBOSE_SPELL) {
+        this.Logger.Debug($"{spell}");
+      }
       List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
       foreach(Trigger trigger in triggers) {
         this.DeviceController.SendTrigger(trigger);
