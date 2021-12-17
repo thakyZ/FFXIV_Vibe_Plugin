@@ -432,7 +432,19 @@ namespace FFXIV_Vibe_Plugin {
             }
             ImGui.TableNextRow();
 
+            // TRIGGER FROM_PLAYER_NAME
+            ImGui.TableNextColumn();
+            ImGui.Text("Player name:");
+            ImGui.TableNextColumn();
+            if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
+              this.SelectedTrigger.FromPlayerName = this.SelectedTrigger.FromPlayerName.Trim();
+              this.Configuration.Save();
+            };
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("You can use RegExp.");
+            ImGui.TableNextRow();
 
+            // TRIGGER START_AFTER
             ImGui.TableNextColumn();
             ImGui.Text("Start after");
             ImGui.TableNextColumn();
@@ -444,6 +456,7 @@ namespace FFXIV_Vibe_Plugin {
             ImGuiComponents.HelpMarker("In seconds");
             ImGui.TableNextRow();
 
+            // TRIGGER STOP_AFTER
             ImGui.TableNextColumn();
             ImGui.Text("Stop after");
             ImGui.TableNextColumn();
@@ -475,18 +488,11 @@ namespace FFXIV_Vibe_Plugin {
                 this.SelectedTrigger.ChatText = currentChatText.ToLower(); // ChatMsg is always lower
                 this.Configuration.Save();
               };
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("You can use RegExp.");
               ImGui.TableNextRow();
 
-              // TRIGGER INTENSITY
-              ImGui.TableNextColumn();
-              ImGui.Text("Player first name:");
-              ImGui.TableNextColumn();
-              if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
-                this.Configuration.Save();
-              };
-              ImGui.SameLine();
-              ImGuiComponents.HelpMarker("Only use first name, we can't detect last name as of today.");
-              ImGui.TableNextRow();
+             
               ImGui.EndTable();
             }
 
@@ -512,58 +518,54 @@ namespace FFXIV_Vibe_Plugin {
               }
               ImGui.TableNextRow();
 
-              //TRIGGER SPELL TEXT
-              ImGui.TableNextColumn();
-              ImGui.Text("Spell Text:");
-              ImGui.TableNextColumn();
-              if(ImGui.InputText("###TRIGGER_FORM_SPELLNAME", ref this.SelectedTrigger.SpellText, 100)) {
-                this.Configuration.Save();
-              }
-              ImGui.TableNextRow();
-
-              if(currentEvent != (int)Triggers.EVENT.SelfMount && currentEvent != (int)Triggers.EVENT.Miss ) {
-
-                //TRIGGER DIRECTION
-                ImGui.TableNextColumn();
-                ImGui.Text("Direction:");
-                ImGui.TableNextColumn();
-                string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
-                int currentDirection = (int)this.SelectedTrigger.Direction;
-                if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
-                  this.SelectedTrigger.Direction = currentDirection;
-                  this.Configuration.Save();
-                }
-                ImGui.TableNextRow();
-
-                // Min/Max amount values
-                if(this.SelectedTrigger.Event == (int)Triggers.EVENT.DamageAmount || this.SelectedTrigger.Event == (int)Triggers.EVENT.HealAmount) {
-                  // TRIGGER MIN_VALUE
-                  ImGui.TableNextColumn();
-                  ImGui.Text("Minimum value:");
-                  ImGui.TableNextColumn();
-                  if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
-                    this.Configuration.Save();
-                  }
-                  ImGui.TableNextRow();
-
-                  // TRIGGER MAX_VALUE
-                  ImGui.TableNextColumn();
-                  ImGui.Text("Maximum value:");
-                  ImGui.TableNextColumn();
-                  if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
-                    this.Configuration.Save();
-                  }
-                  ImGui.TableNextRow();
-                }
+              if(this.SelectedTrigger.Event != (int)Triggers.EVENT.Any) { 
 
                 //TRIGGER SPELL TEXT
                 ImGui.TableNextColumn();
-                ImGui.Text("From player:");
+                ImGui.Text("Spell Text:");
                 ImGui.TableNextColumn();
-                if(ImGui.InputText("###TRIGGER_FORM_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
+                if(ImGui.InputText("###TRIGGER_FORM_SPELLNAME", ref this.SelectedTrigger.SpellText, 100)) {
                   this.Configuration.Save();
                 }
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("You can use RegExp.");
                 ImGui.TableNextRow();
+
+                if(currentEvent != (int)Triggers.EVENT.SelfMount && currentEvent != (int)Triggers.EVENT.Miss) {
+
+                  //TRIGGER DIRECTION
+                  ImGui.TableNextColumn();
+                  ImGui.Text("Direction:");
+                  ImGui.TableNextColumn();
+                  string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
+                  int currentDirection = (int)this.SelectedTrigger.Direction;
+                  if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
+                    this.SelectedTrigger.Direction = currentDirection;
+                    this.Configuration.Save();
+                  }
+                  ImGui.TableNextRow();
+
+                  // Min/Max amount values
+                  if(this.SelectedTrigger.Event == (int)Triggers.EVENT.DamageAmount || this.SelectedTrigger.Event == (int)Triggers.EVENT.HealAmount) {
+                    // TRIGGER MIN_VALUE
+                    ImGui.TableNextColumn();
+                    ImGui.Text("Minimum value:");
+                    ImGui.TableNextColumn();
+                    if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
+                      this.Configuration.Save();
+                    }
+                    ImGui.TableNextRow();
+
+                    // TRIGGER MAX_VALUE
+                    ImGui.TableNextColumn();
+                    ImGui.Text("Maximum value:");
+                    ImGui.TableNextColumn();
+                    if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
+                      this.Configuration.Save();
+                    }
+                    ImGui.TableNextRow();
+                  }
+                }
               }
 
 

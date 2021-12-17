@@ -11,10 +11,12 @@ using System.Text.RegularExpressions;
 namespace FFXIV_Vibe_Plugin.Triggers {
   internal class Controller {
     private readonly Logger Logger;
+    private readonly PlayerStats PlayerStats;
     private List<Triggers.Trigger> Triggers = new();
 
-    public Controller(Logger logger) {
+    public Controller(Logger logger, PlayerStats playerStats) {
       this.Logger = logger;
+      this.PlayerStats = playerStats;
     }
 
     public void Set(List<Triggers.Trigger> triggers) {
@@ -33,23 +35,22 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Triggers.Remove(trigger);
     }
     
-    public List<Trigger> CheckTrigger_Chat(string fromPlayerName, string ChatMsg) {
+    public List<Trigger> CheckTrigger_Chat(string ChatFromPlayerName, string ChatMsg) {
       List<Trigger> triggers = new();
-      fromPlayerName = fromPlayerName.Trim().ToLower();
-      foreach(Trigger trigger in this.Triggers) {
-        string triggerFromPlayerName = trigger.FromPlayerName.Trim().ToLower();
-        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Contains(triggerFromPlayerName);
-        // Check if the KIND of the trigger is a chat and if the author is authorized
-        if(trigger.Kind == (int)KIND.Chat && isAuthorized) {
-          // WARNING: ChatMessage received from hook is always lowercase !
-          string pattern = String.Concat(@"", trigger.ChatText);
-          try {
-            Match m = Regex.Match(ChatMsg, pattern, RegexOptions.IgnoreCase);
-            if(m.Success) {
-              triggers.Add(trigger);
-            }
-          } catch(Exception) {
-            this.Logger.Error($"Probably a wrong REGEXP for {trigger.ChatText}");
+      ChatFromPlayerName = ChatFromPlayerName.Trim().ToLower();
+      for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) {
+        Trigger trigger = this.Triggers[triggerIndex];
+        
+        // Ignore if not enabled
+        if(!trigger.Enabled) { continue; }
+
+        // Ignore if the player name is not authorized
+        if(!this.RegExpMatch(ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
+
+        // Check if the KIND of the trigger is a chat and if it matches
+        if(trigger.Kind == (int)KIND.Chat) {
+          if(this.RegExpMatch(ChatMsg, trigger.ChatText)){
+            triggers.Add(trigger);
           }
         }
       }
@@ -58,37 +59,34 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     public List<Trigger> CheckTrigger_Spell(Structures.Spell spell) {
       List<Trigger> triggers = new();
-      Structures.Player fromPlayer = spell.Player;
-      string fromPlayerName = fromPlayer.Name.Trim().ToLower();
-      string spellName = "";
-      if(spell.Name != null) {
-        spellName = spell.Name.Trim().ToLower();
-      }
+      string spellName = spell.Name != null ? spell.Name.Trim() : "";
+      for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) { 
+        Trigger trigger = this.Triggers[triggerIndex];
 
-      foreach(Trigger trigger in this.Triggers) {
-        string triggerFromPlayerName = trigger.FromPlayerName.Trim().ToLower();
-        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Contains(triggerFromPlayerName);
-        // Check if the KIND of the trigger is a spell and if author is authorized
-        if(trigger.Kind == (int)KIND.Spell && isAuthorized) {
-          string pattern = String.Concat(@"", trigger.SpellText);
-          try {
-            Match m = Regex.Match(spellName, pattern, RegexOptions.IgnoreCase);
-            if(m.Success) {
-              // FIXME: only check the amounts when the trigger event is DamageAmount or heal Amount
-              if(trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.HealAmount || trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.DamageAmount) {
-                if(trigger.AmountMinValue <= spell.AmountAverage && spell.AmountAverage <= trigger.AmountMaxValue) {
-                  this.Logger.Log($"{trigger.AmountMinValue} {trigger.AmountMaxValue} {spell.AmountAverage}");
-                  triggers.Add(trigger);
-                }
-              } else {
-                triggers.Add(trigger);
-              }
-              
-            }
-          } catch(Exception) {
-            this.Logger.Error($"Probably a wrong REGEXP for {trigger.SpellText}");
+        // Ignore if not enabled
+        if(!trigger.Enabled) { continue; }
+
+        // Ignore if the player name is not authorized
+        if(!this.RegExpMatch(spell.Player.Name, trigger.FromPlayerName)) { continue; }
+
+        if(trigger.Kind == (int)KIND.Spell) {
+          
+          if(!this.RegExpMatch(spellName, trigger.SpellText)) { continue; }
+
+          if(trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.HealAmount || trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.DamageAmount) {
+            if(trigger.AmountMinValue > spell.AmountAverage) { continue; }
+            if(trigger.AmountMaxValue < spell.AmountAverage) { continue; }
           }
 
+          FFXIV_Vibe_Plugin.Triggers.DIRECTION direction = this.GetSpellDirection(spell);
+          this.Logger.Warn($"{trigger.Name} {spellName} ==> Direction: {direction}");
+          /*
+          if() {
+            this.Logger.Warn("Bad direction");
+            continue;
+          }*/
+
+          triggers.Add(trigger);
         }
       }
       return triggers;
@@ -100,7 +98,47 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         //this.DeviceController.SendVibeToAll(0);
       }
     }
+
+    public bool RegExpMatch(string text, string regexp) {
+      bool found = false;
+
+      if(regexp.Trim() == "") {
+        found = true;
+      } else {
+        string patternCheck = String.Concat(@"", regexp);
+          try {
+            Match m = Regex.Match(text, patternCheck, RegexOptions.IgnoreCase);
+            if(m.Success) {
+              found = true;
+            }
+          } catch(Exception) {
+            this.Logger.Error($"Probably a wrong REGEXP for {regexp}");
+          }
+        }
+
+      return found;
+    }
+
+
+    public FFXIV_Vibe_Plugin.Triggers.DIRECTION GetSpellDirection(Structures.Spell spell) {
+      string myName = this.PlayerStats.GetPlayerName();
+
+     
+      List<Structures.Player> targets = new();
+      if(spell.Targets != null) {
+        targets = spell.Targets;
+      }
+
+      if(targets.Count >= 1 && targets[0].Name != myName) {
+        return FFXIV_Vibe_Plugin.Triggers.DIRECTION.Outgoing;
+      }
+      if(spell.Player.Name != myName) {
+        return FFXIV_Vibe_Plugin.Triggers.DIRECTION.Incoming;
+      }
+      return FFXIV_Vibe_Plugin.Triggers.DIRECTION.Self;
+    }
   }
+
   
 
 }
