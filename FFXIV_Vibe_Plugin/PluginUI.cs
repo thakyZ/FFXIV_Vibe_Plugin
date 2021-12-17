@@ -480,7 +480,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableNextColumn();
               ImGui.Text("Event:");
               ImGui.TableNextColumn();
-              string[] TRIGGER = System.Enum.GetNames(typeof(Triggers.TRIGGER));
+              string[] TRIGGER = System.Enum.GetNames(typeof(Triggers.EVENT));
               int currentEvent = (int)this.SelectedTrigger.Event;
               if(ImGui.Combo("###TRIGGER_FORM_EVENT", ref currentEvent, TRIGGER, TRIGGER.Length)) {
                 this.SelectedTrigger.Event = currentEvent;
@@ -498,47 +498,51 @@ namespace FFXIV_Vibe_Plugin {
               }
               ImGui.TableNextRow();
 
-              //TRIGGER DIRECTION
-              ImGui.TableNextColumn();
-              ImGui.Text("Direction:");
-              ImGui.TableNextColumn();
-              string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
-              int currentDirection = (int)this.SelectedTrigger.Direction;
-              if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
-                this.SelectedTrigger.Direction = currentDirection;
-                this.Configuration.Save();
-              }
-              ImGui.TableNextRow();
+              if(currentEvent != (int)Triggers.EVENT.SelfMount && currentEvent != (int)Triggers.EVENT.Miss ) {
 
-              // Min/Max amount values
-              if(this.SelectedTrigger.Event == (int)Triggers.TRIGGER.DamageAmount || this.SelectedTrigger.Event == (int)Triggers.TRIGGER.HealAmount) {
-                // TRIGGER MIN_VALUE
+                //TRIGGER DIRECTION
                 ImGui.TableNextColumn();
-                ImGui.Text("Minimum value:");
+                ImGui.Text("Direction:");
                 ImGui.TableNextColumn();
-                if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
+                string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
+                int currentDirection = (int)this.SelectedTrigger.Direction;
+                if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
+                  this.SelectedTrigger.Direction = currentDirection;
                   this.Configuration.Save();
                 }
                 ImGui.TableNextRow();
 
-                // TRIGGER MAX_VALUE
+                // Min/Max amount values
+                if(this.SelectedTrigger.Event == (int)Triggers.EVENT.DamageAmount || this.SelectedTrigger.Event == (int)Triggers.EVENT.HealAmount) {
+                  // TRIGGER MIN_VALUE
+                  ImGui.TableNextColumn();
+                  ImGui.Text("Minimum value:");
+                  ImGui.TableNextColumn();
+                  if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
+                    this.Configuration.Save();
+                  }
+                  ImGui.TableNextRow();
+
+                  // TRIGGER MAX_VALUE
+                  ImGui.TableNextColumn();
+                  ImGui.Text("Maximum value:");
+                  ImGui.TableNextColumn();
+                  if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
+                    this.Configuration.Save();
+                  }
+                  ImGui.TableNextRow();
+                }
+
+                //TRIGGER SPELL TEXT
                 ImGui.TableNextColumn();
-                ImGui.Text("Maximum value:");
+                ImGui.Text("From player:");
                 ImGui.TableNextColumn();
-                if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
+                if(ImGui.InputText("###TRIGGER_FORM_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
                   this.Configuration.Save();
                 }
                 ImGui.TableNextRow();
               }
 
-              //TRIGGER SPELL TEXT
-              ImGui.TableNextColumn();
-              ImGui.Text("From player:");
-              ImGui.TableNextColumn();
-              if(ImGui.InputText("###TRIGGER_FORM_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
-                this.Configuration.Save();
-              }
-              ImGui.TableNextRow();
 
               ImGui.EndTable();
             }
