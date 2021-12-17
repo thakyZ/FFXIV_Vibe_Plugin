@@ -27,7 +27,7 @@ namespace FFXIV_Vibe_Plugin {
     private readonly Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new();
 
     // Patterns
-    private readonly Patterns Patterns;
+    private readonly Patterns Patterns = new();
 
     private readonly string DonationLink = "http://paypal.me/kaciedev";
 
@@ -606,7 +606,6 @@ namespace FFXIV_Vibe_Plugin {
               if(this.TRIGGER_CURRENT_SELECTED_DEVICE >= 0) {
                 Device.Device device = visitedDevice[devicesStrings[this.TRIGGER_CURRENT_SELECTED_DEVICE]];
                 Triggers.TriggerDevice newTriggerDevice = new(device);
-                newTriggerDevice.Set(device);
                 triggerDevices.Add(newTriggerDevice);
                 this.Configuration.Save();
               }
@@ -640,13 +639,28 @@ namespace FFXIV_Vibe_Plugin {
                         if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.VibrateSelectedMotors[motorId])) {
                           this.Configuration.Save();
                         }
+
                         if(triggerDevice.VibrateSelectedMotors[motorId]) {
+                          string[] patternNames = this.Patterns.Get().Select(p => p.Name).ToArray();
+                          
+                          // WIP
                           ImGui.SameLine();
-                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.VibrateMotorsIntensity[motorId], 0, 100)) {
-                            if(triggerDevice.VibrateMotorsIntensity[motorId] > 0) {
-                              triggerDevice.VibrateSelectedMotors[motorId] = true;
-                            }
+                          if(ImGui.Combo($"###{prefixLabel}_VIBRATE_PATTERNS_{motorId}", ref triggerDevice.VibrateMotorsPattern[motorId], patternNames, patternNames.Length)) {
                             this.Configuration.Save();
+                          }
+
+                          // Special intensity pattern asks for intensity param.
+                          int currentPatternIndex = triggerDevice.VibrateMotorsPattern[motorId];
+                          if(currentPatternIndex == 0) {
+                            ImGui.Text($"Motor {motorId + 1} intensity:");
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(250);
+                            if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.VibrateMotorsIntensity[motorId], 0, 100)) {
+                              if(triggerDevice.VibrateMotorsIntensity[motorId] > 0) {
+                                triggerDevice.VibrateSelectedMotors[motorId] = true;
+                              }
+                              this.Configuration.Save();
+                            }
                           }
                         }
                       }

@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 namespace FFXIV_Vibe_Plugin {
 
   public class Patterns {
-    public readonly List<Pattern> List = new();
+    private int __count = 0;
+    private readonly List<Pattern> List = new();
 
     public Patterns() {
-      this.Add(new Pattern("testOfPattern", "10:1000|20:1000|"));
+      this.Add(new Pattern("intensity", "")); // Special pattern
+      this.Add(new Pattern("otherPattern", "10:500|20:500|0:0"));
     }
 
     public List<Pattern> Get() {
@@ -18,6 +20,7 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void Add(Pattern pattern) {
+      pattern.Index = this.__count++;
       List.Add(pattern);
     }
 
@@ -30,9 +33,10 @@ namespace FFXIV_Vibe_Plugin {
   }
 
   public class Pattern {
+    public int Index = -1;
     public string Name = "pattern";
     public string Value = "10:1000";
-    public Pattern(string name, string value) {
+    public Pattern(string name="pattern", string value="10:1000") {
       this.Name = name;
       this.Value = value;
     }
