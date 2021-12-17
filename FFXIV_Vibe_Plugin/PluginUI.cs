@@ -431,10 +431,33 @@ namespace FFXIV_Vibe_Plugin {
               this.Configuration.Save();
             }
             ImGui.TableNextRow();
+
+
+            ImGui.TableNextColumn();
+            ImGui.Text("Start after");
+            ImGui.TableNextColumn();
+            ImGui.SetNextItemWidth(230);
+            if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, 0, 120)) {
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("In seconds");
+            ImGui.TableNextRow();
+
+            ImGui.TableNextColumn();
+            ImGui.Text("Stop after");
+            ImGui.TableNextColumn();
+            ImGui.SetNextItemWidth(230);
+            if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, 0, 120)) {
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
+            ImGui.TableNextRow();
+
             ImGui.EndTable();
 
             ImGui.Separator();
-
 
             // TRIGGER KIND:CHAT OPTIONS
             if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Chat) {

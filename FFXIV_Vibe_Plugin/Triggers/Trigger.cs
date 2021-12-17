@@ -45,19 +45,14 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int AmountMaxValue = Trigger._initAmountMaxValue;
     public string FromPlayerName = "";
     public string ToPlayerName = "";
-
+    public float StartAfter = 0;
+    public float StopAfter = 120;
 
     // Device
     public List<TriggerDevice> Devices = new();
 
-
-    private string action = "vibe|vibrate|rotate|linear|stop";
-    private int duration = 2000;
+    // TODO: implement patter
     private string pattern = "default";
-    /**
-     * If it's damage, then check average overtime.
-     * If it's heal, then check average overtime.
-     */
 
     public Trigger(string name) {
       this.Id = Guid.NewGuid().ToString();
@@ -109,7 +104,6 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int[]? LinearMotorsIntensity;
     public int[]? LinearMotorsDuration;
 
-    private int Duration = 500;
 
     public TriggerDevice() {
 
