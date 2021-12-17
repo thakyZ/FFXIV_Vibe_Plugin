@@ -103,8 +103,11 @@ namespace FFXIV_Vibe_Plugin {
       PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
       PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
+      // Patterns
+      this.Patterns = new Patterns();
+
       // Initialize the devices Controller
-      this.DeviceController = new Device.Controller(this.Logger, this.Configuration);
+      this.DeviceController = new Device.Controller(this.Logger, this.Configuration, this.Patterns);
       if(this.Configuration.AUTO_CONNECT) {
         Task.Delay(2000);
         this.Command_DeviceController_Connect();
@@ -121,8 +124,6 @@ namespace FFXIV_Vibe_Plugin {
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
 
-      // Patterns
-      this.Patterns = new Patterns();
 
       // UI
       this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController, this.Patterns);

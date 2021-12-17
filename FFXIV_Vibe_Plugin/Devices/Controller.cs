@@ -17,6 +17,7 @@ namespace FFXIV_Vibe_Plugin.Device{
   internal class Controller {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
+    private readonly Patterns Patterns;
     
     // Buttplug related
     private ButtplugClient? ButtplugClient;
@@ -27,10 +28,11 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Internal variables
     private readonly static Mutex mut = new();
 
-    public Controller(Logger logger, Configuration configuration) {
+    public Controller(Logger logger, Configuration configuration, Patterns patterns) {
       this.Logger = logger;
       this.Configuration = configuration;
       this.VisitedDevices = configuration.VISITED_DEVICES;
+      this.Patterns = patterns;
     }
 
     public void Dispose() {
@@ -236,7 +238,10 @@ namespace FFXIV_Vibe_Plugin.Device{
                     this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
                     this.SendVibrate(device, motorIntensitiy, motorId);
                   } else {
-                    // TODO: use pattern !!!
+                    // WIP
+                    int patternId = triggerDevice.VibrateMotorsPattern[motorId];
+                    Pattern pattern = Patterns.Get(patternId);
+                    this.Logger.Debug($"Sending {device.Name} vibration pattern {patternId}:{pattern.Name}:{pattern.Value} to motor {motorId}");
                   }
                 }
               }
@@ -322,32 +327,6 @@ namespace FFXIV_Vibe_Plugin.Device{
 
     public static void SendStop(Device device) {
       device.Stop();
-    }
-
-    /**
-     * Experimental
-     * Send a command to a foundable device using a text string as identifier.
-     * It will try to guess to which device to send. 
-     * To send to a second device that has the same name use the following format "device name:number".
-     * TODO: use 'UsableCommand' ?
-     */
-    public void Send(String textOfDevice, UsableCommand command) {
-      this.Logger.Log("GENERIC SEND FUNCTION NOT IMPLEMENTED(TODO)");
-
-      switch(command) {
-        case UsableCommand.Vibrate:
-          // TODO
-          break;
-        case UsableCommand.Rotate:
-          // TODO: this.SendRotate(deviceFound)
-          break;
-        case UsableCommand.Linear:
-          // TODO: this.SendLinear(deviceFound)
-          break;
-        case UsableCommand.Stop:
-          // TODO: this.SendStop(deviceFound)
-          break;
-      }
     }
 
     public void AddTriggerTask(Triggers.Trigger trigger) {
