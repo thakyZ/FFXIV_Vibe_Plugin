@@ -8,21 +8,19 @@ namespace FFXIV_Vibe_Plugin.UIComponents {
   internal class ButtonLink {
 
     public static void Draw(string text, string link, Dalamud.Interface.FontAwesomeIcon Icon, Logger Logger) {
-
-      
-        if(ImGuiComponents.IconButton(Icon)) {
-          try {
-            _ = Process.Start(new ProcessStartInfo() {
-              FileName = link,
-              UseShellExecute = true,
-            });
-          } catch(Exception e) {
-            Logger.Error($"Could not open repoUrl: {link}", e);
-          }
+      if(ImGuiComponents.IconButton(Icon)) {
+        try {
+          _ = Process.Start(new ProcessStartInfo() {
+            FileName = link,
+            UseShellExecute = true,
+          });
+        } catch(Exception e) {
+          Logger.Error($"Could not open repoUrl: {link}", e);
         }
-
-        if(ImGui.IsItemHovered()) { ImGui.SetTooltip(text); }
       }
+
+      if(ImGui.IsItemHovered()) { ImGui.SetTooltip(text); }
     }
   }
 }
+
