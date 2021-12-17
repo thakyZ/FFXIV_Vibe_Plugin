@@ -686,11 +686,12 @@ namespace FFXIV_Vibe_Plugin {
                           if(ImGui.Combo($"###{prefixLabel}_ROTATE_PATTERNS_{motorId}", ref triggerDevice.RotateMotorsPattern[motorId], patternNames, patternNames.Length)) {
                             this.Configuration.Save();
                           }
-                          ImGui.SameLine();
-
                           // Special intensity pattern asks for intensity param.
-                          int currentPatternIndex = triggerDevice.VibrateMotorsPattern[motorId];
+                          int currentPatternIndex = triggerDevice.RotateMotorsPattern[motorId];
                           if(currentPatternIndex == 0) {
+                            ImGui.Text($"Motor {motorId + 1} intensity:");
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(250);
                             if(ImGui.SliderInt($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}_INTENSITY", ref triggerDevice.RotateMotorsIntensity[motorId], 0, 100)) {
                               if(triggerDevice.RotateMotorsIntensity[motorId] > 0) {
                                 triggerDevice.RotateSelectedMotors[motorId] = true;
@@ -720,24 +721,23 @@ namespace FFXIV_Vibe_Plugin {
                         }
                         if(triggerDevice.LinearSelectedMotors[motorId]) {
                           ImGui.SameLine();
-
-                          if(triggerDevice.LinearSelectedMotors[motorId]) {
+                          if(ImGui.Combo($"###{prefixLabel}_LINEAR_PATTERNS_{motorId}", ref triggerDevice.LinearMotorsPattern[motorId], patternNames, patternNames.Length)) {
+                            this.Configuration.Save();
+                          }
+                          // Special intensity pattern asks for intensity param.
+                          int currentPatternIndex = triggerDevice.LinearMotorsPattern[motorId];
+                          if(currentPatternIndex == 0) {
+                            ImGui.Text($"Motor {motorId + 1} intensity:");
                             ImGui.SameLine();
-                            if(ImGui.Combo($"###{prefixLabel}_LINEAR_PATTERNS_{motorId}", ref triggerDevice.LinearMotorsPattern[motorId], patternNames, patternNames.Length)) {
+                            ImGui.SetNextItemWidth(250);
+                            if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_INTENSITY", ref triggerDevice.LinearMotorsIntensity[motorId], 0, 100)) {
+                              if(triggerDevice.LinearMotorsIntensity[motorId] > 0) {
+                                triggerDevice.LinearSelectedMotors[motorId] = true;
+                              }
                               this.Configuration.Save();
                             }
-                            ImGui.SameLine();
-
-                            // Special intensity pattern asks for intensity param.
-                            int currentPatternIndex = triggerDevice.LinearMotorsPattern[motorId];
-                            if(currentPatternIndex == 0) {
-                              if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_INTENSITY", ref triggerDevice.RotateMotorsIntensity[motorId], 0, 100)) {
-                                if(triggerDevice.RotateMotorsIntensity[motorId] > 0) {
-                                  triggerDevice.RotateSelectedMotors[motorId] = true;
-                                }
-                                this.Configuration.Save();
-                              }
-                            }
+                            ImGui.Text($"Motor {motorId + 1 } rotation:");
+                            ImGui.SetNextItemWidth(250);
                             if(ImGui.InputInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_DURATION", ref triggerDevice.LinearMotorsDuration[motorId])) {
                               if(!triggerDevice.LinearSelectedMotors[motorId]) {
                                 triggerDevice.LinearMotorsDuration[motorId] = 0;
@@ -745,7 +745,8 @@ namespace FFXIV_Vibe_Plugin {
                               }
                             }
                           }
-                        
+                          
+                          
                         }
                       }
                       ImGui.Indent(-20);
