@@ -56,6 +56,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     private void SetCommands() {
+      if(this.ButtplugClientDevice == null) { return; }
       foreach(var cmd in this.ButtplugClientDevice.AllowedMessages) {
         if(cmd.Key == ServerMessage.Types.MessageAttributeType.VibrateCmd) {
           this.CanVibrate = true;
@@ -119,6 +120,7 @@ namespace FFXIV_Vibe_Plugin.Device {
 
 
     public double UpdateBatteryLevel() {
+      if(this.ButtplugClientDevice == null) { return 0; }
       if(!CanBattery) {return -1; }
       Task<double> batteryLevelTask = this.ButtplugClientDevice.SendBatteryLevelCmd();
       batteryLevelTask.Wait();
@@ -131,6 +133,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void Stop() {
+      if(this.ButtplugClientDevice == null) { return; }
       if(CanVibrate) {
         this.ButtplugClientDevice.SendVibrateCmd(0);
       }
@@ -144,6 +147,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendVibrate(int intensity, int motorId=-1, int threshold=100) {
+      if(this.ButtplugClientDevice == null) { return; }
       if(!CanVibrate || !IsConnected) return;
       Dictionary<uint, double> motorIntensity = new();
       for(int i=0; i < this.VibrateMotors; i++) {

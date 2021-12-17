@@ -51,7 +51,6 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private readonly Triggers.Controller TriggersController;
-    private SortedSet<Triggers.ChatTrigger> ChatTriggers = new();
 
     // Experiments
     private readonly NetworkCapture experiment_networkCapture;

@@ -45,11 +45,11 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         if(!trigger.Enabled) { continue; }
 
         // Ignore if the player name is not authorized
-        if(!this.RegExpMatch(ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
+        if(!Helpers.RegExpMatch(this.Logger, ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
 
         // Check if the KIND of the trigger is a chat and if it matches
         if(trigger.Kind == (int)KIND.Chat) {
-          if(this.RegExpMatch(ChatMsg, trigger.ChatText)){
+          if(Helpers.RegExpMatch(this.Logger, ChatMsg, trigger.ChatText)){
             triggers.Add(trigger);
           }
         }
@@ -67,11 +67,11 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         if(!trigger.Enabled) { continue; }
 
         // Ignore if the player name is not authorized
-        if(!this.RegExpMatch(spell.Player.Name, trigger.FromPlayerName)) { continue; }
+        if(!Helpers.RegExpMatch(this.Logger, spell.Player.Name, trigger.FromPlayerName)) { continue; }
 
         if(trigger.Kind == (int)KIND.Spell) {
           
-          if(!this.RegExpMatch(spellName, trigger.SpellText)) { continue; }
+          if(!Helpers.RegExpMatch(this.Logger, spellName, trigger.SpellText)) { continue; }
 
           if(trigger.ActionEffectType != (int)Structures.ActionEffectType.Nothing && trigger.ActionEffectType != (int)spell.ActionEffectType) {
             continue;
@@ -93,32 +93,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       return triggers;
     }
 
-    public void ExecuteTrigger(Trigger trigger) {
-      if(trigger != null) {
-        this.Logger.Log($"CHAT_TRIGGER:{trigger.Name}");
-        //this.DeviceController.SendVibeToAll(0);
-      }
-    }
 
-    public bool RegExpMatch(string text, string regexp) {
-      bool found = false;
-
-      if(regexp.Trim() == "") {
-        found = true;
-      } else {
-        string patternCheck = String.Concat(@"", regexp);
-          try {
-            Match m = Regex.Match(text, patternCheck, RegexOptions.IgnoreCase);
-            if(m.Success) {
-              found = true;
-            }
-          } catch(Exception) {
-            this.Logger.Error($"Probably a wrong REGEXP for {regexp}");
-          }
-        }
-
-      return found;
-    }
 
 
     public FFXIV_Vibe_Plugin.Triggers.DIRECTION GetSpellDirection(Structures.Spell spell) {
