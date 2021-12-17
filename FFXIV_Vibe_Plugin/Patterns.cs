@@ -12,7 +12,7 @@ namespace FFXIV_Vibe_Plugin {
 
     public Patterns() {
       this.Add(new Pattern("intensity", "")); // Special pattern
-      this.Add(new Pattern("otherPattern", "10:500|20:500|0:0"));
+      this.Add(new Pattern("bump", "10:500|20:1000|0:0"));
     }
 
     public List<Pattern> Get() {
