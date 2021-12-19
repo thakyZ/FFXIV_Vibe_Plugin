@@ -236,18 +236,11 @@ namespace FFXIV_Vibe_Plugin.Device{
             for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
-                int motorIntensity = triggerDevice.VibrateMotorsThreshold[motorId];
+                int motorThreshold = triggerDevice.VibrateMotorsThreshold[motorId];
+                int motorPatternId = triggerDevice.VibrateMotorsPattern[motorId];
                 if(motorEnabled) {
-                  if(triggerDevice.VibrateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensity}!");
-                    this.SendVibrate(device, motorIntensity, motorId);
-                  } else {
-                    // WIP
-                    int patternId = triggerDevice.VibrateMotorsPattern[motorId];
-                    Pattern pattern = Patterns.Get(patternId);
-                    // TODO: this.SendVibratePattern(device, "vibrate", pattern, motorId);
-                    this.Logger.Debug($"Sending {device.Name} vibration pattern {patternId}:{pattern.Name}:{pattern.Value} to motor {motorId}");
-                  }
+                  this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
+                  this.SendVibrate(device, motorThreshold, motorId);
                 }
               }
             }
@@ -256,11 +249,12 @@ namespace FFXIV_Vibe_Plugin.Device{
             for(int motorId = 0; motorId < triggerDevice.RotateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.RotateSelectedMotors != null && triggerDevice.RotateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
-                int motorIntensitiy = triggerDevice.RotateMotorsThreshold[motorId];
+                int motorThreshold = triggerDevice.RotateMotorsThreshold[motorId];
+                int motorPatternId = triggerDevice.RotateMotorsPattern[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
-                    this.SendRotate(device, motorIntensitiy, motorId);
+                    this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
+                    this.SendRotate(device, motorThreshold, motorId);
                   } else {
                     // TODO: use pattern !!!
                   }
@@ -272,12 +266,13 @@ namespace FFXIV_Vibe_Plugin.Device{
             for(int motorId = 0; motorId < triggerDevice.LinearSelectedMotors?.Length; motorId++) {
               if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
-                int motorIntensitiy = triggerDevice.LinearMotorsThreshold[motorId];
-                int motorDuration = triggerDevice.LinearMotorsDuration[motorId];
+                int motorThreshold = triggerDevice.LinearMotorsThreshold[motorId];
+                int motorDuration = 500;
+                int motorPatternId = triggerDevice.LinearMotorsPattern[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}, duration: {motorDuration}!");
-                    this.SendLinear(device, motorIntensitiy, motorDuration, motorId);
+                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
+                    this.SendLinear(device, motorThreshold, motorDuration, motorId);
                   } else {
                     // TODO: use pattern !!!
                   }
