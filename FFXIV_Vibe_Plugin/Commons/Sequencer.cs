@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FFXIV_Vibe_Plugin.Commons {
@@ -9,13 +10,24 @@ namespace FFXIV_Vibe_Plugin.Commons {
     private readonly Logger Logger;
     private List<SequencerTask> SequencerTasks = new();
 
-    private readonly bool playSequence = true;
+    
+
+    private readonly Thread CurrentThread;
+    private bool CurrentThreadRun = true;
+
+
 
     public Sequencer(Logger logger) {
       this.Logger = logger;
+      this.CurrentThread = new Thread(new ThreadStart(this.ExecuteTask));
+      this.CurrentThread.Start();
     }
 
-    public void RunSequencer(List<SequencerTask> sequencerTasks) {
+    public void Run() {
+
+
+
+      /*
       if(sequencerTasks != null) {
         this.SequencerTasks = sequencerTasks;
       }
@@ -33,8 +45,8 @@ namespace FFXIV_Vibe_Plugin.Commons {
           if(task == "connect") {
             //this.DeviceController.Connect();
           } else if(task == "buttplug_sendVibe") {
-            /*float intensity = float.Parse(param1);
-            this.DeviceController.SendVibeToAll(intensity);*/
+            //float intensity = float.Parse(param1);
+            //this.DeviceController.SendVibeToAll(intensity);
           } else if(task == "print") {
             this.Logger.Chat(param1);
           } else if(task == "print_debug") {
@@ -50,9 +62,25 @@ namespace FFXIV_Vibe_Plugin.Commons {
           this.SequencerTasks[0]._startedTime = 0;
           this.SequencerTasks.RemoveAt(0);
         }
-      }
+      }*/
+
+     
     }
+
+    private void ExecuteTask() {
+      while(this.CurrentThreadRun) {
+        this.Logger.Debug("Thread running");
+        Thread.Sleep(5000);
+      }
+      this.Logger.Debug("Thread stopped");
+    }
+
+    public void Dispose() {
+      this.CurrentThreadRun = false;
+    }
+
   }
+
 
   /** A task that can be executed by the Sequencer */
   public class SequencerTask {
