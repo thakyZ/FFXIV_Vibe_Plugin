@@ -11,9 +11,11 @@ namespace FFXIV_Vibe_Plugin {
     private readonly List<Pattern> List = new();
 
     public Patterns() {
-      this.Add(new Pattern("intensity", "")); // Special pattern
+      
+      this.Add(new Pattern("intensity", "5:0")); // TODO: change 5 to 100 and use threshold
       this.Add(new Pattern("bump", "10:500|20:1000|0:0"));
       this.Add(new Pattern("xenoWave", "10:650|15:500|20:400|30:400|45:350|60:300|75:300|95:250|100:200|90:250|75:300|60:300|45:350|30:400|20:400|15:500|10:650|5:750|0:0"));
+      this.Add(new Pattern("test of pattern for debugging", "10:1000|20:1000|0:0"));
     }
 
     public List<Pattern> GetAll() {

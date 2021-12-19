@@ -40,11 +40,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public float StartAfter = 0;
     public float StopAfter = 0;
 
-    // Device
+    // Devices associated with this trigger
     public List<TriggerDevice> Devices = new();
-
-    // TODO: implement patter
-    private string pattern = "default";
 
     public Trigger(string name) {
       this.Id = Guid.NewGuid().ToString();
@@ -89,18 +86,17 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     // Vibrate states per motor
     public bool[] VibrateSelectedMotors;
-    public int[] VibrateMotorsIntensity;
+    public int[] VibrateMotorsThreshold;
     public int[] VibrateMotorsPattern;
 
     // Rotate states per motor
     public bool[] RotateSelectedMotors;
-    public int[] RotateMotorsIntensity;
+    public int[] RotateMotorsThreshold;
     public int[] RotateMotorsPattern;
 
     // Linear states per motor
     public bool[] LinearSelectedMotors;
-    public int[] LinearMotorsIntensity;
-    public int[] LinearMotorsDuration;
+    public int[] LinearMotorsThreshold;
     public int[] LinearMotorsPattern;
 
     public TriggerDevice(Device.Device device) {
@@ -109,18 +105,17 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
       // Init vibration array
       this.VibrateSelectedMotors = new bool[device.CanVibrate ? device.VibrateMotors : 0];
-      this.VibrateMotorsIntensity = new int[device.CanVibrate ? device.VibrateMotors : 0];
+      this.VibrateMotorsThreshold = new int[device.CanVibrate ? device.VibrateMotors : 0];
       this.VibrateMotorsPattern = new int[device.CanVibrate ? device.VibrateMotors : 0];
 
       // Init rotate array
       this.RotateSelectedMotors = new bool[device.CanRotate ? device.RotateMotors : 0];
-      this.RotateMotorsIntensity = new int[device.CanRotate ? device.RotateMotors : 0];
+      this.RotateMotorsThreshold = new int[device.CanRotate ? device.RotateMotors : 0];
       this.RotateMotorsPattern = new int[device.CanRotate ? device.RotateMotors : 0];
 
       // Init linear array
       this.LinearSelectedMotors = new bool[device.CanLinear ? device.LinearMotors : 0];
-      this.LinearMotorsIntensity = new int[device.CanLinear ? device.LinearMotors : 0];
-      this.LinearMotorsDuration = new int[device.CanLinear ? device.LinearMotors : 0];
+      this.LinearMotorsThreshold = new int[device.CanLinear ? device.LinearMotors : 0];
       this.LinearMotorsPattern = new int[device.CanLinear ? device.LinearMotors : 0];
     }
 
