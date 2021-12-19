@@ -18,9 +18,12 @@ namespace FFXIV_Vibe_Plugin.Device{
     private readonly Logger Logger;
     private readonly Configuration Configuration;
     private readonly Patterns Patterns;
-    
-    // TODO:
-    private readonly Sequencer Sequencer;
+
+    /**
+     * State of the current device and motor when it started to play as a unix timestamp.
+     * This is used to detect if a thread that runs a pattern should stop
+     */
+    private readonly Dictionary<string, int> CurrentDeviceAndMotorPlaying = new();
     
     // Buttplug related
     private ButtplugClient? ButtplugClient;
@@ -31,11 +34,10 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Internal variables
     private readonly static Mutex mut = new();
 
-    public DevicesController(Logger logger, Configuration configuration, Sequencer sequencer, Patterns patterns) {
+    public DevicesController(Logger logger, Configuration configuration, Patterns patterns) {
       this.Logger = logger;
       this.Configuration = configuration;
       this.VisitedDevices = configuration.VISITED_DEVICES;
-      this.Sequencer = sequencer;
       this.Patterns = patterns;
     }
 
@@ -315,16 +317,21 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void SendVibratePattern(Device device, int threshold, int motorId=-1, int patternId=0, float StartAfter=0) {
-      
+      this.SaveCurrentMotorAndDevicePlayingState(device, motorId);
       Pattern pattern = Patterns.Get(patternId);
       
       string[] patternSegments = pattern.Value.Split("|");
       this.Logger.Log($"Sending vibrate pattern={pattern.Name} ({patternSegments.Length} segments)");
-      new Thread(delegate () {
-        Thread.Sleep((int)StartAfter*1000);
+      Thread t = new Thread(delegate () {
+        string deviceAndMotorId = $"{device.Name}:{motorId}";
+        int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
+        Thread.Sleep((int)StartAfter * 1000);
         for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
-          
-          // TODO: how to stop previous pattern ????
+
+          // Stop exectution if a new pattern is send to the same device and motor.
+          if(startedUnixTime != this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
+            break;
+          }
 
           string patternSegment = patternSegments[segIndex];
           string[] patternValues = patternSegment.Split(":");
@@ -333,8 +340,10 @@ namespace FFXIV_Vibe_Plugin.Device{
           this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
           this.SendVibrate(device, intensity, motorId);
           Thread.Sleep(duration);
+          
         }
-      }).Start();
+      });
+      t.Start();
     }
 
     public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
@@ -342,9 +351,8 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void SendRotatePattern(Device device, int threshold, int motorId = -1, int patternId=0) {
-      
       this.SendRotate(device, threshold, motorId);
-      this.Logger.Log("Sending pattern rotate");
+      this.Logger.Log("TODO: Sending pattern rotate");
     }
 
     public void SendLinear(Device device, int intensity, int motorId = -1, int duration = 500) {
@@ -353,48 +361,27 @@ namespace FFXIV_Vibe_Plugin.Device{
 
     public void SendLinearPattern(Device device, int threshold, int motorId = -1, int patternId = 0) {
       this.SendLinear(device, threshold, motorId);
-      this.Logger.Log("Sending pattern linear");
+      this.Logger.Log("TODO: Sending pattern linear");
     }
 
     public static void SendStop(Device device) {
       device.Stop();
     }
 
-    public void SendVibratePattern(Triggers.Trigger trigger) {
-      this.Logger.Log($"Adding trigger task: {trigger}");
+    private void SaveCurrentMotorAndDevicePlayingState(Device device, int motorId) {
+      string deviceAndMotorId = $"{device.Name}:{motorId}";
+      this.CurrentDeviceAndMotorPlaying[deviceAndMotorId] = Helpers.GetUnix();
     }
-
-
 
 
 
     /************ LEGACY ************/
 
     public void Play_PatternShake(float from) {
-      /* TODO:PatternShake
-      this.sequencerTasks = new();
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 2}", 700));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
-      */
+
     }
 
     public void Play_PatternMountain(float from) {
-      /* TODO: PatternMountain
-      this.sequencerTasks = new();
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 1.5}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2.5}", 600));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));*/
     }
   }
 

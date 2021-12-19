@@ -52,7 +52,6 @@ namespace FFXIV_Vibe_Plugin {
     private readonly Device.DevicesController DeviceController;
     private readonly Triggers.TriggersController TriggersController;
     private readonly Patterns Patterns;
-    private readonly Sequencer Sequencer;
 
     // Experiments
     private readonly NetworkCapture experiment_networkCapture;
@@ -103,14 +102,11 @@ namespace FFXIV_Vibe_Plugin {
       PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
       PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
-      // Sequencer
-      this.Sequencer = new Sequencer(this.Logger);
-
       // Patterns
       this.Patterns = new Patterns();
 
       // Initialize the devices Controller
-      this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.Sequencer, this.Patterns);
+      this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.Patterns);
       if(this.Configuration.AUTO_CONNECT) {
         Task.Delay(2000);
         this.Command_DeviceController_Connect();
@@ -136,7 +132,6 @@ namespace FFXIV_Vibe_Plugin {
 
     public void Dispose() {
       this.Logger.Debug("Disposing plugin...");
-      this.Sequencer.Dispose();
 
       // Cleaning device controller.
       if(this.DeviceController != null) {
