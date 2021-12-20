@@ -414,7 +414,7 @@ namespace FFXIV_Vibe_Plugin {
         } else if(this.triggersViewMode == "edit") {
           if(this.SelectedTrigger != null) {
 
-            ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
+            ImGui.TextColored(ImGuiColors.DalamudRed, "Experimental/Testing phase");
 
             // Init table
             int COLUMN0_WIDTH = 120;
