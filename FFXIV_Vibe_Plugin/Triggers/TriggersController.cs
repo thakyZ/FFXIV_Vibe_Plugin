@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Dalamud.Game.Text;
+
 using FFXIV_Vibe_Plugin.Triggers;
 using FFXIV_Vibe_Plugin.Commons;
 using System.Text.RegularExpressions;
@@ -35,7 +37,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Triggers.Remove(trigger);
     }
     
-    public List<Trigger> CheckTrigger_Chat(string ChatFromPlayerName, string ChatMsg) {
+    public List<Trigger> CheckTrigger_Chat(XivChatType chatType, string ChatFromPlayerName, string ChatMsg) {
       List<Trigger> triggers = new();
       ChatFromPlayerName = ChatFromPlayerName.Trim().ToLower();
       for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) {
@@ -46,6 +48,9 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
         // Ignore if the player name is not authorized
         if(!Helpers.RegExpMatch(this.Logger, ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
+        if(trigger.AllowedChatTypes.Count > 0 && !trigger.AllowedChatTypes.Any(ct => ct == (int)chatType)) {
+          continue;
+        }
 
         // Check if the KIND of the trigger is a chat and if it matches
         if(trigger.Kind == (int)KIND.Chat) {

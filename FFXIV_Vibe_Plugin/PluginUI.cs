@@ -8,6 +8,8 @@ using Dalamud.Interface.Components;
 using System.Collections.Generic;
 using System.Linq;
 
+using Dalamud.Game.Text;
+
 using FFXIV_Vibe_Plugin.Commons;
 using FFXIV_Vibe_Plugin.UIComponents;
 
@@ -540,35 +542,40 @@ namespace FFXIV_Vibe_Plugin {
 
               // TRIGGER CHAT_TEXT_TYPE_ALLOWED
               ImGui.TableNextColumn();
-              ImGui.Text("WIP Chat type:");
+              ImGui.Text("Add chat type:");
               ImGui.TableNextColumn();
               int currentTypeAllowed = 0;
-              string[] ChatTypesAllowedStrings = Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType));
+              string[] ChatTypesAllowedStrings = Enum.GetNames(typeof(XivChatType));
               if(ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref currentTypeAllowed, ChatTypesAllowedStrings, ChatTypesAllowedStrings.Length)) {
                 if(!this.SelectedTrigger.AllowedChatTypes.Contains(currentTypeAllowed)) {
-                  this.SelectedTrigger.AllowedChatTypes.Add(currentTypeAllowed);
+                  int XivChatTypeValue = (int)(XivChatType)Enum.Parse(typeof(XivChatType), ChatTypesAllowedStrings[currentTypeAllowed]);
+                  this.SelectedTrigger.AllowedChatTypes.Add(XivChatTypeValue);
                 }
                 this.Configuration.Save();
               }
+              ImGuiComponents.HelpMarker("Select some chats to observe or unselect all to watch every chats.");
               ImGui.TableNextRow();
 
-              // TODO: debug me
-              /*
-              ImGui.TableNextColumn();
-              ImGui.Text("Allowed Type:");
-              ImGui.TableNextColumn();
-              for(int indexAllowedChatType = 0; indexAllowedChatType < this.SelectedTrigger.AllowedChatTypes.Count; indexAllowedChatType++){
-                int chatIndex = this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType];
-                if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Minus)) {
-                  this.Logger.Debug(chatIndex.ToString());
-                  this.SelectedTrigger.AllowedChatTypes.RemoveAt(indexAllowedChatType);
-                  this.Configuration.Save();
-                };
-                ImGui.SameLine();
-                ImGui.Text($"{this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType]}");
+              if(this.SelectedTrigger.AllowedChatTypes.Count > 0) {
+                
+                ImGui.TableNextColumn();
+                ImGui.Text("Allowed Type:");
+                ImGui.TableNextColumn();
+                for(int indexAllowedChatType = 0; indexAllowedChatType < this.SelectedTrigger.AllowedChatTypes.Count; indexAllowedChatType++) {
+                  int XivChatTypeValue = this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType];
+                  if(ImGuiComponents.IconButton(indexAllowedChatType, Dalamud.Interface.FontAwesomeIcon.Minus)) {
+                    this.Logger.Debug(XivChatTypeValue.ToString());
+                    this.SelectedTrigger.AllowedChatTypes.RemoveAt(indexAllowedChatType);
+                    this.Configuration.Save();
+                  };
+                  ImGui.SameLine();
+                  string XivChatTypeName = ((XivChatType)XivChatTypeValue).ToString();
+                  ImGui.Text($"{XivChatTypeName}");
+
+                }
+                ImGui.TableNextRow();
               }
-              ImGui.TableNextRow();
-              */
+              
 
               // END OF TABLE
               ImGui.EndTable();
