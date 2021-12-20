@@ -229,7 +229,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendTrigger(Triggers.Trigger trigger) {
-      this.Logger.Log($"Sending trigger {trigger}");
+      this.Logger.Debug($"Sending trigger {trigger}");
       foreach(Triggers.TriggerDevice triggerDevice in trigger.Devices) {
         Device? device = this.FindDevice(triggerDevice.Name);
         if(device != null && triggerDevice != null) {
