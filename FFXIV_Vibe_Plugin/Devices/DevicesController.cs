@@ -13,7 +13,7 @@ using FFXIV_Vibe_Plugin.Commons;
 using Buttplug;
 #endregion
 
-namespace FFXIV_Vibe_Plugin.Device{
+namespace FFXIV_Vibe_Plugin.Device {
   internal class DevicesController {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
@@ -24,7 +24,7 @@ namespace FFXIV_Vibe_Plugin.Device{
      * This is used to detect if a thread that runs a pattern should stop
      */
     private readonly Dictionary<string, int> CurrentDeviceAndMotorPlaying = new();
-    
+
     // Buttplug related
     private ButtplugClient? ButtplugClient;
     private readonly List<Device> Devices = new();
@@ -46,44 +46,44 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void Connect(String host, int port) {
-        if(this.IsConnected()) {
-          this.Logger.Debug("Disconnecting previous instance! Waiting 2sec...");
-          this.Disconnect();
-          Thread.Sleep(200);
-        }
-
-        try {
-          this.ButtplugClient = new("buttplugtriggers-dalamud");
-        } catch(Exception e) {
-          this.Logger.Error($"Can't load buttplug.io.", e);
-          return;
-        }
-        this.ButtplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
-        this.ButtplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
-        this.ButtplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
-        this.ButtplugClient.ScanningFinished += ButtplugClient_OnScanComplete;
-        string hostandport = host + ":" + port.ToString();
-        
-
-        try {
-          var uri = new Uri($"ws://{hostandport}/buttplug");
-          var connector = new ButtplugWebsocketConnectorOptions(uri);
-          this.Logger.Log($"Connecting to {hostandport}.");
-          Task task = this.ButtplugClient.ConnectAsync(connector);
-          task.Wait();
-          this.ScanDevice();
-        } catch(Exception e) {
-          this.Logger.Error($"Could not connect to {hostandport}.", e);
-        }
-
+      if(this.IsConnected()) {
+        this.Logger.Debug("Disconnecting previous instance! Waiting 2sec...");
+        this.Disconnect();
         Thread.Sleep(200);
+      }
 
-        if(this.ButtplugClient.Connected) {
-          this.Logger.Log($"FVP connected to Intiface!");
-        } else {
-          this.Logger.Error("Failed connecting (Intiface server is up?)");
-          return;
-        }
+      try {
+        this.ButtplugClient = new("buttplugtriggers-dalamud");
+      } catch(Exception e) {
+        this.Logger.Error($"Can't load buttplug.io.", e);
+        return;
+      }
+      this.ButtplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
+      this.ButtplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
+      this.ButtplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
+      this.ButtplugClient.ScanningFinished += ButtplugClient_OnScanComplete;
+      string hostandport = host + ":" + port.ToString();
+
+
+      try {
+        var uri = new Uri($"ws://{hostandport}/buttplug");
+        var connector = new ButtplugWebsocketConnectorOptions(uri);
+        this.Logger.Log($"Connecting to {hostandport}.");
+        Task task = this.ButtplugClient.ConnectAsync(connector);
+        task.Wait();
+        this.ScanDevice();
+      } catch(Exception e) {
+        this.Logger.Error($"Could not connect to {hostandport}.", e);
+      }
+
+      Thread.Sleep(200);
+
+      if(this.ButtplugClient.Connected) {
+        this.Logger.Log($"FVP connected to Intiface!");
+      } else {
+        this.Logger.Error("Failed connecting (Intiface server is up?)");
+        return;
+      }
     }
 
     private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
@@ -100,7 +100,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public void ScanDevice() {
-      if(this.ButtplugClient == null) { return;  }
+      if(this.ButtplugClient == null) { return; }
       this.Logger.Debug("Scanning for devices...");
       if(this.IsConnected()) {
         try {
@@ -113,7 +113,7 @@ namespace FFXIV_Vibe_Plugin.Device{
           this.Logger.Error(e.Message);
         }
       }
-      
+
     }
     public bool IsScanning() {
       return this.isScanning;
@@ -205,7 +205,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         this.Logger.Error("Error while disconnecting client", e);
       }
       this.ButtplugClient = null;
- 
+
     }
 
     public List<Device> GetDevices() {
@@ -233,7 +233,7 @@ namespace FFXIV_Vibe_Plugin.Device{
       foreach(Triggers.TriggerDevice triggerDevice in trigger.Devices) {
         Device? device = this.FindDevice(triggerDevice.Name);
         if(device != null && triggerDevice != null) {
-          
+
           if(triggerDevice.ShouldVibrate) {
             for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsThreshold != null) {
@@ -241,9 +241,10 @@ namespace FFXIV_Vibe_Plugin.Device{
                 int motorThreshold = triggerDevice.VibrateMotorsThreshold[motorId];
                 int motorPatternId = triggerDevice.VibrateMotorsPattern[motorId];
                 float startAfter = trigger.StartAfter;
+                float stopAfter = trigger.StopAfter;
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                  this.SendVibratePattern(device, motorThreshold, motorId, motorPatternId, startAfter);
+                  this.SendPattern("vibrate", device, motorThreshold, motorId, motorPatternId, startAfter, stopAfter);
                 }
               }
             }
@@ -254,9 +255,11 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
                 int motorThreshold = triggerDevice.RotateMotorsThreshold[motorId];
                 int motorPatternId = triggerDevice.RotateMotorsPattern[motorId];
+                float startAfter = trigger.StartAfter;
+                float stopAfter = trigger.StopAfter;
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                  this.SendRotatePattern(device, motorThreshold, motorId, motorPatternId);
+                  this.SendPattern("rotate", device, motorThreshold, motorId, motorPatternId, startAfter, stopAfter);
                 }
               }
             }
@@ -266,15 +269,12 @@ namespace FFXIV_Vibe_Plugin.Device{
               if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
                 int motorThreshold = triggerDevice.LinearMotorsThreshold[motorId];
-                int motorDuration = 500;
                 int motorPatternId = triggerDevice.LinearMotorsPattern[motorId];
+                float startAfter = trigger.StartAfter;
+                float stopAfter = trigger.StopAfter;
                 if(motorEnabled) {
-                  if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                    this.SendLinear(device, motorThreshold, motorDuration, motorId);
-                  } else {
-                    // TODO: use pattern !!!
-                  }
+                  this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
+                  this.SendPattern("linear", device, motorThreshold, motorId, motorPatternId);
                 }
               }
             }
@@ -306,22 +306,22 @@ namespace FFXIV_Vibe_Plugin.Device{
       if(this.IsConnected() && this.ButtplugClient != null) {
         foreach(Device device in this.Devices) {
           device.SendVibrate(intensity, -1, this.Configuration.MAX_VIBE_THRESHOLD);
-          device.SendRotate(intensity, true, -1 , this.Configuration.MAX_VIBE_THRESHOLD);
+          device.SendRotate(intensity, true, -1, this.Configuration.MAX_VIBE_THRESHOLD);
           device.SendLinear(intensity, 500, -1, this.Configuration.MAX_VIBE_THRESHOLD);
         }
       }
     }
 
-    public void SendVibrate(Device device, int intensity, int motorId=-1) {
+    public void SendVibrate(Device device, int intensity, int motorId = -1) {
       device.SendVibrate(intensity, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 
-    public void SendVibratePattern(Device device, int threshold, int motorId=-1, int patternId=0, float StartAfter=0) {
+    public void SendPattern(string command, Device device, int threshold, int motorId = -1, int patternId = 0, float StartAfter = 0, float StopAfter = 0) {
       this.SaveCurrentMotorAndDevicePlayingState(device, motorId);
       Pattern pattern = Patterns.Get(patternId);
-      
+
       string[] patternSegments = pattern.Value.Split("|");
-      this.Logger.Log($"Sending vibrate pattern={pattern.Name} ({patternSegments.Length} segments)");
+      this.Logger.Log($"Sending {command} pattern={pattern.Name} ({patternSegments.Length} segments)");
       Thread t = new Thread(delegate () {
         string deviceAndMotorId = $"{device.Name}:{motorId}";
         int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
@@ -333,35 +333,47 @@ namespace FFXIV_Vibe_Plugin.Device{
             break;
           }
 
+
           string patternSegment = patternSegments[segIndex];
           string[] patternValues = patternSegment.Split(":");
           int intensity = Helpers.ClampIntensity(Int32.Parse(patternValues[0]), threshold);
           int duration = Int32.Parse(patternValues[1]);
-          this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
-          this.SendVibrate(device, intensity, motorId);
-          Thread.Sleep(duration);
+          //this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
           
+          // Stop after and send 0 intensity
+          if(StopAfter > 0 && StopAfter * 1000 + startedUnixTime < Helpers.GetUnix()) {
+            this.SendCommand(command, device, 0, motorId, duration);
+            this.Logger.Debug("SHOULD STOPPPPP");
+            break;
+          }
+
+          // Send the command \o/
+          this.SendCommand(command, device, intensity, motorId, duration);
+
+          
+          Thread.Sleep(duration);
+
         }
       });
       t.Start();
+    }
+
+    public void SendCommand(string command, Device device, int intensity, int motorId, int duration) {
+      if(command == "vibrate") {
+        this.SendVibrate(device, intensity, motorId);
+      } else if(command == "rotate") {
+        this.SendRotate(device, intensity, motorId);
+      } else if(command == "linear") {
+        this.SendLinear(device, intensity, motorId, duration);
+      }
     }
 
     public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
       device.SendRotate(intensity, clockwise, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 
-    public void SendRotatePattern(Device device, int threshold, int motorId = -1, int patternId=0) {
-      this.SendRotate(device, threshold, motorId);
-      this.Logger.Log("TODO: Sending pattern rotate");
-    }
-
     public void SendLinear(Device device, int intensity, int motorId = -1, int duration = 500) {
       device.SendLinear(intensity, duration, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
-    }
-
-    public void SendLinearPattern(Device device, int threshold, int motorId = -1, int patternId = 0) {
-      this.SendLinear(device, threshold, motorId);
-      this.Logger.Log("TODO: Sending pattern linear");
     }
 
     public static void SendStop(Device device) {
@@ -384,8 +396,4 @@ namespace FFXIV_Vibe_Plugin.Device{
     public void Play_PatternMountain(float from) {
     }
   }
-
-
-
-
 }
