@@ -387,15 +387,19 @@ namespace FFXIV_Vibe_Plugin {
             if(kindStr != null) {
               kindStr = kindStr.ToUpper();
             }
-            string triggerName = $"{enabled}[{ kindStr}] {trigger.Name}###{ trigger.Id}";
+            string triggerName = $"{enabled}[{ kindStr}] {trigger.Name}";
+            string triggerNameWithId = $"{triggerName}###{ trigger.Id}";
             if(!Helpers.RegExpMatch(this.Logger, triggerName, this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR)) {
               continue;
             }
-            
-            if(ImGui.Selectable($"{triggerName}", selectedId == trigger.Id)) { // We don't want to show the ID
+            if(ImGui.Selectable($"{triggerNameWithId}", selectedId == trigger.Id)) { // We don't want to show the ID
               this.SelectedTrigger = trigger;
               this.triggersViewMode = "edit";
             }
+            if(ImGui.IsItemHovered()) {
+              ImGui.SetTooltip($"{triggerName}");
+            }
+            
           }
         }
         ImGui.EndChild();
@@ -515,6 +519,7 @@ namespace FFXIV_Vibe_Plugin {
 
             // TRIGGER KIND:CHAT OPTIONS
             if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Chat) {
+
               // TRIGGER FORM_TABLE_KIND_CHAT
               ImGui.BeginTable("###TRIGGER_FORM_TABLE_KIND_CHAT", 2);
               ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_CHAT_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
@@ -531,6 +536,15 @@ namespace FFXIV_Vibe_Plugin {
               };
               ImGui.SameLine();
               ImGuiComponents.HelpMarker("You can use RegExp.");
+              ImGui.TableNextRow();
+
+              // TRIGGER CHAT_TEXT_TYPE_ALLOWED
+              ImGui.TableNextColumn();
+              ImGui.Text("WIP Chat type:");
+              ImGui.TableNextColumn();
+              int tmp_currentTypeAllowed = 0;
+              string[] tmp_TypesAllowed = Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType));
+              ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref tmp_currentTypeAllowed, tmp_TypesAllowed, tmp_TypesAllowed.Length);
               ImGui.TableNextRow();
 
               // END OF TABLE
