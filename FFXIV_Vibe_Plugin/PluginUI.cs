@@ -469,14 +469,14 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(185);
             if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StartAfter = Helpers.ClampInt((int)this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
               this.Configuration.Save();
             }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(45);
 
             if(ImGui.InputFloat("###TRIGGER_FORM_START_AFTER_INPUT", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StartAfter = Helpers.ClampInt((int)this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
               this.Configuration.Save();
             }
             ImGui.SameLine();
@@ -489,13 +489,13 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(185);
             if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StopAfter = Helpers.ClampInt((int)this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
               this.Configuration.Save();
             }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(45);
             if(ImGui.InputFloat("###TRIGGER_FORM_STOP_AFTER_INPUT", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StopAfter = Helpers.ClampInt((int)this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
               this.Configuration.Save();
             }
             ImGui.SameLine();
