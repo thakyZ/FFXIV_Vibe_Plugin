@@ -323,9 +323,25 @@ namespace FFXIV_Vibe_Plugin.Device {
 
       string[] patternSegments = pattern.Value.Split("|");
       this.Logger.Log($"Sending {command} pattern={pattern.Name} ({patternSegments.Length} segments)");
+      
+      string deviceAndMotorId = $"{device.Name}:{motorId}";
+      int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
+
+      // Make sure things stops by sending zero
+      bool forceStop = false;
+      Thread tStopAfter = new Thread(delegate () {
+        Thread.Sleep((int)StopAfter * 1000);
+        if(startedUnixTime == this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
+          forceStop = true;
+          this.SendCommand(command, device, 0, motorId);
+          this.Logger.Debug($"Force stoping {deviceAndMotorId} because of StopAfter={StopAfter}");
+        }
+      });
+      tStopAfter.Start();
+
       Thread t = new Thread(delegate () {
-        string deviceAndMotorId = $"{device.Name}:{motorId}";
-        int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
+        
+        
         Thread.Sleep((int)StartAfter * 1000);
         for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
 
@@ -334,7 +350,6 @@ namespace FFXIV_Vibe_Plugin.Device {
             break;
           }
 
-
           string patternSegment = patternSegments[segIndex];
           string[] patternValues = patternSegment.Split(":");
           int intensity = Helpers.ClampIntensity(Int32.Parse(patternValues[0]), threshold);
@@ -342,7 +357,7 @@ namespace FFXIV_Vibe_Plugin.Device {
           //this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
           
           // Stop after and send 0 intensity
-          if(StopAfter > 0 && StopAfter * 1000 + startedUnixTime < Helpers.GetUnix()) {
+          if(forceStop || (StopAfter > 0 && StopAfter * 1000 + startedUnixTime < Helpers.GetUnix())) {
             this.SendCommand(command, device, 0, motorId, duration);
             this.Logger.Debug("SHOULD STOPPPPP");
             break;
@@ -359,7 +374,7 @@ namespace FFXIV_Vibe_Plugin.Device {
       t.Start();
     }
 
-    public void SendCommand(string command, Device device, int intensity, int motorId, int duration) {
+    public void SendCommand(string command, Device device, int intensity, int motorId, int duration=500) {
       if(command == "vibrate") {
         this.SendVibrate(device, intensity, motorId);
       } else if(command == "rotate") {
