@@ -275,7 +275,7 @@ namespace FFXIV_Vibe_Plugin.Device {
                 float stopAfter = trigger.StopAfter;
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                  this.SendPattern("linear", device, motorThreshold, motorId, motorPatternId);
+                  this.SendPattern("linear", device, motorThreshold, motorId, motorPatternId, startAfter, stopAfter);
                 }
               }
             }
