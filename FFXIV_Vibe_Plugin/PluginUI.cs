@@ -160,19 +160,17 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.EndTabItem();
           }
 
-          if(this.DeviceController.IsConnected()) {
-            if(ImGui.BeginTabItem("Options")) {
-              this.DrawOptionsTab();
-              ImGui.EndTabItem();
-            }
-            if(ImGui.BeginTabItem("Devices")) {
-              this.DrawDevicesTab();
-              ImGui.EndTabItem();
-            }
-            if(ImGui.BeginTabItem("Triggers")) {
-              this.DrawTriggersTab();
-              ImGui.EndTabItem();
-            }
+          if(ImGui.BeginTabItem("Options")) {
+            this.DrawOptionsTab();
+            ImGui.EndTabItem();
+          }
+          if(ImGui.BeginTabItem("Devices")) {
+            this.DrawDevicesTab();
+            ImGui.EndTabItem();
+          }
+          if(ImGui.BeginTabItem("Triggers")) {
+            this.DrawTriggersTab();
+            ImGui.EndTabItem();
           }
           if(ImGui.BeginTabItem("Patterns")) {
             this.DrawPatternsTab();
