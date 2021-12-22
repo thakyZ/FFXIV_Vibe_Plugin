@@ -91,12 +91,16 @@ namespace FFXIV_Vibe_Plugin {
 
       // Patterns
       this.Patterns = new Patterns();
+      this.Patterns.SetCustomPatterns(this.Configuration.PatternList);
 
       // Initialize the devices Controller
       this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.Patterns);
       if(this.Configuration.AUTO_CONNECT) {
-        Task.Delay(2000);
-        this.Command_DeviceController_Connect();
+        Thread t = new(delegate () {
+          Thread.Sleep(2000);
+          this.Command_DeviceController_Connect();
+        });
+        t.Start();
       }     
 
       // Initialize Hook ActionEffect
@@ -199,9 +203,7 @@ namespace FFXIV_Vibe_Plugin {
           this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
           this.DeviceController.SendVibeToAll(0);
-        } else if(args.StartsWith("play_pattern")) {
-          this.Play_pattern(args);
-        } 
+        }
         // Experimental
         else if(args.StartsWith("exp_network_start")) {
           this.experiment_networkCapture.StartNetworkCapture();
@@ -276,23 +278,6 @@ namespace FFXIV_Vibe_Plugin {
     /** LEGACY CODE IS BELLOW */
     /**************************/
 
-    private void Play_pattern(string args) {
-      this.Logger.Warn("Play_pattern is disabled temporary");
-      return;
-      try {
-        string[] param = args.Split(" ", 2);
-        string patternName = param[1];
-        this.Logger.Chat($"Play pattern {patternName}");
-        if(patternName == "shake") {
-          this.DeviceController.Play_PatternShake(100);
-        } else if(patternName == "mountain") {
-          this.DeviceController.Play_PatternMountain(30);
-        }
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
-        return;
-      }
-    }
 
     private void PlayerCurrentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
@@ -309,10 +294,6 @@ namespace FFXIV_Vibe_Plugin {
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal
           this.DeviceController.SendVibeToAll((int)percentage);
-        } else if(mode == 1) { // shake
-          this.DeviceController.Play_PatternShake(percentage);
-        } else if(mode == 2) { // mountain
-          this.DeviceController.Play_PatternMountain(percentage);
         }
       }
     }

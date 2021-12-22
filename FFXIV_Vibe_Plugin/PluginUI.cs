@@ -42,6 +42,7 @@ namespace FFXIV_Vibe_Plugin {
     private bool _expandedOnce = false;
     private readonly int WIDTH = 650;
     private readonly int HEIGHT = 700;
+    private readonly int COLUMN0_WIDTH = 120;
 
     // The value to send as a test for vibes.
     private int simulator_currentAllIntensity = 0;
@@ -49,6 +50,13 @@ namespace FFXIV_Vibe_Plugin {
     // Temporary UI values
     private int TRIGGER_CURRENT_SELECTED_DEVICE = -1;
     private string CURRENT_TRIGGER_SELECTOR_SEARCHBAR = "";
+
+    // Custom Patterns
+    string VALID_REGEXP_PATTERN = "^(\\d+:\\d+)+(\\|\\d+:\\d+)*$";
+    string CURRENT_PATTERN_SEARCHBAR = "";
+    string _tmp_currentPatternNameToAdd = "";
+    string _tmp_currentPatternValueToAdd = "";
+    string _tmp_currentPatternValueState = "unset"; // unset|valid|unvalid
 
     // Some limits
     private readonly int TRIGGER_MIN_AFTER = 0;
@@ -75,6 +83,7 @@ namespace FFXIV_Vibe_Plugin {
       this.CurrentPlugin = currentPlugin;
       this.DeviceController = deviceController;
       this.TriggerController = triggersController;
+      this.Patterns = Patterns;
       this.LoadImages();
     }
 
@@ -418,7 +427,7 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TextColored(ImGuiColors.DalamudRed, "Experimental/Testing phase");
 
             // Init table
-            int COLUMN0_WIDTH = 120;
+            
             ImGui.BeginTable("###TRIGGER_FORM_TABLE_GENERAL", 2);
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_COL2", ImGuiTableColumnFlags.WidthStretch);
@@ -474,7 +483,7 @@ namespace FFXIV_Vibe_Plugin {
               this.Configuration.Save();
             };
             ImGui.SameLine();
-            ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any.");
+            ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any. Ignored if chat listening to 'Echo' and chat message we through it.");
             ImGui.TableNextRow();
 
             // TRIGGER START_AFTER
@@ -565,7 +574,6 @@ namespace FFXIV_Vibe_Plugin {
                 for(int indexAllowedChatType = 0; indexAllowedChatType < this.SelectedTrigger.AllowedChatTypes.Count; indexAllowedChatType++) {
                   int XivChatTypeValue = this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType];
                   if(ImGuiComponents.IconButton(indexAllowedChatType, Dalamud.Interface.FontAwesomeIcon.Minus)) {
-                    this.Logger.Debug(XivChatTypeValue.ToString());
                     this.SelectedTrigger.AllowedChatTypes.RemoveAt(indexAllowedChatType);
                     this.Configuration.Save();
                   };
@@ -687,7 +695,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TextColored(ImGuiColors.DalamudGrey, "Please add device(s)...");
             }
             
-            string[] patternNames = this.Patterns.GetAll().Select(p => p.Name).ToArray();
+            string[] patternNames = this.Patterns.GetAllPatterns().Select(p => p.Name).ToArray();
 
             for(int indexDevice = 0; indexDevice < triggerDevices.Count; indexDevice++) {
               string prefixLabel = $"###TRIGGER_FORM_COMBO_DEVICE_${indexDevice}";
@@ -871,7 +879,132 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawPatternsTab() {
-      ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Add or edit a new pattern:");
+      ImGui.Indent(20);
+      List<Pattern> customPatterns = this.Patterns.GetCustomPatterns();
+      ImGui.BeginTable("###PATTERN_ADD_FORM", 3);
+      ImGui.TableSetupColumn("###PATTERN_ADD_FORM_COL1", ImGuiTableColumnFlags.WidthFixed, 100);
+      ImGui.TableSetupColumn("###PATTERN_ADD_FORM_COL2", ImGuiTableColumnFlags.WidthFixed, 300);
+      ImGui.TableSetupColumn("###PATTERN_ADD_FORM_COL3", ImGuiTableColumnFlags.WidthStretch);
+      ImGui.TableNextColumn();
+      ImGui.Text("Pattern Name:");
+      ImGui.TableNextColumn();
+      ImGui.SetNextItemWidth(300);
+      if(ImGui.InputText("###PATTERNS_CURRENT_PATTERN_NAME_TO_ADD", ref this._tmp_currentPatternNameToAdd, 150)) {
+        this._tmp_currentPatternNameToAdd = this._tmp_currentPatternNameToAdd.Trim();
+      }
+      ImGui.TableNextRow();
+      ImGui.TableNextColumn();
+      ImGui.Text("Pattern Value:");
+      ImGui.TableNextColumn();
+      ImGui.SetNextItemWidth(300);
+      if(ImGui.InputText("###PATTERNS_CURRENT_PATTERN_VALUE_TO_ADD", ref this._tmp_currentPatternValueToAdd, 500)) {
+        this._tmp_currentPatternValueToAdd = this._tmp_currentPatternValueToAdd.Trim();
+        string value = this._tmp_currentPatternValueToAdd.Trim();
+        if(value == "") {
+          this._tmp_currentPatternValueState = "unset";
+        } else {
+          this._tmp_currentPatternValueState = Helpers.RegExpMatch(this.Logger, this._tmp_currentPatternValueToAdd, this.VALID_REGEXP_PATTERN) ? "valid" : "unvalid";
+        }
+      }
+
+    
+
+    
+      if(this._tmp_currentPatternNameToAdd.Trim() != "" && this._tmp_currentPatternValueState == "valid") {
+        ImGui.TableNextColumn();
+        if(ImGui.Button("Save")) {
+          Pattern newPattern = new(this._tmp_currentPatternNameToAdd, this._tmp_currentPatternValueToAdd);
+          this.Patterns.AddCustomPattern(newPattern);
+          this.Configuration.PatternList = this.Patterns.GetCustomPatterns();
+          this.Configuration.Save();
+          this._tmp_currentPatternNameToAdd = "";
+          this._tmp_currentPatternValueToAdd = "";
+          this._tmp_currentPatternValueState = "unset";
+        }
+      }
+      ImGui.TableNextRow();
+      
+      if(this._tmp_currentPatternValueState == "unvalid") {
+        ImGui.TableNextColumn();
+        ImGui.TextColored(ImGuiColors.DalamudRed, "WRONG FORMAT!");
+        ImGui.TableNextColumn();
+        ImGui.TextColored(ImGuiColors.DalamudRed, "Format: <int>:<ms>|<int>:<ms>...");
+        ImGui.TableNextColumn();
+        ImGui.TextColored(ImGuiColors.DalamudRed, "Eg: 10:500|100:1000|20:500|0:0");
+      }
+
+      ImGui.EndTable();
+      ImGui.Indent(-20);
+
+
+      ImGui.Separator();
+
+      
+      if(customPatterns.Count == 0) { 
+        ImGui.Text("No custom patterns, please add some");
+      } else {
+        ImGui.TextColored(ImGuiColors.DalamudViolet, "Custom Patterns:");
+        ImGui.Indent(20);
+
+        ImGui.BeginTable("###PATTERN_CUSTOM_LIST", 3);
+        ImGui.TableSetupColumn("###PATTERN_CUSTOM_LIST_COL1", ImGuiTableColumnFlags.WidthFixed, 100);
+        ImGui.TableSetupColumn("###PATTERN_CUSTOM_LIST_COL2", ImGuiTableColumnFlags.WidthFixed, 430);
+        ImGui.TableSetupColumn("###PATTERN_CUSTOM_LIST_COL3", ImGuiTableColumnFlags.WidthStretch);
+
+        // Searchbar
+        ImGui.TableNextColumn();
+        ImGui.TextColored(ImGuiColors.DalamudGrey2, "Search name:");
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(150);
+        ImGui.InputText("###PATTERN_SEARCH_BAR", ref CURRENT_PATTERN_SEARCHBAR, 200);
+        ImGui.TableNextRow();
+
+
+        for(int patternIndex = 0; patternIndex < customPatterns.Count; patternIndex++) {
+          Pattern pattern = customPatterns[patternIndex];
+          if(!Helpers.RegExpMatch(this.Logger, pattern.Name, this.CURRENT_PATTERN_SEARCHBAR)) {
+            continue;
+          }
+          ImGui.TableNextColumn();
+          ImGui.Text($"{pattern.Name}");
+          if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip($"{pattern.Name}");
+          }
+          ImGui.TableNextColumn();
+          string valueShort = pattern.Value;
+          if(valueShort.Length > 70) {
+            valueShort = $"{valueShort[..70]}...";
+          }
+          ImGui.Text(valueShort);
+          if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip($"{pattern.Value}");
+          }
+          
+          ImGui.TableNextColumn();
+          
+          if(ImGuiComponents.IconButton(patternIndex, Dalamud.Interface.FontAwesomeIcon.Trash)) {
+            bool ok = this.Patterns.RemoveCustomPattern(pattern);
+            if(!ok) {
+              this.Logger.Error($"Could not remove pattern {pattern.Name}");
+            } else {
+              List<Pattern> newPatternList = this.Patterns.GetCustomPatterns();
+              this.Configuration.PatternList = newPatternList;
+              this.Configuration.Save();
+            }
+          }
+          ImGui.SameLine();
+          if(ImGuiComponents.IconButton(patternIndex, Dalamud.Interface.FontAwesomeIcon.Pen)) {
+            this._tmp_currentPatternNameToAdd = pattern.Name;
+            this._tmp_currentPatternValueToAdd = pattern.Value;
+            this._tmp_currentPatternValueState = "valid";
+          }
+          ImGui.TableNextRow();
+        }
+        ImGui.EndTable();
+        ImGui.Indent(-20);
+      }
+      
     }
 
     public void DrawHelpTab() {

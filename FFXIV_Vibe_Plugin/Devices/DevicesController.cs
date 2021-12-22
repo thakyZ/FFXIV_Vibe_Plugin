@@ -319,7 +319,7 @@ namespace FFXIV_Vibe_Plugin.Device {
 
     public void SendPattern(string command, Device device, int threshold, int motorId = -1, int patternId = 0, float StartAfter = 0, float StopAfter = 0) {
       this.SaveCurrentMotorAndDevicePlayingState(device, motorId);
-      Pattern pattern = Patterns.Get(patternId);
+      Pattern pattern = Patterns.GetPatternById(patternId);
 
       string[] patternSegments = pattern.Value.Split("|");
       this.Logger.Log($"Sending {command} pattern={pattern.Name} ({patternSegments.Length} segments)");
@@ -358,16 +358,13 @@ namespace FFXIV_Vibe_Plugin.Device {
           // Stop after and send 0 intensity
           if(forceStop || (StopAfter > 0 && StopAfter * 1000 + startedUnixTime < Helpers.GetUnix())) {
             this.SendCommand(command, device, 0, motorId, duration);
-            this.Logger.Debug("SHOULD STOPPPPP");
             break;
           }
 
           // Send the command \o/
           this.SendCommand(command, device, intensity, motorId, duration);
 
-          
           Thread.Sleep(duration);
-
         }
       });
       t.Start();
@@ -398,17 +395,6 @@ namespace FFXIV_Vibe_Plugin.Device {
     private void SaveCurrentMotorAndDevicePlayingState(Device device, int motorId) {
       string deviceAndMotorId = $"{device.Name}:{motorId}";
       this.CurrentDeviceAndMotorPlaying[deviceAndMotorId] = Helpers.GetUnix();
-    }
-
-
-
-    /************ LEGACY ************/
-
-    public void Play_PatternShake(float from) {
-
-    }
-
-    public void Play_PatternMountain(float from) {
     }
   }
 }
