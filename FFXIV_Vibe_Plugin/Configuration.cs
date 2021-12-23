@@ -12,6 +12,7 @@ namespace FFXIV_Vibe_Plugin {
     public int Version { get; set; } = 0; // TODO: remove me ?
 
     public bool VERBOSE_SPELL = false;
+    public bool VERBOSE_CHAT = false;
 
     public bool VIBE_HP_TOGGLE { get; set; } = false;
     public int VIBE_HP_MODE { get; set; } = 0;

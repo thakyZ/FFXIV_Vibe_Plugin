@@ -293,11 +293,20 @@ namespace FFXIV_Vibe_Plugin {
       // Checkbox OPTION_VERBOSE_SPELL
       ImGui.Text("Log casted spells:");
       ImGui.SameLine();
-      if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL.", ref this.Configuration.VERBOSE_SPELL)) {
+      if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL", ref this.Configuration.VERBOSE_SPELL)) {
         this.Configuration.Save();
       }
       ImGui.SameLine();
       ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better ingame performance.");
+
+      // Checkbox OPTION_VERBOSE_CHAT
+      ImGui.Text("Log chat triggered:");
+      ImGui.SameLine();
+      if(ImGui.Checkbox("###OPTION_VERBOSE_CHAT", ref this.Configuration.VERBOSE_CHAT)) {
+        this.Configuration.Save();
+      }
+      ImGui.SameLine();
+      ImGuiComponents.HelpMarker("Use the /xllog to see all chat message. Disable this to have better ingame performance.");
     }
 
     public void DrawDevicesTab() {
