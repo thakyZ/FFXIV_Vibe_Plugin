@@ -341,7 +341,18 @@ namespace FFXIV_Vibe_Plugin.Device {
       tStopAfter.Start();
 
       Thread t = new(delegate () {
+        
         Thread.Sleep((int)StartAfter * 1000);
+        
+        // Stop exectution if a new pattern is send to the same device and motor.
+        if(startedUnixTime != this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
+          return;
+        }
+
+        // Experimental send a fake command to activate connection
+        this.SendCommand(command, device, 0, motorId);
+        Thread.Sleep(50); // Yield if necessary
+
         for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
 
           // Stop exectution if a new pattern is send to the same device and motor.
