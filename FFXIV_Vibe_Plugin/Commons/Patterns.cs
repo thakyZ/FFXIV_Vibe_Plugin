@@ -67,14 +67,6 @@ namespace FFXIV_Vibe_Plugin {
         return true;
       }
       return false;
-      
-    }
-
-    public void UpdateCustomPattern(Pattern pattern, string name, string value) {
-      /* TODO: Get the correct pattern based on pattern name
-      pattern.SetName(pattern.Name);
-      pattern.SetValue(pattern.Value);
-      */
     }
   }
 

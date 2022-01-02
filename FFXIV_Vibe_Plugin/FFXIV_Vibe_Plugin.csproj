@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<Authors>Kacie8989</Authors>
+		<Authors>KacieXX</Authors>
 		<Company>Karsian</Company>
 		<Version>0.0.0.2</Version>
 		<Description>A plugin to help you vibe your controller or toys</Description>
-		<Copyright>kacie8989 2021</Copyright>
-		<PackageProjectUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</PackageProjectUrl>
+		<Copyright>kacieXX 2021</Copyright>
+		<PackageProjectUrl>https://github.com/kaciexx/FFXIV_Vibe_Plugin</PackageProjectUrl>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -25,9 +25,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="..\Data\ffxivbp.json" Link="Data\ffxivbp.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Include="..\Data\logo.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
 	</ItemGroup>
 
@@ -36,15 +33,17 @@
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</RepositoryUrl>
+		<RepositoryUrl>https://github.com/kaciexx/FFXIV_Vibe_Plugin</RepositoryUrl>
 		<PackageLicenseFile>.\LICENSE</PackageLicenseFile>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<PackageId>$(AssemblyName)</PackageId>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Buttplug" Version="2.0.5" />
+		<PackageReference Include="Buttplug" Version="2.0.6" />
 		<PackageReference Include="DalamudPackager" Version="2.1.5" />
 		<PackageReference Include="Lumina" Version="3.5.1" />
-		<PackageReference Include="Lumina.Excel" Version="6.0.1" />
+		<PackageReference Include="Lumina.Excel" Version="6.0.2" />
 		<Reference Include="FFXIVClientStructs">
 			<HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
 			<Private>false</Private>
