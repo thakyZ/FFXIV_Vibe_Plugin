@@ -1,7 +1,9 @@
 # FFXIV Vibe Plugin
 
+<img src="https://img.shields.io/github/downloads/kaciexx/FFXIV_Vibe_Plugin/total?label=Downloads" />
+
 <p align="center">
-  <img width="200" height="200" src="./Data/logo.png">
+  <img width="200" height="200" src="./Data/logo.png" />
 </p>
 
 A plugin for FFXIV that will let you vibe your controller or toys.
