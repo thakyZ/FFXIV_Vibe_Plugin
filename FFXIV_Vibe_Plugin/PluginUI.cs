@@ -11,7 +11,7 @@ using System.Linq;
 using Dalamud.Game.Text;
 
 using FFXIV_Vibe_Plugin.Commons;
-using FFXIV_Vibe_Plugin.UIComponents;
+using FFXIV_Vibe_Plugin.UI.Components;
 
 
 namespace FFXIV_Vibe_Plugin {
@@ -157,7 +157,7 @@ namespace FFXIV_Vibe_Plugin {
         
         ImGui.Text($"Donations: {this.DonationLink}");
         ImGui.SameLine();
-        UIComponents.ButtonLink.Draw("Thanks for the donation ;)", this.DonationLink, Dalamud.Interface.FontAwesomeIcon.Pray, this.Logger);
+        UI.Components.ButtonLink.Draw("Thanks for the donation ;)", this.DonationLink, Dalamud.Interface.FontAwesomeIcon.Pray, this.Logger);
         
         // Back to on column
         ImGui.Columns(1);
@@ -401,6 +401,7 @@ namespace FFXIV_Vibe_Plugin {
       if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
         ImGui.SetNextItemWidth(185);
         ImGui.InputText("###TriggersSelector_SearchBar", ref this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR, 200);
+        ImGui.Spacing();
         foreach(Triggers.Trigger trigger in triggers) {
           if(trigger != null) {
             string enabled = trigger.Enabled ? "" : "[disabled]";
