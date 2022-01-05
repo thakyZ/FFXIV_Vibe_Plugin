@@ -268,7 +268,7 @@ namespace FFXIV_Vibe_Plugin {
       string fromPlayerName = _sender.ToString();
       if(this.Configuration.VERBOSE_CHAT) {
         string XivChatTypeName = ((XivChatType)chatType).ToString();
-        this.Logger.Debug($"VERBOSE_CHAT: {fromPlayerName} type={XivChatTypeName}: {_message.ToString()}");
+        this.Logger.Debug($"VERBOSE_CHAT: {fromPlayerName} type={XivChatTypeName}: {_message}");
       }
       List<Trigger> triggers = this.TriggersController.CheckTrigger_Chat(chatType, fromPlayerName, _message.TextValue);
       foreach(Trigger trigger in triggers) {

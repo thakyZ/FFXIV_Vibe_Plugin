@@ -57,6 +57,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         // Check if the KIND of the trigger is a chat and if it matches
         if(trigger.Kind == (int)KIND.Chat) {
           if(Helpers.RegExpMatch(this.Logger, ChatMsg, trigger.ChatText)){
+            this.Logger.Debug($"ChatTrigger matched {trigger.ChatText}<>{ChatMsg}, adding {trigger}");
             triggers.Add(trigger);
           }
         }
@@ -92,8 +93,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           FFXIV_Vibe_Plugin.Triggers.DIRECTION direction = this.GetSpellDirection(spell);
 
           if(trigger.Direction != (int)FFXIV_Vibe_Plugin.Triggers.DIRECTION.Any && (int)direction != trigger.Direction) { continue;}
-
-          //this.Logger.Debug($"Sending trigger \"{trigger.Name}\"");
+          this.Logger.Debug($"SpellTrigger matched {spell}, adding {trigger}");
           triggers.Add(trigger);
         }
       }
