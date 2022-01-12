@@ -23,6 +23,7 @@ using FFXIV_Vibe_Plugin.Commons;
 using FFXIV_Vibe_Plugin.Triggers;
 using FFXIV_Vibe_Plugin.Hooks;
 using FFXIV_Vibe_Plugin.Experimental;
+using FFXIV_Vibe_Plugin.Migrations;
 #endregion
 
 namespace FFXIV_Vibe_Plugin {
@@ -74,6 +75,7 @@ namespace FFXIV_Vibe_Plugin {
       this.DataManager = dataManager;
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
       this.Configuration.Initialize(this.PluginInterface);
+      
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A vibe plugin for fun..."
       });
@@ -83,6 +85,10 @@ namespace FFXIV_Vibe_Plugin {
 
       // Initialize the logger
       this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
+
+      // Migrations
+      Migration migration = new(Configuration, Logger);
+      migration.Patch_2_0_0_to_2_1_0_config_profile();
 
       // Initialize player stats monitoring.
       this.PlayerStats = new PlayerStats(this.ClientState);

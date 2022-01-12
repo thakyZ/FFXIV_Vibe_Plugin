@@ -141,28 +141,12 @@ namespace FFXIV_Vibe_Plugin {
       if(ImGui.Begin("FFXIV Vibe Plugin", ref this.visible, ImGuiWindowFlags.None)) {
         ImGui.Spacing();
 
-        ImGuiScene.TextureWrap imgLogo = this.loadedImages["logo.png"];
-        ImGui.Columns(2, "###main_header", false);
-        float logoScale = 0.2f;
-        ImGui.SetColumnWidth(0, (int)(imgLogo.Width * logoScale + 20));
-        ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * logoScale, imgLogo.Height * logoScale));
-        ImGui.NextColumn();
-        if(this.DeviceController.IsConnected()) {
-          int nbrDevices = this.DeviceController.GetDevices().Count;
-          ImGui.TextColored(ImGuiColors.ParsedGreen, "Your are connected!");
-          ImGui.Text($"Number of device(s): {nbrDevices}");
-        } else {
-          ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
-        }
-        
-        ImGui.Text($"Donations: {this.DonationLink}");
-        ImGui.SameLine();
-        UI.Components.ButtonLink.Draw("Thanks for the donation ;)", this.DonationLink, Dalamud.Interface.FontAwesomeIcon.Pray, this.Logger);
+        this.DrawBanner();
         
         // Back to on column
         ImGui.Columns(1);
-
-        // Experimental
+        
+        // Tab header
         if(ImGui.BeginTabBar("##ConfigTabBar", ImGuiTabBarFlags.None)) {
           if(ImGui.BeginTabItem("Connect")) {
             this.DrawConnectTab();
@@ -193,6 +177,26 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       ImGui.End();
+    }
+
+    public void DrawBanner() {
+      ImGuiScene.TextureWrap imgLogo = this.loadedImages["logo.png"];
+      ImGui.Columns(2, "###main_header", false);
+      float logoScale = 0.2f;
+      ImGui.SetColumnWidth(0, (int)(imgLogo.Width * logoScale + 20));
+      ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * logoScale, imgLogo.Height * logoScale));
+      ImGui.NextColumn();
+      if(this.DeviceController.IsConnected()) {
+        int nbrDevices = this.DeviceController.GetDevices().Count;
+        ImGui.TextColored(ImGuiColors.ParsedGreen, "Your are connected!");
+        ImGui.Text($"Number of device(s): {nbrDevices}");
+      } else {
+        ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
+      }
+
+      ImGui.Text($"Donations: {this.DonationLink}");
+      ImGui.SameLine();
+      UI.Components.ButtonLink.Draw("Thanks for the donation ;)", this.DonationLink, Dalamud.Interface.FontAwesomeIcon.Pray, this.Logger);
     }
 
     public void DrawConnectTab() {
@@ -1020,6 +1024,11 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawHelpTab() {
       string help = Plugin.GetHelp(this.CurrentPlugin.commandName);
       ImGui.TextWrapped(help);
+      ImGui.Text($"App version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+      ImGui.Text($"Config version: {this.Configuration.Version}");
+      foreach(ConfigurationProfile profile in this.Configuration.Profiles) {
+        ImGui.Text($"Profile: {profile.Name}");
+      }
     }
 
 
