@@ -39,6 +39,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string ToPlayerName = "";
     public float StartAfter = 0;
     public float StopAfter = 0;
+    public int Priority = 0;
     public readonly List<int> AllowedChatTypes = new ();
 
     // Devices associated with this trigger
