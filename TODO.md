@@ -6,4 +6,4 @@
 - Use values from damage/heal amount as intensity
 - Add sort ID for triggers to let people organize a bit
 - Move loss of HP/Power feature into triggers
-- Add/Update delete presets (custom groups for triggers).
+- Add/Update delete profile in the list + UI (custom groups for triggers).
