@@ -17,7 +17,7 @@ namespace FFXIV_Vibe_Plugin.Device {
   internal class DevicesController {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
-    private readonly ConfigurationProfile Profile;
+    private ConfigurationProfile Profile;
     private readonly Patterns Patterns;
 
     /**
@@ -29,7 +29,6 @@ namespace FFXIV_Vibe_Plugin.Device {
     // Buttplug related
     private ButtplugClient? ButtplugClient;
     private readonly List<Device> Devices = new();
-    private readonly Dictionary<String, Device> VisitedDevices = new();
     private bool isScanning = false;
 
     // Internal variables
@@ -39,12 +38,15 @@ namespace FFXIV_Vibe_Plugin.Device {
       this.Logger = logger;
       this.Configuration = configuration;
       this.Profile = profile;
-      this.VisitedDevices = profile.VISITED_DEVICES;
       this.Patterns = patterns;
     }
 
     public void Dispose() {
       this.Disconnect();
+    }
+
+    public void SetProfile(ConfigurationProfile profile) {
+      this.Profile = profile;
     }
 
     public void Connect(String host, int port) {
@@ -147,9 +149,8 @@ namespace FFXIV_Vibe_Plugin.Device {
         device.IsConnected = true;
         this.Logger.Log($"{arg.Device.Name}, {buttplugClientDevice.Name}");
         this.Devices.Add(device);
-        if(!this.VisitedDevices.ContainsKey(device.Name)) {
-          this.VisitedDevices[device.Name] = device;
-          this.Profile.VISITED_DEVICES = this.VisitedDevices;
+        if(!this.Profile.VISITED_DEVICES.ContainsKey(device.Name)) {
+          this.Profile.VISITED_DEVICES[device.Name] = device;
           this.Configuration.Save();
           this.Logger.Debug($"Adding device to visited list {device})");
         }
@@ -216,7 +217,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public Dictionary<String, Device> GetVisitedDevices() {
-      return this.VisitedDevices;
+      return this.Profile.VISITED_DEVICES;
     }
 
     public void UpdateAllBatteryLevel() {

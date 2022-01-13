@@ -14,7 +14,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   internal class TriggersController {
     private readonly Logger Logger;
     private readonly PlayerStats PlayerStats;
-    private readonly ConfigurationProfile Profile;
+    private ConfigurationProfile Profile;
     private List<Triggers.Trigger> Triggers = new();
 
     public TriggersController(Logger logger, PlayerStats playerStats, ConfigurationProfile profile) {
@@ -23,8 +23,9 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Profile = profile;
     }
 
-    public void Set(List<Triggers.Trigger> triggers) {
-      this.Triggers = triggers;
+    public void SetProfile(ConfigurationProfile profile) {
+      this.Profile = profile;
+      this.Triggers = profile.TRIGGERS;
     }
 
     public List<Triggers.Trigger> GetTriggers() {
