@@ -253,125 +253,174 @@ namespace FFXIV_Vibe_Plugin {
       }
       ImGui.EndChild();
 
-      ImGui.TextColored(ImGuiColors.DalamudViolet, "Others");
-      ImGui.BeginChild("###Main_Others", new Vector2(-1, 40f), true);
-      {
-        // Checkbox AUTO_OPEN
-        bool config_AUTO_OPEN = this.ConfigurationProfile.AUTO_OPEN;
-        if(ImGui.Checkbox("Automatically open configuration panel. ", ref config_AUTO_OPEN)) {
-          this.ConfigurationProfile.AUTO_OPEN = config_AUTO_OPEN;
-          this.Configuration.Save();
-        }
-      }
-      ImGui.EndChild();
+     
     }
 
     public void DrawOptionsTab() {
-      ImGui.Spacing();
-      ImGui.Text("Current profile:");
-      string[] PROFILES = this.Configuration.Profiles.Select(profile => profile.Name).ToArray();
-      int currentProfileIndex = this.Configuration.Profiles.FindIndex(profile => profile.Name == this.Configuration.CurrentProfileName);
-      if(ImGui.Combo("###CONFIGURATION_CURRENT_PROFILE", ref currentProfileIndex, PROFILES, PROFILES.Length)) {
-        this.Configuration.CurrentProfileName = this.Configuration.Profiles[currentProfileIndex].Name;
-        this.Plugin.SetProfile(this.Configuration.CurrentProfileName);
-        this.Logger.Debug($"New profile selected: {this.Configuration.CurrentProfileName}");
-        this.Configuration.Save();
-      }
-      if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash)) {
-        if(this.Configuration.Profiles.Count <= 1) {
-          string errorMsg = "You can't delete this profile. At least one profile should exists. Create another one before deleting.";
-          this.Logger.Error(errorMsg);
-          this._tmp_currentProfile_ErrorMsg = errorMsg;
-        } else {
-          this.Configuration.RemoveProfile(this.ConfigurationProfile.Name);
-          ConfigurationProfile? newProfileToUse = this.Configuration.GetFirstProfile();
-          if(newProfileToUse != null) {
-            this.Plugin.SetProfile(newProfileToUse.Name);
-          }
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Profile settings");
+      float CONFIG_PROFILE_ZONE_HEIGHT = this._tmp_currentProfile_ErrorMsg == "" ? 100f : 120f;
+      ImGui.BeginChild("###CONFIGURATION_PROFILE_ZONE", new Vector2(-1, CONFIG_PROFILE_ZONE_HEIGHT), true);
+      {
+        // Init table
+        ImGui.BeginTable("###CONFIGURATION_PROFILE_TABLE", 3);
+        ImGui.TableSetupColumn("###CONFIGURATION_PROFILE_TABLE_COL1", ImGuiTableColumnFlags.WidthFixed, 150);
+        ImGui.TableSetupColumn("###CONFIGURATION_PROFILE_TABLE_COL2", ImGuiTableColumnFlags.WidthFixed, 350);
+        ImGui.TableSetupColumn("###CONFIGURATION_PROFILE_TABLE_COL3", ImGuiTableColumnFlags.WidthStretch);
+
+        ImGui.TableNextColumn();
+        ImGui.Text("Current profile:");
+        ImGui.TableNextColumn();
+        string[] PROFILES = this.Configuration.Profiles.Select(profile => profile.Name).ToArray();
+        int currentProfileIndex = this.Configuration.Profiles.FindIndex(profile => profile.Name == this.Configuration.CurrentProfileName);
+        ImGui.SetNextItemWidth(350);
+        if(ImGui.Combo("###CONFIGURATION_CURRENT_PROFILE", ref currentProfileIndex, PROFILES, PROFILES.Length)) {
+          this.Configuration.CurrentProfileName = this.Configuration.Profiles[currentProfileIndex].Name;
+          this.Plugin.SetProfile(this.Configuration.CurrentProfileName);
+          this.Logger.Debug($"New profile selected: {this.Configuration.CurrentProfileName}");
           this.Configuration.Save();
         }
-      }
-      ImGui.Text("Add new profile: ");
-      if(ImGui.InputText("###CONFIGURATION_NEW_PROFILE_NAME", ref _tmp_currentProfileNameToAdd, 150)) {
-        this._tmp_currentProfile_ErrorMsg = "";
-      }
-      if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
-        if(this._tmp_currentProfileNameToAdd.Trim() != "") {
-          bool wasAdded = this.Configuration.AddProfile(this._tmp_currentProfileNameToAdd);
-          if(!wasAdded) {
-            string errorMsg = $"The current profile name '{this._tmp_currentProfileNameToAdd}' already exists!";
+        ImGui.TableNextColumn();
+        if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash)) {
+          if(this.Configuration.Profiles.Count <= 1) {
+            string errorMsg = "You can't delete this profile. At least one profile should exists. Create another one before deleting.";
             this.Logger.Error(errorMsg);
             this._tmp_currentProfile_ErrorMsg = errorMsg;
           } else {
-            this.Plugin.SetProfile(this._tmp_currentProfileNameToAdd);
-            this.Logger.Debug($"New profile added {_tmp_currentProfileNameToAdd}");
-            this._tmp_currentProfileNameToAdd = "";
+            this.Configuration.RemoveProfile(this.ConfigurationProfile.Name);
+            ConfigurationProfile? newProfileToUse = this.Configuration.GetFirstProfile();
+            if(newProfileToUse != null) {
+              this.Plugin.SetProfile(newProfileToUse.Name);
+            }
             this.Configuration.Save();
           }
         }
-      }
-      ImGui.Text("Rename current profile");
-      if(ImGui.InputText("###CONFIGURATION_CURRENT_PROFILE_RENAME", ref this.ConfigurationProfile.Name, 150)) {
-        this.Configuration.CurrentProfileName = this.ConfigurationProfile.Name;
-        this.Configuration.Save();
-      }
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        ImGui.Text("Add new profile: ");
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(350);
+        if(ImGui.InputText("###CONFIGURATION_NEW_PROFILE_NAME", ref _tmp_currentProfileNameToAdd, 150)) {
+          this._tmp_currentProfile_ErrorMsg = "";
+        }
+        ImGui.TableNextColumn();
+        if(this._tmp_currentProfileNameToAdd.Length > 0) {
+          if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
+            if(this._tmp_currentProfileNameToAdd.Trim() != "") {
+              bool wasAdded = this.Configuration.AddProfile(this._tmp_currentProfileNameToAdd);
+              if(!wasAdded) {
+                string errorMsg = $"The current profile name '{this._tmp_currentProfileNameToAdd}' already exists!";
+                this.Logger.Error(errorMsg);
+                this._tmp_currentProfile_ErrorMsg = errorMsg;
+              } else {
+                this.Plugin.SetProfile(this._tmp_currentProfileNameToAdd);
+                this.Logger.Debug($"New profile added {_tmp_currentProfileNameToAdd}");
+                this._tmp_currentProfileNameToAdd = "";
+                this.Configuration.Save();
+              }
+            }
+          }
+        }
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        ImGui.Text("Rename current profile");
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(350);
+        if(ImGui.InputText("###CONFIGURATION_CURRENT_PROFILE_RENAME", ref this.ConfigurationProfile.Name, 150)) {
+          this.Configuration.CurrentProfileName = this.ConfigurationProfile.Name;
+          this.Configuration.Save();
+        }
+        ImGui.EndTable();
 
 
-      if(this._tmp_currentProfile_ErrorMsg != "") {
-        ImGui.TextColored(ImGuiColors.DalamudRed, this._tmp_currentProfile_ErrorMsg);
-      }
-
-      ImGui.Spacing();
-      // Checkbox MAX_VIBE_THRESHOLD
-      ImGui.Text("Global threshold: ");
-      ImGui.SameLine();
-      int config_MAX_VIBE_THRESHOLD = this.ConfigurationProfile.MAX_VIBE_THRESHOLD;
-      ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("###OPTION_MaximumThreshold", ref config_MAX_VIBE_THRESHOLD, 2, 100)) {
-        this.ConfigurationProfile.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
-        this.Configuration.Save();
-      }
-      ImGuiComponents.HelpMarker("Maximum threshold for vibes (will override every devices).");
-
-      // Checkbox VIBE_HP_TOGGLE
-      bool config_VIBE_HP_TOGGLE = this.ConfigurationProfile.VIBE_HP_TOGGLE;
-      ImGui.Text("Vibe on HP Change: ");
-      ImGui.SameLine();
-      if(ImGui.Checkbox("###Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
-        this.ConfigurationProfile.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
-        this.Configuration.Save();
-      }
-
-      // Checkbox VIBE_HP_MODE
-      ImGui.SameLine();
-      int config_VIBE_HP_MODE = this.ConfigurationProfile.VIBE_HP_MODE;
-      ImGui.SetNextItemWidth(200);
-      string[] VIBE_HP_MODES = new string[] { "intensity", "shake", "mountain" };
-      if(ImGui.Combo("###OPTION_VIBE_HP_MODES", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
-        this.ConfigurationProfile.VIBE_HP_MODE = config_VIBE_HP_MODE;
-        this.Configuration.Save();
-      }
-      ImGui.SameLine();
-      ImGuiComponents.HelpMarker("The more you loose HP, the more it will vibe all toys");
+        if(this._tmp_currentProfile_ErrorMsg != "") {
+          ImGui.TextColored(ImGuiColors.DalamudRed, this._tmp_currentProfile_ErrorMsg);
+        }
+      };
+      ImGui.EndChild();
 
 
-      // Checkbox OPTION_VERBOSE_SPELL
-      ImGui.Text("Log casted spells:");
-      ImGui.SameLine();
-      if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL", ref this.ConfigurationProfile.VERBOSE_SPELL)) {
-        this.Configuration.Save();
-      }
-      ImGui.SameLine();
-      ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better ingame performance.");
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "General Settings");
+      ImGui.BeginChild("###GENERAL_OPTIONS_ZONE", new Vector2(-1, 155f), true);
+      {
+        // Init table
+        ImGui.BeginTable("###GENERAL_OPTIONS_TABLE", 2);
+        ImGui.TableSetupColumn("###GENERAL_OPTIONS_TABLE_COL1", ImGuiTableColumnFlags.WidthFixed, 250);
+        ImGui.TableSetupColumn("###GENERAL_OPTIONS_TABLE_COL2", ImGuiTableColumnFlags.WidthStretch);
 
-      // Checkbox OPTION_VERBOSE_CHAT
-      ImGui.Text("Log chat triggered:");
-      ImGui.SameLine();
-      if(ImGui.Checkbox("###OPTION_VERBOSE_CHAT", ref this.ConfigurationProfile.VERBOSE_CHAT)) {
-        this.Configuration.Save();
+
+        // Checkbox AUTO_OPEN
+        ImGui.TableNextColumn();
+        bool config_AUTO_OPEN = this.ConfigurationProfile.AUTO_OPEN;
+        ImGui.Text("Automatically open configuration panel.");
+        ImGui.TableNextColumn();
+        if(ImGui.Checkbox("###GENERAL_OPTIONS_AUTO_OPEN", ref config_AUTO_OPEN)) {
+          this.ConfigurationProfile.AUTO_OPEN = config_AUTO_OPEN;
+          this.Configuration.Save();
+        }
+        ImGui.TableNextRow();
+
+
+        // Checkbox MAX_VIBE_THRESHOLD
+        ImGui.TableNextColumn();
+        ImGui.Text("Global threshold: ");
+        ImGui.TableNextColumn();
+        int config_MAX_VIBE_THRESHOLD = this.ConfigurationProfile.MAX_VIBE_THRESHOLD;
+        ImGui.SetNextItemWidth(201);
+        if(ImGui.SliderInt("###OPTION_MaximumThreshold", ref config_MAX_VIBE_THRESHOLD, 2, 100)) {
+          this.ConfigurationProfile.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
+          this.Configuration.Save();
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("Maximum threshold for vibes (will override every devices).");
+
+        // Checkbox VIBE_HP_TOGGLE
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        bool config_VIBE_HP_TOGGLE = this.ConfigurationProfile.VIBE_HP_TOGGLE;
+        ImGui.Text("Vibe on HP Change: ");
+        ImGui.TableNextColumn();
+        if(ImGui.Checkbox("###Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
+          this.ConfigurationProfile.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
+          this.Configuration.Save();
+        }
+
+        // Dropdown VIBE_HP_MODE
+        ImGui.SameLine();
+        int config_VIBE_HP_MODE = this.ConfigurationProfile.VIBE_HP_MODE;
+        ImGui.SetNextItemWidth(170);
+        string[] VIBE_HP_MODES = new string[] { "intensity", "shake", "mountain" };
+        if(ImGui.Combo("###OPTION_VIBE_HP_MODES", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
+          this.ConfigurationProfile.VIBE_HP_MODE = config_VIBE_HP_MODE;
+          this.Configuration.Save();
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("The more you loose HP, the more it will vibe all toys");
+        ImGui.TableNextRow();
+
+        // Checkbox OPTION_VERBOSE_SPELL
+        ImGui.TableNextColumn();
+        ImGui.Text("Log casted spells:");
+        ImGui.TableNextColumn();
+        if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL", ref this.ConfigurationProfile.VERBOSE_SPELL)) {
+          this.Configuration.Save();
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better ingame performance.");
+        ImGui.TableNextRow();
+
+        // Checkbox OPTION_VERBOSE_CHAT
+        ImGui.TableNextColumn();
+        ImGui.Text("Log chat triggered:");
+        ImGui.TableNextColumn();
+        if(ImGui.Checkbox("###OPTION_VERBOSE_CHAT", ref this.ConfigurationProfile.VERBOSE_CHAT)) {
+          this.Configuration.Save();
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("Use the /xllog to see all chat message. Disable this to have better ingame performance.");
+
+        ImGui.EndTable();
       }
-      ImGui.SameLine();
-      ImGuiComponents.HelpMarker("Use the /xllog to see all chat message. Disable this to have better ingame performance.");
+      ImGui.EndChild();
     }
 
     public void DrawDevicesTab() {
@@ -502,11 +551,9 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TextColored(ImGuiColors.DalamudRed, "Experimental/Testing phase");
 
             // Init table
-
             ImGui.BeginTable("###TRIGGER_FORM_TABLE_GENERAL", 2);
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_COL2", ImGuiTableColumnFlags.WidthStretch);
-
 
             // Displaying the trigger ID
             ImGui.TableNextColumn();
