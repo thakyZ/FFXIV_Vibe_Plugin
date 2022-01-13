@@ -90,7 +90,7 @@ namespace FFXIV_Vibe_Plugin {
 
       // Migrations
       Migration migration = new(Configuration, Logger);
-      migration.Patch_2_0_0_to_2_1_0_config_profile();
+      migration.Patch_0_2_0_to_1_0_0_config_profile();
 
       // Initialize player stats monitoring.
       this.PlayerStats = new PlayerStats(this.ClientState);
