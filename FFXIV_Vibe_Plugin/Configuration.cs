@@ -80,6 +80,15 @@ namespace FFXIV_Vibe_Plugin {
         this.Profiles.Add(profile);
       }
     }
+
+    public bool SetCurrentProfile(String name) {
+      ConfigurationProfile profile = this.GetProfile(name);
+      if(profile == null) {
+        return false;
+      }
+      this.CurrentProfileName = profile.Name;
+      return true;
+    }
   }
 
   public class ConfigurationProfile{

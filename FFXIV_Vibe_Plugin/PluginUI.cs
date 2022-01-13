@@ -70,6 +70,7 @@ namespace FFXIV_Vibe_Plugin {
       Logger logger,
       DalamudPluginInterface pluginInterface,
       Configuration configuration,
+      ConfigurationProfile profile,
       Plugin currentPlugin,
       Device.DevicesController deviceController,
       Triggers.TriggersController triggersController,
@@ -77,7 +78,7 @@ namespace FFXIV_Vibe_Plugin {
     ) {
       this.Logger = logger;
       this.Configuration = configuration;
-      this.ConfigurationProfile = configuration.GetProfile();
+      this.ConfigurationProfile = profile;
       this.PluginInterface = pluginInterface;
       this.CurrentPlugin = currentPlugin;
       this.DeviceController = deviceController;
@@ -1025,9 +1026,17 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.TextWrapped(help);
       ImGui.Text($"App version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
       ImGui.Text($"Config version: {this.Configuration.Version}");
-      foreach(ConfigurationProfile profile in this.Configuration.Profiles) {
-        ImGui.Text($"Profile: {profile.Name}");
+      
+      ImGui.Text("Current profile:");
+      string[] PROFILES = this.Configuration.Profiles.Select(profile => profile.Name).ToArray();
+      int currentProfileIndex = this.Configuration.Profiles.FindIndex(profile => profile.Name == this.Configuration.CurrentProfileName);
+      if(ImGui.Combo("###CONFIGURATION_CURRENT_PROFILE", ref currentProfileIndex, PROFILES, PROFILES.Length)) {
+        this.Configuration.CurrentProfileName = this.Configuration.Profiles[currentProfileIndex].Name;
+        this.Configuration.Save();
       }
+      ImGui.Text("WIP Add new profile: ");
+      string TMP_CONFIGURATION_NEW_PROFILE_NAME = "";
+      ImGui.InputText("###CONFIGURATION_NEW_PROFILE_NAME", ref TMP_CONFIGURATION_NEW_PROFILE_NAME, 150);
     }
 
 

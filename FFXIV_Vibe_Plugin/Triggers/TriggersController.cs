@@ -14,11 +14,13 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   internal class TriggersController {
     private readonly Logger Logger;
     private readonly PlayerStats PlayerStats;
+    private readonly ConfigurationProfile Profile;
     private List<Triggers.Trigger> Triggers = new();
 
-    public TriggersController(Logger logger, PlayerStats playerStats) {
+    public TriggersController(Logger logger, PlayerStats playerStats, ConfigurationProfile profile) {
       this.Logger = logger;
       this.PlayerStats = playerStats;
+      this.Profile = profile;
     }
 
     public void Set(List<Triggers.Trigger> triggers) {
@@ -57,7 +59,9 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         // Check if the KIND of the trigger is a chat and if it matches
         if(trigger.Kind == (int)KIND.Chat) {
           if(Helpers.RegExpMatch(this.Logger, ChatMsg, trigger.ChatText)){
-            this.Logger.Debug($"ChatTrigger matched {trigger.ChatText}<>{ChatMsg}, adding {trigger}");
+            if(this.Profile.VERBOSE_CHAT) {
+              this.Logger.Debug($"ChatTrigger matched {trigger.ChatText}<>{ChatMsg}, adding {trigger}");
+            }
             triggers.Add(trigger);
           }
         }
@@ -93,7 +97,9 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           FFXIV_Vibe_Plugin.Triggers.DIRECTION direction = this.GetSpellDirection(spell);
 
           if(trigger.Direction != (int)FFXIV_Vibe_Plugin.Triggers.DIRECTION.Any && (int)direction != trigger.Direction) { continue;}
-          this.Logger.Debug($"SpellTrigger matched {spell}, adding {trigger}");
+          if(this.Profile.VERBOSE_SPELL) {
+            this.Logger.Debug($"SpellTrigger matched {spell}, adding {trigger}");
+          }
           triggers.Add(trigger);
         }
       }
