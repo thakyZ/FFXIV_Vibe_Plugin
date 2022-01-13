@@ -296,7 +296,6 @@ namespace FFXIV_Vibe_Plugin {
         this._tmp_currentProfile_ErrorMsg = "";
       }
       if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
-        this.Logger.Debug($"{this._tmp_currentProfileNameToAdd}");
         if(this._tmp_currentProfileNameToAdd.Trim() != "") {
           bool wasAdded = this.Configuration.AddProfile(this._tmp_currentProfileNameToAdd);
           if(!wasAdded) {
@@ -311,6 +310,12 @@ namespace FFXIV_Vibe_Plugin {
           }
         }
       }
+      ImGui.Text("Rename current profile");
+      if(ImGui.InputText("###CONFIGURATION_CURRENT_PROFILE_RENAME", ref this.ConfigurationProfile.Name, 150)) {
+        this.Configuration.CurrentProfileName = this.ConfigurationProfile.Name;
+        this.Configuration.Save();
+      }
+
 
       if(this._tmp_currentProfile_ErrorMsg != "") {
         ImGui.TextColored(ImGuiColors.DalamudRed, this._tmp_currentProfile_ErrorMsg);
