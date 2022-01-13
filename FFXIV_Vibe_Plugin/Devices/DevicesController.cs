@@ -17,6 +17,7 @@ namespace FFXIV_Vibe_Plugin.Device {
   internal class DevicesController {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
+    private readonly ConfigurationProfile Profile;
     private readonly Patterns Patterns;
 
     /**
@@ -37,7 +38,8 @@ namespace FFXIV_Vibe_Plugin.Device {
     public DevicesController(Logger logger, Configuration configuration, Patterns patterns) {
       this.Logger = logger;
       this.Configuration = configuration;
-      this.VisitedDevices = configuration.VISITED_DEVICES;
+      this.Profile = configuration.GetProfile();
+      this.VisitedDevices = this.Profile.VISITED_DEVICES;
       this.Patterns = patterns;
     }
 
@@ -147,7 +149,7 @@ namespace FFXIV_Vibe_Plugin.Device {
         this.Devices.Add(device);
         if(!this.VisitedDevices.ContainsKey(device.Name)) {
           this.VisitedDevices[device.Name] = device;
-          this.Configuration.VISITED_DEVICES = this.VisitedDevices;
+          this.Profile.VISITED_DEVICES = this.VisitedDevices;
           this.Configuration.Save();
           this.Logger.Debug($"Adding device to visited list {device})");
         }
@@ -306,15 +308,15 @@ namespace FFXIV_Vibe_Plugin.Device {
     public void SendVibeToAll(int intensity) {
       if(this.IsConnected() && this.ButtplugClient != null) {
         foreach(Device device in this.Devices) {
-          device.SendVibrate(intensity, -1, this.Configuration.MAX_VIBE_THRESHOLD);
-          device.SendRotate(intensity, true, -1, this.Configuration.MAX_VIBE_THRESHOLD);
-          device.SendLinear(intensity, 500, -1, this.Configuration.MAX_VIBE_THRESHOLD);
+          device.SendVibrate(intensity, -1, this.Profile.MAX_VIBE_THRESHOLD);
+          device.SendRotate(intensity, true, -1, this.Profile.MAX_VIBE_THRESHOLD);
+          device.SendLinear(intensity, 500, -1, this.Profile.MAX_VIBE_THRESHOLD);
         }
       }
     }
 
     public void SendVibrate(Device device, int intensity, int motorId = -1) {
-      device.SendVibrate(intensity, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+      device.SendVibrate(intensity, motorId, this.Profile.MAX_VIBE_THRESHOLD);
     }
 
     public void SendPattern(string command, Device device, int threshold, int motorId = -1, int patternId = 0, float StartAfter = 0, float StopAfter = 0) {
@@ -392,11 +394,11 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
-      device.SendRotate(intensity, clockwise, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+      device.SendRotate(intensity, clockwise, motorId, this.Profile.MAX_VIBE_THRESHOLD);
     }
 
     public void SendLinear(Device device, int intensity, int motorId = -1, int duration = 500) {
-      device.SendLinear(intensity, duration, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+      device.SendLinear(intensity, duration, motorId, this.Profile.MAX_VIBE_THRESHOLD);
     }
 
     public static void SendStop(Device device) {

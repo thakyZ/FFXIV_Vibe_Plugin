@@ -9,8 +9,9 @@ namespace FFXIV_Vibe_Plugin {
   [Serializable]
   public class Configuration : IPluginConfiguration {
 
-    public int Version { get; set; } = 0; 
-    public List<ConfigurationProfile> Profiles = new() { new ConfigurationProfile() };
+    public int Version { get; set; } = 0;
+    public string CurrentProfileName = "Default";
+    public List<ConfigurationProfile> Profiles = new();
 
 
     /** 
@@ -32,16 +33,52 @@ namespace FFXIV_Vibe_Plugin {
 
 
     // the below exist just to make saving less cumbersome
-
     [NonSerialized]
     private DalamudPluginInterface? pluginInterface;
-
     public void Initialize(DalamudPluginInterface pluginInterface) {
       this.pluginInterface = pluginInterface;
     }
-
     public void Save() {
       this.pluginInterface!.SavePluginConfig(this);
+    }
+
+    /** 
+     * Get the profile specified by name. If not found,
+     * tries to use the default or automatically creates it.
+     */
+    public ConfigurationProfile GetProfile(String name="") {
+      if(name == "") {
+        name = this.CurrentProfileName;
+      }
+      ConfigurationProfile? profile = this.Profiles.Find(i => i.Name == this.CurrentProfileName);
+      
+      // Nothing corresponded to this.CurrentProfileName, trying to find the Default profile.
+      if(profile == null) {
+        profile = this.Profiles.Find(i => i.Name == "Default");
+
+        // Default profile was not found, adding it.
+        if(profile == null) {
+          profile = new ConfigurationProfile();
+          this.CurrentProfileName = profile.Name;
+          this.Profiles.Add(profile);
+          this.Save();
+        }
+      }
+      return profile;
+    }
+
+    public void RemoveProfile(String name) {
+      ConfigurationProfile profile = this.GetProfile(name);
+      this.Profiles.Remove(profile);
+    }
+
+    public void AddProfile(String name) {
+      ConfigurationProfile profile = GetProfile(name);
+      if(profile == null) {
+        profile = new();
+        profile.Name = name;
+        this.Profiles.Add(profile);
+      }
     }
   }
 
@@ -65,4 +102,6 @@ namespace FFXIV_Vibe_Plugin {
     public Dictionary<string, FFXIV_Vibe_Plugin.Device.Device> VISITED_DEVICES = new();
 
   }
+
+
 }

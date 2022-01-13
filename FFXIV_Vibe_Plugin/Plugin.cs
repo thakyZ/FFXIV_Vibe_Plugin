@@ -34,6 +34,7 @@ namespace FFXIV_Vibe_Plugin {
     private Dalamud.Game.Gui.ChatGui? DalamudChat { get; init; }
     private DalamudPluginInterface PluginInterface { get; init; }
     private CommandManager CommandManager { get; init; }
+    // TODO: fix me
     private Configuration Configuration { get; init; }
     private PluginUI PluginUi { get; init; }
     private GameNetwork GameNetwork { get; init; }
@@ -47,11 +48,12 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _firstUpdated = false;
+    private readonly ConfigurationProfile ConfigurationProfile;
     private readonly Logger Logger;
     private readonly ActionEffect hook_ActionEffect;
     private readonly PlayerStats PlayerStats;
     private readonly Device.DevicesController DeviceController;
-    private readonly Triggers.TriggersController TriggersController;
+    private readonly TriggersController TriggersController;
     private readonly Patterns Patterns;
 
     // Experiments
@@ -95,13 +97,16 @@ namespace FFXIV_Vibe_Plugin {
       PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
       PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
+      // Configuration Profile
+      this.ConfigurationProfile = this.Configuration.GetProfile();
+
       // Patterns
       this.Patterns = new Patterns();
-      this.Patterns.SetCustomPatterns(this.Configuration.PatternList);
+      this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
 
       // Initialize the devices Controller
       this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.Patterns);
-      if(this.Configuration.AUTO_CONNECT) {
+      if(this.ConfigurationProfile.AUTO_CONNECT) {
         Thread t = new(delegate () {
           Thread.Sleep(2000);
           this.Command_DeviceController_Connect();
@@ -115,7 +120,7 @@ namespace FFXIV_Vibe_Plugin {
 
       // Triggers
       this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats);
-      this.TriggersController.Set(this.Configuration.TRIGGERS);
+      this.TriggersController.Set(this.ConfigurationProfile.TRIGGERS);
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
@@ -125,7 +130,9 @@ namespace FFXIV_Vibe_Plugin {
       this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController, this.Patterns);
       this.PluginInterface.UiBuilder.Draw += DrawUI;
       this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
+
     }
+
 
     public void Dispose() {
       this.Logger.Debug("Disposing plugin...");
@@ -168,7 +175,7 @@ namespace FFXIV_Vibe_Plugin {
 
     private void FirstUpdated() {
       this.Logger.Debug("First updated");
-      if(this.Configuration.AUTO_OPEN) {
+      if(this.ConfigurationProfile.AUTO_OPEN) {
         this.DisplayUI();
       }
     }
@@ -222,8 +229,8 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void Command_DeviceController_Connect() {
-      string host = this.Configuration.BUTTPLUG_SERVER_HOST;
-      int port = this.Configuration.BUTTPLUG_SERVER_PORT;
+      string host = this.ConfigurationProfile.BUTTPLUG_SERVER_HOST;
+      int port = this.ConfigurationProfile.BUTTPLUG_SERVER_PORT;
       this.DeviceController.Connect(host, port);
     }
 
@@ -257,7 +264,7 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       Structures.Spell spell = args.Spell;
-      if(this.Configuration.VERBOSE_SPELL) {
+      if(this.ConfigurationProfile.VERBOSE_SPELL) {
         this.Logger.Debug($"VERBOSE_SPELL: {spell}");
       }
       List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
@@ -272,7 +279,7 @@ namespace FFXIV_Vibe_Plugin {
         return;
       }
       string fromPlayerName = _sender.ToString();
-      if(this.Configuration.VERBOSE_CHAT) {
+      if(this.ConfigurationProfile.VERBOSE_CHAT) {
         string XivChatTypeName = ((XivChatType)chatType).ToString();
         this.Logger.Debug($"VERBOSE_CHAT: {fromPlayerName} type={XivChatTypeName}: {_message}");
       }
@@ -292,7 +299,7 @@ namespace FFXIV_Vibe_Plugin {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
 
-      if(this.Configuration.VIBE_HP_TOGGLE) {
+      if(this.ConfigurationProfile.VIBE_HP_TOGGLE) {
         float percentageHP = currentHP / maxHP * 100f;
         float percentage = 100 - percentageHP;
         if(percentage == 0) {
@@ -300,7 +307,7 @@ namespace FFXIV_Vibe_Plugin {
         }
         this.Logger.Debug($"Current: HP={currentHP} MaxHP={maxHP} Percentage={percentage}");
 
-        int mode = this.Configuration.VIBE_HP_MODE;
+        int mode = this.ConfigurationProfile.VIBE_HP_MODE;
         if(mode == 0) { // normal
           this.DeviceController.SendVibeToAll((int)percentage);
         }
