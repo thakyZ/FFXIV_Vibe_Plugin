@@ -664,7 +664,9 @@ namespace FFXIV_Vibe_Plugin {
 
 
             // TRIGGER KIND:SPELL OPTIONS
-            if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Spell) {
+            if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
+                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal ||
+                this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange) {
               // TRIGGER FORM_TABLE_KIND_CHAT
               ImGui.BeginTable("###TRIGGER_FORM_TABLE_KIND_SPELL", 2);
               ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
@@ -708,42 +710,28 @@ namespace FFXIV_Vibe_Plugin {
               ImGuiComponents.HelpMarker("Warning: Hitting no target will result to self as if you cast on yourself");
               ImGui.TableNextRow();
 
-              if(this.SelectedTrigger.ActionEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Any) {
-                if(currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Mount &&
-                  currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Miss &&
-                  currentEffectType != (int)Structures.ActionEffectType.Transport &&
-                  currentEffectType != (int)Structures.ActionEffectType.Unknown_0
-                ) {
-
-
-
-                  // Min/Max amount values
-                  if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage || this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
-                    string type = "";
-                    if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
-                    if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) { type = "heal"; }
-                    // TRIGGER MIN_VALUE
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"Min {type} value:");
-                    ImGui.TableNextColumn();
-                    if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
-                      this.Configuration.Save();
-                    }
-                    ImGui.TableNextRow();
-
-                    // TRIGGER MAX_VALUE
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"Max {type} value:");
-                    ImGui.TableNextColumn();
-                    if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
-                      this.Configuration.Save();
-                    }
-                    ImGui.TableNextRow();
-
-                  }
-                }
+              // Min/Max amount values
+              string type = "";
+              if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
+              if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) { type = "heal"; }
+              if(this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange) { type = "health"; }
+              // TRIGGER MIN_VALUE
+              ImGui.TableNextColumn();
+              ImGui.Text($"Min {type} value:");
+              ImGui.TableNextColumn();
+              if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
+                this.Configuration.Save();
               }
+              ImGui.TableNextRow();
 
+              // TRIGGER MAX_VALUE
+              ImGui.TableNextColumn();
+              ImGui.Text($"Max {type} value:");
+              ImGui.TableNextColumn();
+              if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
+                this.Configuration.Save();
+              }
+              ImGui.TableNextRow();
 
               ImGui.EndTable();
             }
