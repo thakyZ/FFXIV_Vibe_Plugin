@@ -51,7 +51,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     }
 
     public override string ToString() {
-      return $"TRIGGER: ${this.GetShortID()} {this.Name}";
+      return $"Trigger(name={this.Name}, id={this.GetShortID()})";
     }
 
     public int CompareTo(Trigger? other) {
@@ -66,7 +66,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     }
 
     public string GetShortID() {
-      return this.Id[..13];
+      return this.Id[..5];
     }
 
     public void Reset() {
