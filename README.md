@@ -36,6 +36,9 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 ## Our TODO
 Our current ideas and feedbacks are in: [TODO List](./TODO.md)
 
+## Build yourself
+You can build yourself, instructions are here: [Build yourself](./BUILD.md)
+
 ## Installation
 
 1. Download a [release here](https://github.com/kacie8989/FFXIV-Vibe-Plugin/releases)
