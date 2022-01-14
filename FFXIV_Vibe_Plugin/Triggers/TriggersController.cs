@@ -86,7 +86,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
           
           if(!Helpers.RegExpMatch(this.Logger, spellName, trigger.SpellText)) { continue; }
 
-          if(trigger.ActionEffectType != (int)Structures.ActionEffectType.Nothing && trigger.ActionEffectType != (int)spell.ActionEffectType) {
+          if(trigger.ActionEffectType != (int)Structures.ActionEffectType.Any && trigger.ActionEffectType != (int)spell.ActionEffectType) {
             continue;
           }
 

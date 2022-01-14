@@ -29,7 +29,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public readonly string Id = "";
     public string Name = "";
     public int Kind = (int)KIND.Chat;
-    public int ActionEffectType = (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Nothing;
+    public int ActionEffectType = (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Any;
     public int Direction = (int)DIRECTION.Any;
     public string ChatText = "hello world";
     public string SpellText = "";

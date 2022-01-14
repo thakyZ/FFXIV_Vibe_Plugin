@@ -318,7 +318,7 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.SameLine();
         int config_VIBE_HP_MODE = this.ConfigurationProfile.VIBE_HP_MODE;
         ImGui.SetNextItemWidth(170);
-        string[] VIBE_HP_MODES = new string[] { "intensity", "shake", "mountain" };
+        string[] VIBE_HP_MODES = new string[] { "intensity" };
         if(ImGui.Combo("###OPTION_VIBE_HP_MODES", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
           this.ConfigurationProfile.VIBE_HP_MODE = config_VIBE_HP_MODE;
           this.Configuration.Save();
@@ -718,7 +718,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGuiComponents.HelpMarker("Warning: Hitting no target will result to self as if you cast on yourself");
               ImGui.TableNextRow();
 
-              if(this.SelectedTrigger.ActionEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Nothing) {
+              if(this.SelectedTrigger.ActionEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Any) {
                 if(currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Mount &&
                   currentEffectType != (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Miss &&
                   currentEffectType != (int)Structures.ActionEffectType.Transport &&
@@ -729,9 +729,12 @@ namespace FFXIV_Vibe_Plugin {
 
                   // Min/Max amount values
                   if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage || this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
+                    string type = "";
+                    if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
+                    if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) { type = "heal"; }
                     // TRIGGER MIN_VALUE
                     ImGui.TableNextColumn();
-                    ImGui.Text("Minimum value:");
+                    ImGui.Text($"Min {type} value:");
                     ImGui.TableNextColumn();
                     if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
                       this.Configuration.Save();
@@ -740,7 +743,7 @@ namespace FFXIV_Vibe_Plugin {
 
                     // TRIGGER MAX_VALUE
                     ImGui.TableNextColumn();
-                    ImGui.Text("Maximum value:");
+                    ImGui.Text($"Max {type} value:");
                     ImGui.TableNextColumn();
                     if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
                       this.Configuration.Save();

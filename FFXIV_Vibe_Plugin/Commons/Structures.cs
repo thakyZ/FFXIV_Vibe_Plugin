@@ -5,7 +5,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
   internal class Structures {
 
     public enum ActionEffectType : byte {
-      Nothing = 0,
+      Any = 0,
       Miss = 1,
       FullResist = 2,
       Damage = 3,
@@ -50,7 +50,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
      * Still testing: https://github.com/SapphireServer/Sapphire/blob/master/src/common/Network/PacketDef/Zone/ClientZoneDef.h#L73
      */
     public struct EffectEntry {
-      public ActionEffectType type = ActionEffectType.Nothing;
+      public ActionEffectType type = ActionEffectType.Any;
       public byte param0 = 0;
       public byte param1 = 0;
       public byte param2 = 0;
