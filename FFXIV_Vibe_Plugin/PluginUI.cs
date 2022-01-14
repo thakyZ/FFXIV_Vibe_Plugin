@@ -667,11 +667,7 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL2", ImGuiTableColumnFlags.WidthStretch);
 
             // TRIGGER KIND:SPELL OPTIONS
-            if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
-                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal
-                ) {
-
-
+            if(this.SelectedTrigger.Kind == (int)Triggers.KIND.Spell){
               // TRIGGER TYPE
               ImGui.TableNextColumn();
               ImGui.Text("Type:");
@@ -711,8 +707,10 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableNextRow();
             }
 
-            if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
-                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal || 
+            if(
+                  this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
+                  this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal
+                 || 
                 this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange)
             {
               // Min/Max amount values
