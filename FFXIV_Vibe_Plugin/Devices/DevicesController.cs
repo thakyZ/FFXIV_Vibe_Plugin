@@ -28,7 +28,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     private readonly Dictionary<string, int> CurrentDeviceAndMotorPlaying = new();
 
     // Buttplug related
-    private ButtplugClient? ButtplugClient;
+    private ButtplugClient? BPClient;
     private readonly List<Device> Devices = new();
     private bool isScanning = false;
 
@@ -58,15 +58,15 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
 
       try {
-        this.ButtplugClient = new("buttplugtriggers-dalamud");
+        this.BPClient = new("bp-dalamud");
       } catch(Exception e) {
-        this.Logger.Error($"Can't load buttplug.io.", e);
+        this.Logger.Error($"Can't load bp.", e);
         return;
       }
-      this.ButtplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
-      this.ButtplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
-      this.ButtplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
-      this.ButtplugClient.ScanningFinished += ButtplugClient_OnScanComplete;
+      this.BPClient.ServerDisconnect += BPClient_ServerDisconnected;
+      this.BPClient.DeviceAdded += BPClient_DeviceAdded;
+      this.BPClient.DeviceRemoved += BPClient_DeviceRemoved;
+      this.BPClient.ScanningFinished += BPClient_OnScanComplete;
       string hostandport = host + ":" + port.ToString();
 
 
@@ -74,7 +74,7 @@ namespace FFXIV_Vibe_Plugin.Device {
         var uri = new Uri($"ws://{hostandport}/buttplug");
         var connector = new ButtplugWebsocketConnectorOptions(uri);
         this.Logger.Log($"Connecting to {hostandport}.");
-        Task task = this.ButtplugClient.ConnectAsync(connector);
+        Task task = this.BPClient.ConnectAsync(connector);
         task.Wait();
         this.ScanDevice();
       } catch(Exception e) {
@@ -83,7 +83,7 @@ namespace FFXIV_Vibe_Plugin.Device {
 
       Thread.Sleep(200);
 
-      if(this.ButtplugClient.Connected) {
+      if(this.BPClient.Connected) {
         this.Logger.Log($"FVP connected to Intiface!");
       } else {
         this.Logger.Error("Failed connecting (Intiface server is up?)");
@@ -91,26 +91,26 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
     }
 
-    private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
+    private void BPClient_ServerDisconnected(object? sender, EventArgs e) {
       this.Logger.Debug("Server disconnected");
       this.Disconnect();
     }
 
     public bool IsConnected() {
       bool isConnected = false;
-      if(this.ButtplugClient != null) {
-        isConnected = this.ButtplugClient.Connected;
+      if(this.BPClient != null) {
+        isConnected = this.BPClient.Connected;
       }
       return isConnected;
     }
 
     public void ScanDevice() {
-      if(this.ButtplugClient == null) { return; }
+      if(this.BPClient == null) { return; }
       this.Logger.Debug("Scanning for devices...");
       if(this.IsConnected()) {
         try {
           this.isScanning = true;
-          var task = this.ButtplugClient.StartScanningAsync();
+          var task = this.BPClient.StartScanningAsync();
           task.Wait();
         } catch(Exception e) {
           this.isScanning = false;
@@ -125,9 +125,9 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void StopScanningDevice() {
-      if(this.ButtplugClient != null && this.IsConnected()) {
+      if(this.BPClient != null && this.IsConnected()) {
         try {
-          Task task = this.ButtplugClient.StopScanningAsync();
+          Task task = this.BPClient.StopScanningAsync();
           task.Wait();
         } catch(Exception) {
           this.Logger.Debug("StopScanningDevice ignored: already stopped");
@@ -136,19 +136,19 @@ namespace FFXIV_Vibe_Plugin.Device {
       this.isScanning = false;
     }
 
-    private void ButtplugClient_OnScanComplete(object? sender, EventArgs e) {
+    private void BPClient_OnScanComplete(object? sender, EventArgs e) {
       this.Logger.Debug("Stop scanning...");
-      // FIXME: this is not working, buttplug client emit the trigger instantly. Let's ignore for the moment.
+      // FIXME: this is not working, bp client emit the trigger instantly. Let's ignore for the moment.
       // this.isScanning = false;
     }
 
-    private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
+    private void BPClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
       try {
         mut.WaitOne();
-        ButtplugClientDevice buttplugClientDevice = arg.Device;
-        Device device = new(buttplugClientDevice);
+        ButtplugClientDevice BPClientDevice = arg.Device;
+        Device device = new(BPClientDevice);
         device.IsConnected = true;
-        this.Logger.Log($"{arg.Device.Name}, {buttplugClientDevice.Name}");
+        this.Logger.Log($"{arg.Device.Name}, {BPClientDevice.Name}");
         this.Devices.Add(device);
         if(!this.Profile.VISITED_DEVICES.ContainsKey(device.Name)) {
           this.Profile.VISITED_DEVICES[device.Name] = device;
@@ -161,7 +161,7 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
     }
 
-    private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
+    private void BPClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
       try {
         mut.WaitOne();
         int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
@@ -179,12 +179,12 @@ namespace FFXIV_Vibe_Plugin.Device {
 
     public void Disconnect() {
       this.Devices.Clear();
-      if(this.ButtplugClient == null || !this.IsConnected()) {
+      if(this.BPClient == null || !this.IsConnected()) {
         return;
       }
       try {
-        if(this.ButtplugClient.IsScanning) {
-          var task = this.ButtplugClient.StopScanningAsync();
+        if(this.BPClient.IsScanning) {
+          var task = this.BPClient.StopScanningAsync();
           task.Wait();
         }
       } catch(Exception e) {
@@ -192,24 +192,24 @@ namespace FFXIV_Vibe_Plugin.Device {
         this.Logger.Error(e.Message);
       }
       try {
-        for(int i = 0; i < this.ButtplugClient.Devices.Length; i++) {
-          this.Logger.Log($"Disconnecting device {i} {this.ButtplugClient.Devices[i].Name}");
-          this.ButtplugClient.Devices[i].Dispose();
+        for(int i = 0; i < this.BPClient.Devices.Length; i++) {
+          this.Logger.Log($"Disconnecting device {i} {this.BPClient.Devices[i].Name}");
+          this.BPClient.Devices[i].Dispose();
         }
       } catch(Exception e) {
         this.Logger.Error("Error while disconnecting device", e);
       }
       try {
         Thread.Sleep(1000);
-        if(this.ButtplugClient != null) {
-          this.ButtplugClient.DisconnectAsync();
+        if(this.BPClient != null) {
+          this.BPClient.DisconnectAsync();
           this.Logger.Log("Disconnecting! Bye... Waiting 2sec...");
         }
       } catch(Exception e) {
         // ignore exception, we are trying to do our best
         this.Logger.Error("Error while disconnecting client", e);
       }
-      this.ButtplugClient = null;
+      this.BPClient = null;
 
     }
 
@@ -319,7 +319,7 @@ namespace FFXIV_Vibe_Plugin.Device {
      * @param {float} intensity
      */
     public void SendVibeToAll(int intensity) {
-      if(this.IsConnected() && this.ButtplugClient != null) {
+      if(this.IsConnected() && this.BPClient != null) {
         foreach(Device device in this.Devices) {
           device.SendVibrate(intensity, -1, this.Profile.MAX_VIBE_THRESHOLD);
           device.SendRotate(intensity, true, -1, this.Profile.MAX_VIBE_THRESHOLD);
