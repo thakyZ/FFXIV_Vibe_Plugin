@@ -327,12 +327,7 @@ namespace FFXIV_Vibe_Plugin {
       List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged();
       // Overwrites the threshold for every motors
       foreach(Trigger trigger in triggers) {
-        foreach(TriggerDevice device in trigger.Devices) {
-          device.VibrateMotorsThreshold = Enumerable.Repeat((int)percentage, device.VibrateMotorsThreshold.Length).ToArray();
-          device.RotateMotorsThreshold = Enumerable.Repeat((int)percentage, device.RotateMotorsThreshold.Length).ToArray();
-          device.LinearMotorsThreshold = Enumerable.Repeat((int)percentage, device.LinearMotorsThreshold.Length).ToArray();
-        }
-        this.DeviceController.SendTrigger(trigger);
+        this.DeviceController.SendTrigger(trigger, (int)percentage);
       }
     }
   }
