@@ -11,7 +11,7 @@ using FFXIV_Vibe_Plugin.Device;
 
 namespace FFXIV_Vibe_Plugin.UI {
   internal class UIBanner {
-    public static void Draw(Logger logger, ImGuiScene.TextureWrap image, String donationLink, DevicesController devicesController) {
+    public static void Draw(int frameCounter, Logger logger, ImGuiScene.TextureWrap image, String donationLink, DevicesController devicesController) {
       ImGui.Columns(2, "###main_header", false);
       float logoScale = 0.2f;
       ImGui.SetColumnWidth(0, (int)(image.Width * logoScale + 20));
@@ -25,9 +25,16 @@ namespace FFXIV_Vibe_Plugin.UI {
         ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
       }
 
-      ImGui.Text($"Donations: {donationLink}");
+      if(frameCounter < 200) { // Make blink effect
+        ImGui.Text("Donations: ");
+      } else {
+        ImGui.Text("                        ");
+      }
+      ImGui.SameLine();
+      ImGui.Text($"{donationLink}");
       ImGui.SameLine();
       UI.Components.ButtonLink.Draw("Thanks for the donation ;)", donationLink, Dalamud.Interface.FontAwesomeIcon.Pray, logger);
+      
     }
   }
 }
