@@ -274,7 +274,7 @@ namespace FFXIV_Vibe_Plugin {
 
 
       ImGui.TextColored(ImGuiColors.DalamudViolet, "General Settings");
-      ImGui.BeginChild("###GENERAL_OPTIONS_ZONE", new Vector2(-1, 155f), true);
+      ImGui.BeginChild("###GENERAL_OPTIONS_ZONE", new Vector2(-1, 125f), true);
       {
         // Init table
         ImGui.BeginTable("###GENERAL_OPTIONS_TABLE", 2);
@@ -305,30 +305,6 @@ namespace FFXIV_Vibe_Plugin {
         }
         ImGui.SameLine();
         ImGuiComponents.HelpMarker("Maximum threshold for vibes (will override every devices).");
-
-        // Checkbox VIBE_HP_TOGGLE
-        ImGui.TableNextRow();
-        ImGui.TableNextColumn();
-        bool config_VIBE_HP_TOGGLE = this.ConfigurationProfile.VIBE_HP_TOGGLE;
-        ImGui.Text("Vibe on lost HP: ");
-        ImGui.TableNextColumn();
-        if(ImGui.Checkbox("###Vibe on lost HP.", ref config_VIBE_HP_TOGGLE)) {
-          this.ConfigurationProfile.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
-          this.Configuration.Save();
-        }
-
-        // Dropdown VIBE_HP_MODE
-        ImGui.SameLine();
-        int config_VIBE_HP_MODE = this.ConfigurationProfile.VIBE_HP_MODE;
-        ImGui.SetNextItemWidth(170);
-        string[] VIBE_HP_MODES = new string[] { "intensity" };
-        if(ImGui.Combo("###OPTION_VIBE_HP_MODES", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
-          this.ConfigurationProfile.VIBE_HP_MODE = config_VIBE_HP_MODE;
-          this.Configuration.Save();
-        }
-        ImGui.SameLine();
-        ImGuiComponents.HelpMarker("The less HP you have, the more it vibes on all toys (gets priority on other triggers).");
-        ImGui.TableNextRow();
 
         // Checkbox OPTION_VERBOSE_SPELL
         ImGui.TableNextColumn();
@@ -546,60 +522,67 @@ namespace FFXIV_Vibe_Plugin {
             int currentKind = (int)this.SelectedTrigger.Kind;
             if(ImGui.Combo("###TRIGGER_FORM_KIND", ref currentKind, TRIGGER_KIND, TRIGGER_KIND.Length)) {
               this.SelectedTrigger.Kind = currentKind;
+              if(currentKind == (int)Triggers.KIND.HPChange) {
+                this.SelectedTrigger.StartAfter = 0;
+                this.SelectedTrigger.StopAfter = 0;
+              }
               this.Configuration.Save();
             }
             ImGui.TableNextRow();
 
             // TRIGGER FROM_PLAYER_NAME
-            ImGui.TableNextColumn();
-            ImGui.Text("Player name:");
-            ImGui.TableNextColumn();
-            if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
-              this.SelectedTrigger.FromPlayerName = this.SelectedTrigger.FromPlayerName.Trim();
-              this.Configuration.Save();
-            };
-            ImGui.SameLine();
-            ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any. Ignored if chat listening to 'Echo' and chat message we through it.");
-            ImGui.TableNextRow();
+            if(currentKind != (int)Triggers.KIND.HPChange) {
+              ImGui.TableNextColumn();
+              ImGui.Text("Player name:");
+              ImGui.TableNextColumn();
+              if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
+                this.SelectedTrigger.FromPlayerName = this.SelectedTrigger.FromPlayerName.Trim();
+                this.Configuration.Save();
+              };
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any. Ignored if chat listening to 'Echo' and chat message we through it.");
+              ImGui.TableNextRow();
 
-            // TRIGGER START_AFTER
-            ImGui.TableNextColumn();
-            ImGui.Text("Start after");
-            ImGui.TableNextColumn();
-            ImGui.SetNextItemWidth(185);
-            if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-              this.Configuration.Save();
-            }
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(45);
 
-            if(ImGui.InputFloat("###TRIGGER_FORM_START_AFTER_INPUT", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-              this.Configuration.Save();
-            }
-            ImGui.SameLine();
-            ImGuiComponents.HelpMarker("In seconds");
-            ImGui.TableNextRow();
+              // TRIGGER START_AFTER
+              ImGui.TableNextColumn();
+              ImGui.Text("Start after");
+              ImGui.TableNextColumn();
+              ImGui.SetNextItemWidth(185);
+              if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+                this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGui.SetNextItemWidth(45);
 
-            // TRIGGER STOP_AFTER
-            ImGui.TableNextColumn();
-            ImGui.Text("Stop after");
-            ImGui.TableNextColumn();
-            ImGui.SetNextItemWidth(185);
-            if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-              this.Configuration.Save();
+              if(ImGui.InputFloat("###TRIGGER_FORM_START_AFTER_INPUT", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+                this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("In seconds");
+              ImGui.TableNextRow();
+
+              // TRIGGER STOP_AFTER
+              ImGui.TableNextColumn();
+              ImGui.Text("Stop after");
+              ImGui.TableNextColumn();
+              ImGui.SetNextItemWidth(185);
+              if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+                this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGui.SetNextItemWidth(45);
+              if(ImGui.InputFloat("###TRIGGER_FORM_STOP_AFTER_INPUT", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+                this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+                this.Configuration.Save();
+              }
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
+              ImGui.TableNextRow();
             }
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(45);
-            if(ImGui.InputFloat("###TRIGGER_FORM_STOP_AFTER_INPUT", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-              this.Configuration.Save();
-            }
-            ImGui.SameLine();
-            ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
-            ImGui.TableNextRow();
 
 
             // TRIGGER PRIORITY
