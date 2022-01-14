@@ -307,9 +307,9 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         bool config_VIBE_HP_TOGGLE = this.ConfigurationProfile.VIBE_HP_TOGGLE;
-        ImGui.Text("Vibe on HP Change: ");
+        ImGui.Text("Vibe on lost HP: ");
         ImGui.TableNextColumn();
-        if(ImGui.Checkbox("###Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
+        if(ImGui.Checkbox("###Vibe on lost HP.", ref config_VIBE_HP_TOGGLE)) {
           this.ConfigurationProfile.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
           this.Configuration.Save();
         }
@@ -324,7 +324,7 @@ namespace FFXIV_Vibe_Plugin {
           this.Configuration.Save();
         }
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker("The more you loose HP, the more it will vibe all toys");
+        ImGuiComponents.HelpMarker("The less HP you have, the more it vibes on all toys (gets priority on other triggers).");
         ImGui.TableNextRow();
 
         // Checkbox OPTION_VERBOSE_SPELL
@@ -351,6 +351,10 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.EndTable();
       }
       ImGui.EndChild();
+
+      if(this.ConfigurationProfile.VERBOSE_CHAT || this.ConfigurationProfile.VERBOSE_SPELL) {
+        ImGui.TextColored(ImGuiColors.DalamudOrange, "Please, disabled chat and spell logs for better ingame performance.");
+      }
     }
 
     public void DrawDevicesTab() {
