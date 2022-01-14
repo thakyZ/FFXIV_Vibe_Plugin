@@ -661,16 +661,16 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.EndTable();
             }
 
-
+            // TRIGGER FORM_TABLE_KIND_CHAT
+            ImGui.BeginTable("###TRIGGER_FORM_TABLE_KIND_SPELL", 2);
+            ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
+            ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL2", ImGuiTableColumnFlags.WidthStretch);
 
             // TRIGGER KIND:SPELL OPTIONS
             if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
-                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal ||
-                this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange) {
-              // TRIGGER FORM_TABLE_KIND_CHAT
-              ImGui.BeginTable("###TRIGGER_FORM_TABLE_KIND_SPELL", 2);
-              ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
-              ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_KIND_SPELL_COL2", ImGuiTableColumnFlags.WidthStretch);
+                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal
+                ) {
+
 
               // TRIGGER TYPE
               ImGui.TableNextColumn();
@@ -709,7 +709,12 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               ImGuiComponents.HelpMarker("Warning: Hitting no target will result to self as if you cast on yourself");
               ImGui.TableNextRow();
+            }
 
+            if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
+                this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal || 
+                this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange)
+            {
               // Min/Max amount values
               string type = "";
               if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
@@ -732,9 +737,8 @@ namespace FFXIV_Vibe_Plugin {
                 this.Configuration.Save();
               }
               ImGui.TableNextRow();
-
-              ImGui.EndTable();
             }
+            ImGui.EndTable();
 
             ImGui.TextColored(ImGuiColors.DalamudViolet, "Actions & Devices");
             ImGui.Separator();
