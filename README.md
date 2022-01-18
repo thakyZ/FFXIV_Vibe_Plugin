@@ -31,18 +31,11 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
 - [Intiface Desktop](https://intiface.com/desktop/)
 
-## Our TODO
-Our current ideas and feedbacks are in: [TODO List](./TODO.md)
-
-## Build yourself
-You can build yourself, instructions are here: [Build yourself](./BUILD.md)
 
 ## Installation
-1. Launch your game and open /xlplugins.
-2. Go to settings on the bottom left.
-3. Go to the `Experimental` tab.
-4. Under `Custom Plugin Repositories` add the following url `https://raw.githubusercontent.com/kaciexx/FFXIV_Vibe_Plugin/master/repo.json` and press the <kbd>+</kbd> icon.
-5. Press the `Save and close` button on the bottom left.
+1. Launch your game, open `/xlplugins`, go to the settings (bottom left) and in the `Experimental` tab.
+2. Under `Custom Plugin Repositories` add the following url `https://raw.githubusercontent.com/kaciexx/FFXIV_Vibe_Plugin/master/repo.json` and press the <kbd>+</kbd> icon.
+3. Press the `Save and close` button on the bottom left.
 
 Now you should be able to see `FFXIV Vibe Plugin`. Click install and enjoy. 
 
@@ -57,6 +50,12 @@ You have now FFXIV connected to Intiface. Now you can connect your device to Int
 should be able to use them with FFXIV Vibe Plugin.
 
 ![ingame](./Docs/screenshot.png)
+
+## Our TODO
+Our current ideas and feedbacks are in: [TODO List](./TODO.md)
+
+## Build yourself
+You can build yourself, instructions are here: [Build yourself](./BUILD.md)
 
 
 ## Tested devices
