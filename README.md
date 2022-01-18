@@ -52,10 +52,10 @@ should be able to use them with FFXIV Vibe Plugin.
 ![ingame](./Docs/screenshot.png)
 
 ## Our TODO
-Our current ideas and feedbacks are in: [TODO List](./TODO.md)
+Our current ideas and feedbacks are in: [TODO List](./Docs/TODO.md)
 
 ## Build yourself
-You can build yourself, instructions are here: [Build yourself](./BUILD.md)
+You can build yourself, instructions are here: [Build yourself](./Docs/BUILD.md)
 
 
 ## Tested devices
