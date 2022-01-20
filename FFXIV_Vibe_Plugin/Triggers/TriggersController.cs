@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Dalamud.Game.ClientState;
 using Dalamud.Game.Text;
 
 using FFXIV_Vibe_Plugin.Triggers;

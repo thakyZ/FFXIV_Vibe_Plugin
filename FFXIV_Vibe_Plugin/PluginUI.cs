@@ -589,7 +589,7 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TableNextColumn();
             ImGui.Text("Priority");
             ImGui.TableNextColumn();
-            if(ImGui.InputInt("###TRIGGER_FORM_PRIORITY", ref this.SelectedTrigger.Priority, 100)) {
+            if(ImGui.InputInt("###TRIGGER_FORM_PRIORITY", ref this.SelectedTrigger.Priority, 1)) {
               this.Configuration.Save();
             }
             ImGui.SameLine();
