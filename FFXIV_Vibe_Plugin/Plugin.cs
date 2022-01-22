@@ -48,7 +48,7 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _firstUpdated = false;
-    private PlayerStats PlayerStats;
+    private readonly PlayerStats PlayerStats;
     private ConfigurationProfile ConfigurationProfile;
     private readonly Logger Logger;
     private readonly ActionEffect hook_ActionEffect;
