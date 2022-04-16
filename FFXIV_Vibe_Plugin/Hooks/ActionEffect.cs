@@ -53,7 +53,8 @@ namespace FFXIV_Vibe_Plugin.Hooks {
 
     private void InitHook() {
       try {
-        IntPtr receiveActionEffectFuncPtr = this.Scanner.ScanText("4C 89 44 24 18 53 56 57 41 54 41 57 48 81 EC ?? 00 00 00 8B F9");
+        // Found on: https://github.com/lmcintyre/DamageInfoPlugin/blob/main/DamageInfoPlugin/DamageInfoPlugin.cs#L133
+        IntPtr receiveActionEffectFuncPtr = this.Scanner.ScanText("4C 89 44 24 ?? 55 56 57 41 54 41 55 41 56 48 8D 6C 24");
         receiveActionEffectHook = new Hook<HOOK_ReceiveActionEffectDelegate>(receiveActionEffectFuncPtr, (HOOK_ReceiveActionEffectDelegate)ReceiveActionEffect);
         
       } catch(Exception e) {

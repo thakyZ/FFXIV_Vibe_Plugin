@@ -28,7 +28,7 @@ namespace FFXIV_Vibe_Plugin.UI {
       if(frameCounter < 200) { // Make blink effect
         ImGui.Text("Donations: ");
       } else {
-        ImGui.Text("                        ");
+        ImGui.Text("                     ");
       }
       ImGui.SameLine();
       ImGui.Text($"{donationLink}");
