@@ -34,7 +34,6 @@ namespace FFXIV_Vibe_Plugin {
     private Dalamud.Game.Gui.ChatGui? DalamudChat { get; init; }
     private DalamudPluginInterface PluginInterface { get; init; }
     private CommandManager CommandManager { get; init; }
-    // TODO: fix me
     private Configuration Configuration { get; init; }
     private PluginUI PluginUi { get; init; }
     private GameNetwork GameNetwork { get; init; }
@@ -326,16 +325,11 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       float percentageHP = currentHP / maxHP * 100f;
-      float intensity = 100 - percentageHP;
-      if(intensity == 0) {
-        intensity = 0;
-      }
-
-      List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged((int)currentHP);
-      this.Logger.Debug($"Player HPChanged {currentHP}/{maxHP} {intensity}");
+      List<Trigger> triggers = TriggersController.CheckTrigger_HPChanged((int)currentHP, (float)percentageHP);
+      this.Logger.Debug($"Player HPChanged {currentHP}/{maxHP} {percentageHP}%");
       // Overwrites the threshold for every motors
       foreach(Trigger trigger in triggers) {
-        this.DeviceController.SendTrigger(trigger, (int)intensity);
+        this.DeviceController.SendTrigger(trigger);
       }
     }
   }

@@ -44,6 +44,8 @@ namespace FFXIV_Vibe_Plugin {
     private readonly int HEIGHT = 700;
     private readonly int COLUMN0_WIDTH = 120;
 
+    private string _tmp_void = "";
+
     // The value to send as a test for vibes.
     private int simulator_currentAllIntensity = 0;
 
@@ -531,58 +533,56 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TableNextRow();
 
             // TRIGGER FROM_PLAYER_NAME
-            if(currentKind != (int)Triggers.KIND.HPChange) {
-              ImGui.TableNextColumn();
-              ImGui.Text("Player name:");
-              ImGui.TableNextColumn();
-              if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
-                this.SelectedTrigger.FromPlayerName = this.SelectedTrigger.FromPlayerName.Trim();
-                this.Configuration.Save();
-              };
-              ImGui.SameLine();
-              ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any. Ignored if chat listening to 'Echo' and chat message we through it.");
-              ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Player name:");
+            ImGui.TableNextColumn();
+            if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
+              this.SelectedTrigger.FromPlayerName = this.SelectedTrigger.FromPlayerName.Trim();
+              this.Configuration.Save();
+            };
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("You can use RegExp. Leave empty for any. Ignored if chat listening to 'Echo' and chat message we through it.");
+            ImGui.TableNextRow();
 
 
-              // TRIGGER START_AFTER
-              ImGui.TableNextColumn();
-              ImGui.Text("Start after");
-              ImGui.TableNextColumn();
-              ImGui.SetNextItemWidth(185);
-              if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-                this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-                this.Configuration.Save();
-              }
-              ImGui.SameLine();
-              ImGui.SetNextItemWidth(45);
-
-              if(ImGui.InputFloat("###TRIGGER_FORM_START_AFTER_INPUT", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-                this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-                this.Configuration.Save();
-              }
-              ImGui.SameLine();
-              ImGuiComponents.HelpMarker("In seconds");
-              ImGui.TableNextRow();
-
-              // TRIGGER STOP_AFTER
-              ImGui.TableNextColumn();
-              ImGui.Text("Stop after");
-              ImGui.TableNextColumn();
-              ImGui.SetNextItemWidth(185);
-              if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-                this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-                this.Configuration.Save();
-              }
-              ImGui.SameLine();
-              ImGui.SetNextItemWidth(45);
-              if(ImGui.InputFloat("###TRIGGER_FORM_STOP_AFTER_INPUT", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
-                this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
-                this.Configuration.Save();
-              }
-              ImGui.SameLine();
-              ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
-              ImGui.TableNextRow();
+            // TRIGGER START_AFTER
+            ImGui.TableNextColumn();
+            ImGui.Text("Start after");
+            ImGui.TableNextColumn();
+            ImGui.SetNextItemWidth(185);
+            if(ImGui.SliderFloat("###TRIGGER_FORM_START_AFTER", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.Configuration.Save();
             }
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(45);
+
+            if(ImGui.InputFloat("###TRIGGER_FORM_START_AFTER_INPUT", ref this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+              this.SelectedTrigger.StartAfter = Helpers.ClampFloat(this.SelectedTrigger.StartAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("In seconds");
+            ImGui.TableNextRow();
+
+            // TRIGGER STOP_AFTER
+            ImGui.TableNextColumn();
+            ImGui.Text("Stop after");
+            ImGui.TableNextColumn();
+            ImGui.SetNextItemWidth(185);
+            if(ImGui.SliderFloat("###TRIGGER_FORM_STOP_AFTER", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(45);
+            if(ImGui.InputFloat("###TRIGGER_FORM_STOP_AFTER_INPUT", ref this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER)) {
+              this.SelectedTrigger.StopAfter = Helpers.ClampFloat(this.SelectedTrigger.StopAfter, this.TRIGGER_MIN_AFTER, this.TRIGGER_MAX_AFTER);
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
+            ImGui.TableNextRow();
 
 
             // TRIGGER PRIORITY
@@ -718,12 +718,31 @@ namespace FFXIV_Vibe_Plugin {
               if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
               if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) { type = "heal"; }
               if(this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange) { type = "health"; }
+              
+              // TRIGGER AMOUNT IN PERCENTAGE
+              ImGui.TableNextColumn();
+              ImGui.Text("Amount in percentage?");
+              ImGui.TableNextColumn();
+              if(ImGui.Checkbox("###TRIGGER_AMOUNT_IN_PERCENTAGE", ref this.SelectedTrigger.AmountInPercentage)){
+                this.SelectedTrigger.AmountMinValue = 0;
+                this.SelectedTrigger.AmountMaxValue = 100;
+                this.Configuration.Save();
+              }
+
+              
+
               // TRIGGER MIN_VALUE
               ImGui.TableNextColumn();
               ImGui.Text($"Min {type} value:");
               ImGui.TableNextColumn();
-              if(ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
-                this.Configuration.Save();
+              if (this.SelectedTrigger.AmountInPercentage) {
+                if(ImGui.SliderInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 0, 100)) {
+                  this.Configuration.Save();
+                }
+              } else {
+                if (ImGui.InputInt("###TRIGGER_FORM_MIN_AMOUNT", ref this.SelectedTrigger.AmountMinValue, 100)) {
+                  this.Configuration.Save();
+                }
               }
               ImGui.TableNextRow();
 
@@ -731,8 +750,15 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableNextColumn();
               ImGui.Text($"Max {type} value:");
               ImGui.TableNextColumn();
-              if(ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
-                this.Configuration.Save();
+              if (this.SelectedTrigger.AmountInPercentage) {
+                if (ImGui.SliderInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 0, 100)) {
+                  this.Configuration.Save();
+                }
+              }
+              else {
+                if (ImGui.InputInt("###TRIGGER_FORM_MAX_AMOUNT", ref this.SelectedTrigger.AmountMaxValue, 100)) {
+                  this.Configuration.Save();
+                }
               }
               ImGui.TableNextRow();
             }
@@ -1075,11 +1101,15 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawHelpTab() {
       string help = Plugin.GetHelp(this.Plugin.commandName);
       ImGui.TextWrapped(help);
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Plugin information");
       ImGui.Text($"App version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
       ImGui.Text($"Config version: {this.Configuration.Version}");
-
-    
-
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Pattern information");
+      ImGui.TextWrapped("You should use a string separated by the | (pipe) symbol with a pair of <Intensity> and <Duration in milliseconds>.");
+      ImGui.TextWrapped("Below is an example of a pattern that would vibe 1sec at 50pct intensity and 2sec at 100pct:");
+      ImGui.TextWrapped("Pattern example:");
+      this._tmp_void = "1000:50|2000:100";
+      ImGui.InputText("###HELP_PATTERN_EXAMPLE", ref this._tmp_void, 50);
     }
 
   }

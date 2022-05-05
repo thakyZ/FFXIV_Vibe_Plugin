@@ -108,7 +108,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       return triggers;
     }
 
-    public List<Trigger> CheckTrigger_HPChanged(int currentHP) {
+    public List<Trigger> CheckTrigger_HPChanged(int currentHP, float percentageHP) {
       List<Trigger> triggers = new();
      
       for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) {
@@ -116,10 +116,18 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
         // Ignore if not enabled
         if(!trigger.Enabled) { continue; }
-        
-        if(trigger.AmountMinValue >= currentHP) { continue; }
-        if(trigger.AmountMaxValue <= currentHP) { continue; }
-        
+
+        // Check if the amount is in percentage
+        if (trigger.AmountInPercentage) {
+          if (percentageHP < trigger.AmountMinValue) { continue; }
+          if (percentageHP > trigger.AmountMaxValue) { continue; }
+          this.Logger.Debug($"{percentageHP}, {trigger.AmountMinValue}, {trigger.AmountMaxValue}");
+        }
+        // If the amount is not in percentage check the amount value
+        else {
+          if (trigger.AmountMinValue >= currentHP) { continue; }
+          if (trigger.AmountMaxValue <= currentHP) { continue; }
+        }
         if(trigger.Kind == (int)KIND.HPChange) {
           triggers.Add(trigger);
         }
