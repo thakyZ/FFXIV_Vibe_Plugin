@@ -29,6 +29,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int SortOder = -1;
     public readonly string Id = "";
     public string Name = "";
+    public string Description = "";
     public int Kind = (int)KIND.Chat;
     public int ActionEffectType = (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Any;
     public int Direction = (int)DIRECTION.Any;

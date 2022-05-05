@@ -6,3 +6,4 @@
 5. Update the repo.json version, timestamp, downloadCount and download links.
 6. Tag the project version (eg: `git tag v1.4.0.0`)
 7. Create a release on github, upload the zip and publish
+8. Remove the FFXIV\_Vibe\_Plugin in devPlugins/FFXIV\_Vibe\_Plugin
