@@ -104,7 +104,8 @@ Be aware: this will overrides everything.
 - [This plugin discord](https://discord.gg/JnCGxa3gGa) 
 - [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
 
-# Donors
-Please concider doing a small donation if you like this plugin. We work a lot and gave a lots of nights to design it, listening to everything people wanted.
+# Donation & Donors
+Donation link: https://paypalme/kaciedev
+Please concider doing a small donation if you like this plugin. We worked a lot, gave a lots of free nights to design it, listening to everything people wanted and doing the implementation. 
 
 Thanks to: Maple (20$)
