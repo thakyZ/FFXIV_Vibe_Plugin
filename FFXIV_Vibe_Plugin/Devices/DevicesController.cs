@@ -332,9 +332,6 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
     }
 
-    public void SendVibrate(Device device, int intensity, int motorId = -1) {
-      device.SendVibrate(intensity, motorId, this.Profile.MAX_VIBE_THRESHOLD);
-    }
 
     public void SendPattern(string command, Device device, int threshold, int motorId = -1, int patternId = 0, float StartAfter = 0, float StopAfter = 0) {
       this.SaveCurrentMotorAndDevicePlayingState(device, motorId);
@@ -346,7 +343,8 @@ namespace FFXIV_Vibe_Plugin.Device {
       string deviceAndMotorId = $"{device.Name}:{motorId}";
       int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
 
-      // Make sure things stops by sending zero
+      // Make sure things stops if StopAfter is set by sending a zero. 
+      // We make sure to send the zero to the correct device and if it is still running.
       bool forceStop = false;
       Thread tStopAfter = new(delegate () {
         if(StopAfter == 0) { return; }
@@ -354,7 +352,7 @@ namespace FFXIV_Vibe_Plugin.Device {
         if(startedUnixTime == this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
           forceStop = true;
           this.SendCommand(command, device, 0, motorId);
-          this.Logger.Debug($"Force stoping {deviceAndMotorId} because of StopAfter={StopAfter}");
+          this.Logger.Debug($"Force stopping {deviceAndMotorId} because of StopAfter={StopAfter}");
         }
       });
       tStopAfter.Start();
@@ -363,7 +361,7 @@ namespace FFXIV_Vibe_Plugin.Device {
         
         Thread.Sleep((int)StartAfter * 1000);
         
-        // Stop exectution if a new pattern is send to the same device and motor.
+        // Stop exectution if a new pattern is sent to the same device and motor.
         if(startedUnixTime != this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
           return;
         }
@@ -411,6 +409,10 @@ namespace FFXIV_Vibe_Plugin.Device {
       } else if(command == "linear") {
         this.SendLinear(device, intensity, motorId, duration);
       }
+    }
+
+    public void SendVibrate(Device device, int intensity, int motorId = -1) {
+      device.SendVibrate(intensity, motorId, this.Profile.MAX_VIBE_THRESHOLD);
     }
 
     public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
