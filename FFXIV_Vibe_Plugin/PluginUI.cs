@@ -1120,7 +1120,7 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.TextWrapped("You should use a string separated by the | (pipe) symbol with a pair of <Intensity> and <Duration in milliseconds>.");
       ImGui.TextWrapped("Below is an example of a pattern that would vibe 1sec at 50pct intensity and 2sec at 100pct:");
       ImGui.TextWrapped("Pattern example:");
-      this._tmp_void = "1000:50|2000:100";
+      this._tmp_void = "50:1000|100:2000";
       ImGui.InputText("###HELP_PATTERN_EXAMPLE", ref this._tmp_void, 50);
     }
 
