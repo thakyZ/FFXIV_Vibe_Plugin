@@ -7,10 +7,15 @@
     <OutputType>WinExe</OutputType>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</OutputPath>
+    <BaseOutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,5 +42,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DalamudPackager" Version="2.1.7" />
   </ItemGroup>
 </Project>
