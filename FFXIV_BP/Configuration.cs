@@ -1,7 +1,8 @@
-﻿using Dalamud.Configuration;
-using Dalamud.Plugin;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using Dalamud.Configuration;
+using Dalamud.Plugin;
 
 namespace FFXIV_Vibe_Plugin {
   [Serializable]

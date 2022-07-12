@@ -1,8 +1,9 @@
 ﻿using System;
+
 using Dalamud.Game.ClientState;
 
 namespace FFXIV_Vibe_Plugin {
-  
+
   internal class PlayerStats {
     Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter localPlayer;
 
@@ -14,8 +15,8 @@ namespace FFXIV_Vibe_Plugin {
     private float _CurrentHp, _prevCurrentHp = 0;
     private float _MaxHp, _prevMaxHp = 0;
 
-    public PlayerStats( ClientState clientState) {
-      if(clientState != null && clientState.LocalPlayer != null) {
+    public PlayerStats(ClientState clientState) {
+      if (clientState != null && clientState.LocalPlayer != null) {
         this.localPlayer = clientState.LocalPlayer;
 
         // Init variables
@@ -25,7 +26,7 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void update() {
-      if(this.localPlayer == null) { return;  }
+      if (this.localPlayer == null) { return; }
       this._updateCurrentHp();
     }
 
@@ -36,10 +37,10 @@ namespace FFXIV_Vibe_Plugin {
       this._MaxHp = this.localPlayer.MaxHp;
 
       // Send events after all value updated
-      if(this._CurrentHp != this._prevCurrentHp) {
+      if (this._CurrentHp != this._prevCurrentHp) {
         event_CurrentHpChanged?.Invoke(this, EventArgs.Empty);
       }
-      if(this._MaxHp != this._prevMaxHp) {
+      if (this._MaxHp != this._prevMaxHp) {
         event_MaxHpChanged?.Invoke(this, EventArgs.Empty);
       }
 
