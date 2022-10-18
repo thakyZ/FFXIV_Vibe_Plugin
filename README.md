@@ -35,47 +35,18 @@ Well done ! You have now FFXIV connected to Intiface and your toys.
 
 ![ingame](./Docs/screenshot.png)
 
-## Quick guide to make it work
-
-| Command                | Description  |
-|------------------------|--------------|
-| /fvp | List all the available commands |
-| /fvp connect [ip[:port]] | Connect to Intiface |
-| /fvp disconnect | Disconnect from Intiface |
-| /fvp scan | Force re-scanning |
-| /fvp toys_list | List all the toys that are connected |
-| /fvp save [file path] | Save the current configuration |
-| /fvp load [file path] | Load a configuration |
-| /fvp chat_list_triggers | List all the added words and intensity. |
-| /fvp chat_add <intensity 0-100> <The words to match> | Add a word that will trigger update the intensity of the toy. |
-| /fvp chat_remove <id> | Remove a word from the list. |
-| /fvp chat_user <username> | Triggered only by the define username. |
-| /fvp hp_toggle | Will vibe when some HP are missing. |
-| /fvp send <0-100> | Sends some vibes to the toys |
-| /fvp threshold <0-100> | Will pet to feel it to strongly. |
-| /fvp stop | Stop the toys (basically sending zero intensity). |
-
-### Examples
-
-```
-/fvp connect
-/fvp add 20 hello world
-/fvp add 0 stop
-/fvp add 100 lol
-/fvp user Alice           <==== Only names matching "...Alice..." will be able to control you. 
-/fvp hp_toggle
-/fvp threshold 50
-```
-
-Now open the FFXIV chat texbox, select the /freecompany channel and write: `hello world`.
-
-Enjoy :)
 
 ## Tested controllers
 - Microsoft XBox Controller
 
 ## Tested toys
-- Lovense: Hush, Domi, Ferri, Diamo, Edge 2, Gush
+Please use Bluetooth and not lovense dongle.
+- Lovense: Nora, Hush, Domi, Ferri, Diamo, Edge 2, Gush
+
+## FAQ
+### My Lovense Nora is not doing rotations
+Please stop using Lovense Dongle. Connect using the Lovense Connect or bluetooth. If you don't have bluetooth
+please buy a bluetooth 5.0 dongle on amazon for 20$. 
 
 
 # Discord
