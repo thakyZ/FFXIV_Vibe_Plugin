@@ -392,6 +392,7 @@ party, a (cross) linkshell, or a free company chat.
         PrintError($"Can't load buttplug.io: {e.Message}");
         return;
       }
+      buttplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
       buttplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
       buttplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
       string host = this.Configuration.BUTTPLUG_SERVER_HOST;
@@ -425,6 +426,12 @@ party, a (cross) linkshell, or a free company chat.
       }
 
       this.ScanToys();
+    }
+
+    private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
+      this.Print("Server disconnected");
+      this.DisconnectButtplugs();
+      this._buttplugIsConnected = false;
     }
 
     private void ScanToys() {
