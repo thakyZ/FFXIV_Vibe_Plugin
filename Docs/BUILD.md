@@ -11,3 +11,5 @@ Don't forget to install the Nuggets:
 
 # Package for plugin
 Simply change the mode from Debug to Release. Ignore the error reported for UIDev project that is missing the manifest.
+
+The build will be in the project under: FFXIV\_Vibe\_Plugin/bin/x64/Release
