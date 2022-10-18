@@ -166,7 +166,7 @@ namespace FFXIV_BP {
       this.CommandManager.RemoveHandler(commandName);
       Chat.ChatMessage -= CheckForTriggers; // XXX: ???
       this.PluginUi.Dispose();
-      Print("Buttplug Disconnects!");
+      Print("Plugin dispose...");
       if(this.buttplugClient != null) {
         Print("Buttplug disconnecting...");
         try {
@@ -300,9 +300,9 @@ Example:
 
     private void ConnectButtplugs(string args) {
       if(this.buttplugIsConnected) {
-        Print("Disconnecting previous instance...");
+        Print("Disconnecting previous instance! Waiting 2sec...");
         this.DisconnectButtplugs();
-        Thread.Sleep(2000);
+        Thread.Sleep(200);
       }
       
       try {
@@ -325,16 +325,15 @@ Example:
       try {
         var uri = new Uri($"ws://{hostandport}/buttplug");
         var connector = new ButtplugWebsocketConnectorOptions(uri);
-        Print($"Connecting to {hostandport}...");
-        // FIXME: problematic when disconnection of toy occures
+        Print($"Connecting to {hostandport}.");
         Task task = buttplugClient.ConnectAsync(connector);
         task.Wait();
-        Print("Buttplug connected correctly...");
       } catch(Exception e) {
         PrintError($"Could not connect to {hostandport}");
       }
-      
-      
+
+      Thread.Sleep(200);
+
       if(buttplugClient.Connected) {
         Print($"Buttplug connected!");
         this.buttplugIsConnected = true;
@@ -356,12 +355,16 @@ Example:
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
-      Print("Added device: " + e.Device.Name);
+      Thread.Sleep(2000);
+      string name = e.Device.Name;
+      int index = (int)e.Device.Index;
+      Print($"Added device: {index}:{name}" );
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
        * Therefore, it is important to trigger a zero and some vibes before continuing further.
        * Don't remove this part unless you want to debug for hours.
        */
+      
       this.sendVibes(0, false); // Needed to make sure we can play with the toys again
       this.sendVibes(0.1f, false);
       Thread.Sleep(500);
@@ -377,10 +380,13 @@ Example:
       try {
         Task task = this.buttplugClient.DisconnectAsync();
         task.Wait();
+        Print("Disconnecting! Waiting 2sec...");
+        Thread.Sleep(2000); // Wait a bit before reloading the plugin.
+        Print("Disconnected! Bye!");
       } catch(Exception e){
         // ignore exception, we are trying to do our best
       }
-      Print("Disconnected! Bye!");
+      
       this.buttplugIsConnected = false;
     }
 
