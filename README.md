@@ -23,6 +23,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 - Using RegExp for chat messages and spell names.
 - Define global threshold or threshold per motor.
 - Displaying battery life of devices.
+- Custom patterns per motor (save, with easy import, export).
 
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).

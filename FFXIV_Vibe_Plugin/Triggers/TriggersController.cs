@@ -46,10 +46,12 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         // Ignore if not enabled
         if(!trigger.Enabled) { continue; }
 
-        // Ignore if the player name is not authorized
-        if(!Helpers.RegExpMatch(this.Logger, ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
-        if(trigger.AllowedChatTypes.Count > 0 && !trigger.AllowedChatTypes.Any(ct => ct == (int)chatType)) {
-          continue;
+        // Ignore if the player name is not authorized when chat type is not "Echo"
+        if(chatType != XivChatType.Echo) {
+          if(!Helpers.RegExpMatch(this.Logger, ChatFromPlayerName, trigger.FromPlayerName)) { continue; }
+          if(trigger.AllowedChatTypes.Count > 0 && !trigger.AllowedChatTypes.Any(ct => ct == (int)chatType)) {
+            continue;
+          }
         }
 
         // Check if the KIND of the trigger is a chat and if it matches
