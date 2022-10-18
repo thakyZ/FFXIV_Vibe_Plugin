@@ -128,13 +128,16 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
-      mut.WaitOne();
-      ButtplugClientDevice buttplugClientDevice = arg.Device;
-      Device device = new(buttplugClientDevice);
-      this.Devices.Add(device);
-      this.Logger.Debug($"Added {device})");
-      device.IsConnected = true;
-      mut.ReleaseMutex();
+      try {
+        mut.WaitOne();
+        ButtplugClientDevice buttplugClientDevice = arg.Device;
+        Device device = new(buttplugClientDevice);
+        this.Devices.Add(device);
+        this.Logger.Debug($"Added {device})");
+        device.IsConnected = true;
+      } finally {
+        mut.ReleaseMutex();
+      }
 
 
       /**
@@ -150,15 +153,18 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-      mut.WaitOne();
-      int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
+      try {
+        mut.WaitOne();
+        int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
 
-      Device device = Devices[index];
-      this.Logger.Debug($"Removed {Devices[index]}");
-      this.Devices.RemoveAt(index);
-      device.IsConnected = false;
-      
-      mut.ReleaseMutex();
+        Device device = Devices[index];
+        this.Logger.Debug($"Removed {Devices[index]}");
+        this.Devices.RemoveAt(index);
+        device.IsConnected = false;
+
+      } finally {
+        mut.ReleaseMutex();
+      }
     }
 
     public void Disconnect() {
