@@ -10,8 +10,11 @@ namespace FFXIV_Vibe_Plugin {
     private readonly List<Pattern> BuiltinPatterns = new();
     private List<Pattern> CustomPatterns = new();
 
+    /**
+     * Pattern is: [intensity]:[duration in ms]
+     */
     public Patterns() {
-      this.AddBuiltinPattern(new Pattern("intensity", "100:0")); // TODO: change 5 to 100 and use threshold
+      this.AddBuiltinPattern(new Pattern("intensity", "100:0")); // Don't change this one. 
       this.AddBuiltinPattern(new Pattern("ramp", "10:150|20:150|30:150|40:150|50:150|60:150|70:150|80:150|90:150|100:250|0:0"));
       this.AddBuiltinPattern(new Pattern("bump", "10:150|20:150|30:150|40:150|50:150|60:150|70:150|80:150|90:150|100:250|50:250|100:500|0:0"));
       this.AddBuiltinPattern(new Pattern("square", "100:800|50:800|0:200|100:1000|0:0"));
