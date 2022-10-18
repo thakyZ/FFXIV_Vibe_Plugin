@@ -25,9 +25,12 @@ namespace FFXIV_Vibe_Plugin.Experimental {
     // Lumina excel sheet for actions.
     private readonly Lumina.Excel.ExcelSheet<Lumina.Excel.GeneratedSheets.Action>? LuminaActionSheet;
 
-    // Hook event
-    private delegate void ReceiveActionEffectDelegate(int sourceId, IntPtr sourceCharacter, IntPtr pos, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
-    private Hook<ReceiveActionEffectDelegate>? receiveActionEffectHook;
+    // Hooks
+    private delegate void HOOK_ReceiveActionEffectDelegate(int sourceId, IntPtr sourceCharacter, IntPtr pos, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
+    private Hook<HOOK_ReceiveActionEffectDelegate>? receiveActionEffectHook;
+
+    // Event to dispatch.
+    public event EventHandler<HookActionEffects_ReceivedEventArgs>? ReceivedEvent;
 
     // Constructor
     public HookActionEffect(DataManager dataManager, Logger logger, SigScanner scanner, ClientState clientState, ObjectTable gameObjects) {
@@ -47,13 +50,11 @@ namespace FFXIV_Vibe_Plugin.Experimental {
       receiveActionEffectHook?.Disable();
       receiveActionEffectHook?.Dispose();
     }
-    
-
 
     private void InitHook() {
       try {
         IntPtr receiveActionEffectFuncPtr = this.Scanner.ScanText("4C 89 44 24 18 53 56 57 41 54 41 57 48 81 EC ?? 00 00 00 8B F9");
-        receiveActionEffectHook = new Hook<ReceiveActionEffectDelegate>(receiveActionEffectFuncPtr, (ReceiveActionEffectDelegate)ReceiveActionEffect);
+        receiveActionEffectHook = new Hook<HOOK_ReceiveActionEffectDelegate>(receiveActionEffectFuncPtr, (HOOK_ReceiveActionEffectDelegate)ReceiveActionEffect);
         
       } catch(Exception e) {
         this.Dispose();
@@ -94,7 +95,8 @@ namespace FFXIV_Vibe_Plugin.Experimental {
         spell.damageType = Structures.DamageType.Unknown;
         spell.type = effect.type;
 
-        this.Logger.Log($"{spell}");
+        // DEBUG: this.Logger.Debug($"{spell}");
+        this.DispatchReceivedEvent(spell);
       } catch(Exception e) {
         this.Logger.Log($"{e.Message} {e.StackTrace}");
       }
@@ -137,7 +139,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
       // Sum all the damage.
       int counterValueFound = 0;
       for(int i = 0; i < entries.Count; i++) {
-        //Logger.Debug(entries[i].ToString());
+        // DEBUG: Logger.Debug(entries[i].ToString());
         if(i % 8 == 0) { // Value of dmg is located every 8
           uint tDmg = entries[i].value;
           if(entries[i].mult != 0) {
@@ -205,5 +207,16 @@ namespace FFXIV_Vibe_Plugin.Experimental {
       }
       return characterName;
     }
+
+    protected virtual void DispatchReceivedEvent(Structures.Spell spell) {
+      HookActionEffects_ReceivedEventArgs args = new();
+      args.Spell = spell;
+      ReceivedEvent?.Invoke(this, args);
+    }
+  }
+
+  // EventArgs data HookActionEffects_ReceivedEventArgs the 'Received' event is triggers.
+  internal class HookActionEffects_ReceivedEventArgs : EventArgs {
+    public Structures.Spell Spell { get; set; }
   }
 }
