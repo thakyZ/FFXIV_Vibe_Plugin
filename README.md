@@ -25,7 +25,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 
 4. Start *FFXIV* using the **FFXIV QuickLauncher**
 5. In game, type: `/xlplugins`. A red window should open. It's *Dalamud*, the plugin manage for FFXIV.
-6. In Dalamud go to: `Developer tools` > `Plugins in developement` > `Buttplug Triggers`
+6. In Dalamud go to: `Developer tools` > `Plugins in developement` > `FFXIV Vibe Plugin`
 7. Make sure the plugin is enabled
 8. Type: `/fvp`. You should see the configuration panel.
 9. Start `Intiface` and click on `Start Server`. Power on your toy, scan toys and make sure it is connected to Intiface.
