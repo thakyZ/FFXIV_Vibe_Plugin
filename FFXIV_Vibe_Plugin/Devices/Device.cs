@@ -162,8 +162,8 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendRotate(int intensity, bool clockWise=true, int motorId=-1, int threshold = 100) {
-      if(this.ButtplugClientDevice == null) return;
-        if(!CanRotate || !IsConnected) return;
+      if(this.ButtplugClientDevice == null) return;  
+      if(!CanRotate || !IsConnected) return;
       Dictionary<uint, (double, bool)> motorIntensity = new();
       for(int i = 0; i < this.RotateMotors; i++) {
         if(motorId == -1 || motorId == i) {

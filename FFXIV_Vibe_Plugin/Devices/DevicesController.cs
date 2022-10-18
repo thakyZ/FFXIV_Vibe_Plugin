@@ -238,9 +238,10 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
                 int motorThreshold = triggerDevice.VibrateMotorsThreshold[motorId];
                 int motorPatternId = triggerDevice.VibrateMotorsPattern[motorId];
+                float startAfter = trigger.StartAfter;
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                  this.SendVibrate(device, motorThreshold, motorId);
+                  this.SendVibratePattern(device, motorThreshold, motorId, motorPatternId, startAfter);
                 }
               }
             }
@@ -252,12 +253,8 @@ namespace FFXIV_Vibe_Plugin.Device{
                 int motorThreshold = triggerDevice.RotateMotorsThreshold[motorId];
                 int motorPatternId = triggerDevice.RotateMotorsPattern[motorId];
                 if(motorEnabled) {
-                  if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
-                    this.SendRotate(device, motorThreshold, motorId);
-                  } else {
-                    // TODO: use pattern !!!
-                  }
+                  this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} patternId={motorPatternId} with threshold: {motorThreshold}!");
+                  this.SendRotatePattern(device, motorThreshold, motorId, motorPatternId);
                 }
               }
             }
@@ -317,12 +314,46 @@ namespace FFXIV_Vibe_Plugin.Device{
       device.SendVibrate(intensity, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 
+    public void SendVibratePattern(Device device, int threshold, int motorId=-1, int patternId=0, float StartAfter=0) {
+      
+      Pattern pattern = Patterns.Get(patternId);
+      
+      string[] patternSegments = pattern.Value.Split("|");
+      this.Logger.Log($"Sending vibrate pattern={pattern.Name} ({patternSegments.Length} segments)");
+      new Thread(delegate () {
+        Thread.Sleep((int)StartAfter*1000);
+        for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
+          
+          // TODO: how to stop previous pattern ????
+
+          string patternSegment = patternSegments[segIndex];
+          string[] patternValues = patternSegment.Split(":");
+          int intensity = Helpers.ClampIntensity(Int32.Parse(patternValues[0]), threshold);
+          int duration = Int32.Parse(patternValues[1]);
+          this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
+          this.SendVibrate(device, intensity, motorId);
+          Thread.Sleep(duration);
+        }
+      }).Start();
+    }
+
     public void SendRotate(Device device, int intensity, int motorId = -1, bool clockwise = true) {
       device.SendRotate(intensity, clockwise, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
     }
 
-    public void SendLinear(Device device, int intensity, int duration = 500, int motorId = -1) {
+    public void SendRotatePattern(Device device, int threshold, int motorId = -1, int patternId=0) {
+      
+      this.SendRotate(device, threshold, motorId);
+      this.Logger.Log("Sending pattern rotate");
+    }
+
+    public void SendLinear(Device device, int intensity, int motorId = -1, int duration = 500) {
       device.SendLinear(intensity, duration, motorId, this.Configuration.MAX_VIBE_THRESHOLD);
+    }
+
+    public void SendLinearPattern(Device device, int threshold, int motorId = -1, int patternId = 0) {
+      this.SendLinear(device, threshold, motorId);
+      this.Logger.Log("Sending pattern linear");
     }
 
     public static void SendStop(Device device) {

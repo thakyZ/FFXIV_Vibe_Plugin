@@ -98,7 +98,6 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     public FFXIV_Vibe_Plugin.Triggers.DIRECTION GetSpellDirection(Structures.Spell spell) {
       string myName = this.PlayerStats.GetPlayerName();
-
      
       List<Structures.Player> targets = new();
       if(spell.Targets != null) {
