@@ -13,7 +13,6 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
 using Buttplug;
-using System.Timers;
 
 // Experimental
 using static FFXIV_BP.PlayerStats;
@@ -102,19 +101,18 @@ namespace FFXIV_BP {
 
       // Default values
       this.AuthorizedUser = "";
-
-
     }
 
     private readonly XivChatType[] allowedChatTypes = {
-            XivChatType.Say, XivChatType.Party,
-            XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
-            XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
-            XivChatType.FreeCompany, XivChatType.CrossParty,
-            XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
-            XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
-            XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
-            XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 };
+      XivChatType.Say, XivChatType.Party,
+      XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
+      XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
+      XivChatType.FreeCompany, XivChatType.CrossParty,
+      XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
+      XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
+      XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
+      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 
+    };
 
     private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
       string sender = _sender.ToString();
@@ -143,18 +141,20 @@ namespace FFXIV_BP {
 
       }
       this.PluginUi.Draw();
-      if(this.clientState != null && this.clientState.LocalPlayer != null) {
 
+      if(!this.buttplugIsConnected) { return;  }
+      if(this.clientState == null || this.clientState.LocalPlayer == null) { return; }
 
-        // Send vibes on HP loss
-        if(this.hp_toggle) {
-          float currentHP = (float)this.clientState.LocalPlayer.CurrentHp;
-          float maxHP = (float)this.clientState.LocalPlayer.MaxHp;
-          float percentageHP = this.threshold * currentHP / maxHP;
-          float percentage = ((percentageHP) - this.threshold) * -1;
-          this.sendVibes(percentage);
-        }
-      }
+      // Send vibes on HP loss
+      if(this.hp_toggle) {
+        float currentHP = (float)this.clientState.LocalPlayer.CurrentHp;
+        float maxHP = (float)this.clientState.LocalPlayer.MaxHp;
+        float percentageHP = this.threshold * currentHP / maxHP;
+        float percentage = ((percentageHP) - this.threshold) * -1;
+        this.sendVibes(percentage);
+      }  
+
+      
     }
 
     private void DrawConfigUI() {
@@ -162,6 +162,7 @@ namespace FFXIV_BP {
     }
 
     public void Dispose() {
+      if(!buttplugIsConnected) { return; }
      
       this.CommandManager.RemoveHandler(commandName);
       Chat.ChatMessage -= CheckForTriggers; // XXX: ???
@@ -228,7 +229,6 @@ Example:
         if(args.StartsWith("test")) {
           this.PluginUi.Visible = true;
         } else if(args.StartsWith("connect")) {
-          
           ConnectButtplugs(args);
         } else if(args.StartsWith("scan")) {
           ScanToys();
@@ -309,6 +309,7 @@ Example:
         this.buttplugClient = new("buttplugtriggers-dalamud");
       } catch(Exception e) {
         PrintError($"Can't load buttplug.io: {e.Message}");
+        return;
       }
       buttplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
       buttplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
