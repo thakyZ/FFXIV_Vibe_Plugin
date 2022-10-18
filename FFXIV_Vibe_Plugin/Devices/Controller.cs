@@ -232,8 +232,12 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
                 if(motorEnabled) {
-                  this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
-                  this.SendVibrate(device, motorIntensitiy, motorId);
+                  if(triggerDevice.VibrateMotorsPattern[motorId] == 0) {
+                    this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
+                    this.SendVibrate(device, motorIntensitiy, motorId);
+                  } else {
+                    // TODO: use pattern !!!
+                  }
                 }
               }
             }
@@ -244,8 +248,12 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.RotateMotorsIntensity[motorId];
                 if(motorEnabled) {
-                  this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
-                  this.SendRotate(device, motorIntensitiy, motorId);
+                  if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
+                    this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
+                    this.SendRotate(device, motorIntensitiy, motorId);
+                  } else {
+                    // TODO: use pattern !!!
+                  }
                 }
               }
             }
@@ -256,8 +264,12 @@ namespace FFXIV_Vibe_Plugin.Device{
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.LinearMotorsIntensity[motorId];
                 if(motorEnabled) {
-                  this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}!");
-                  this.SendLinear(device, motorIntensitiy, motorId);
+                  if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
+                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}!");
+                    this.SendLinear(device, motorIntensitiy, motorId);
+                  } else {
+                    // TODO: use pattern !!!
+                  }
                 }
               }
             }
