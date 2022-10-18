@@ -38,7 +38,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string FromPlayerName = "";
     public string ToPlayerName = "";
     public float StartAfter = 0;
-    public float StopAfter = 120;
+    public float StopAfter = 0;
 
     // Device
     public List<TriggerDevice> Devices = new();
@@ -88,48 +88,44 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public Device.Device? Device;
 
     // Vibrate states per motor
-    public bool[]? VibrateSelectedMotors;
-    public int[]? VibrateMotorsIntensity;
-    public Pattern[]? VibrateMotorsPattern;
+    public bool[] VibrateSelectedMotors;
+    public int[] VibrateMotorsIntensity;
+    public int[] VibrateMotorsPattern;
 
     // Rotate states per motor
-    public bool[]? RotateSelectedMotors;
-    public int[]? RotateMotorsIntensity;
-    public Pattern[]? RotateMotorsPattern;
+    public bool[] RotateSelectedMotors;
+    public int[] RotateMotorsIntensity;
+    public int[] RotateMotorsPattern;
 
     // Linear states per motor
-    public bool[]? LinearSelectedMotors;
-    public int[]? LinearMotorsIntensity;
-    public int[]? LinearMotorsDuration;
-    public Pattern[]? LinearMotorsPattern;
+    public bool[] LinearSelectedMotors;
+    public int[] LinearMotorsIntensity;
+    public int[] LinearMotorsDuration;
+    public int[] LinearMotorsPattern;
 
     public TriggerDevice(Device.Device device) {
-      this.Set(device);
-    }
-
-    public override string ToString() {
-      return $"TRIGGER_DEVICE {this.Name}";
-    }
-
-    public void Set(Device.Device device) {
       this.Name = device.Name;
       this.Device = device;
 
       // Init vibration array
       this.VibrateSelectedMotors = new bool[device.CanVibrate ? device.VibrateMotors : 0];
       this.VibrateMotorsIntensity = new int[device.CanVibrate ? device.VibrateMotors : 0];
-      this.VibrateMotorsPattern = new Pattern[device.CanVibrate ? device.VibrateMotors : 0];
+      this.VibrateMotorsPattern = new int[device.CanVibrate ? device.VibrateMotors : 0];
 
       // Init rotate array
       this.RotateSelectedMotors = new bool[device.CanRotate ? device.RotateMotors : 0];
       this.RotateMotorsIntensity = new int[device.CanRotate ? device.RotateMotors : 0];
-      this.RotateMotorsPattern = new Pattern[device.CanRotate ? device.RotateMotors : 0];
+      this.RotateMotorsPattern = new int[device.CanRotate ? device.RotateMotors : 0];
 
       // Init linear array
       this.LinearSelectedMotors = new bool[device.CanLinear ? device.LinearMotors : 0];
       this.LinearMotorsIntensity = new int[device.CanLinear ? device.LinearMotors : 0];
       this.LinearMotorsDuration = new int[device.CanLinear ? device.LinearMotors : 0];
-      this.LinearMotorsPattern = new Pattern[device.CanLinear ? device.LinearMotors : 0];
+      this.LinearMotorsPattern = new int[device.CanLinear ? device.LinearMotors : 0];
+    }
+
+    public override string ToString() {
+      return $"TRIGGER_DEVICE {this.Name}";
     }
   }
 }
