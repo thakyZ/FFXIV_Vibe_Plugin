@@ -58,7 +58,7 @@ Our current ideas and feedbacks are in: [TODO List](./Docs/TODO.md)
 You can build yourself, instructions are here: [Build yourself](./Docs/BUILD.md)
 
 ## USB Dongle vs Lovense Dongle vs Other
-We recommend you to use a bluetooth dongle. Here is the one we are using: [TP-Link Nano USB Bluetooth 5.0 Adaptateur pour Plusieurs appareils, Dongle/récepteur Bluetooth Longue portée pour Windows 10/8.1/8/7, Plug and Play (UB500)](https://www.amazon.fr/gp/product/B09C25VRXD/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=B09C25VRXD&linkCode=as2&tag=kaciexx-21&linkId=8b6c8c6e693ab549216c2dacad34e03b)
+We recommend you to use a bluetooth dongle. Here is the one we are using: [TP-Link Nano USB Dongle Bluetooth 5.0](https://www.amazon.fr/gp/product/B09C25VRXD/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=B09C25VRXD&linkCode=as2&tag=kaciexx-21&linkId=8b6c8c6e693ab549216c2dacad34e03b)
 
 ## Tested devices
 - Microsoft XBox Controller
