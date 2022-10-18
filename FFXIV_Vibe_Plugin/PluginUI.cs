@@ -131,6 +131,7 @@ namespace FFXIV_Vibe_Plugin {
         } else {
           ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
         }
+        ImGui.Text("Donations: http://paypal.me/kaciedev ! Thanks :) !");
         ImGui.Columns(1);
 
 
@@ -711,7 +712,6 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawHelpTab() {
       string help = Plugin.GetHelp(this.CurrentPlugin.commandName);
       ImGui.TextWrapped(help);
-
     }
 
     
