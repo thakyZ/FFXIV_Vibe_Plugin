@@ -20,8 +20,9 @@ namespace FFXIV_Vibe_Plugin {
     public string BUTTPLUG_SERVER_HOST { get; set; } = "localhost";
     public int BUTTPLUG_SERVER_PORT { get; set; } = 12345;
 
+    public List<Triggers.Trigger> TRIGGERS { get; set; } = new List<Triggers.Trigger>();
     public SortedSet<ChatTrigger> CHAT_TRIGGERS { get; set; } = new SortedSet<ChatTrigger>();
-    public SortedSet<Triggers.Trigger> TRIGGERS { get; set; } = new SortedSet<Triggers.Trigger>();
+    
 
     // the below exist just to make saving less cumbersome
 

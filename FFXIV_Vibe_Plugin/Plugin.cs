@@ -51,7 +51,7 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private string AuthorizedUser = "";
-    private SortedSet<Triggers.Trigger> Triggers = new();
+    private List<Triggers.Trigger> Triggers = new();
     private SortedSet<Triggers.ChatTrigger> ChatTriggers = new();
 
     // Experiments
@@ -459,12 +459,16 @@ ID   Intensity   Text Match
       this.DeviceController.SendVibeToAll(intensity);
     }
 
-    public SortedSet<Trigger> GetTriggers() {
+    public List<Trigger> GetTriggers() {
       return this.Triggers;
     }
 
     public void AddTrigger(Trigger trigger) {
       this.Triggers.Add(trigger);
+    }
+
+    public void RemoveTrigger(Trigger trigger) {
+      this.Triggers.Remove(trigger);
     }
   }
 }
