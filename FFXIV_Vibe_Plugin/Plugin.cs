@@ -104,7 +104,6 @@ namespace FFXIV_Vibe_Plugin {
       this.Patterns = new Patterns();
       this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
       
-
       // Initialize the devices Controller
       this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.ConfigurationProfile, this.Patterns);
       if(this.ConfigurationProfile.AUTO_CONNECT) {

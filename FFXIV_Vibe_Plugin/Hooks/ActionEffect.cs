@@ -97,7 +97,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         // WARNING: if there is no target, some information will be wrong !
         // It is needed to avoid effect type if there is no target.
         if(targets.Count == 0) { 
-          spell.ActionEffectType = Structures.ActionEffectType.Nothing;
+          spell.ActionEffectType = Structures.ActionEffectType.Any;
         } else {
           spell.ActionEffectType = effect.type;
         }

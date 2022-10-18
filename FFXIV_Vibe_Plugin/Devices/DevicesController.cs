@@ -234,6 +234,10 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendTrigger(Triggers.Trigger trigger) {
+      if(!this.IsConnected()) {
+        this.Logger.Debug($"Not connected, cannot send ${trigger}");
+        return;
+      }
       this.Logger.Debug($"Sending trigger {trigger} (priority={trigger.Priority})");
 
       // Check if the trigger has the priority
@@ -241,7 +245,7 @@ namespace FFXIV_Vibe_Plugin.Device {
         this.CurrentPlayingTrigger = trigger;
       }
       if(trigger.Priority < this.CurrentPlayingTrigger.Priority) {
-        this.Logger.Debug($"Ignoring trigger because lower priority => {trigger}");
+        this.Logger.Debug($"Ignoring trigger because lower priority => {trigger} < {this.CurrentPlayingTrigger}");
         return;
       }
       this.CurrentPlayingTrigger = trigger;
