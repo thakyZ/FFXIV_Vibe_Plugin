@@ -6,12 +6,29 @@
 
 A plugin for FFXIV that will let you vibe your controller or toys.
 
+## Features
+- Easy UI interface.
+- Connect your device (manually or automatically).
+- Trigger some pattern from chat message.
+    - Custom chat selection.
+    - Custom allowed characters.
+- Trigger some pattern from spells.
+    - Custom spell name.
+    - Custom spell type (damage, heal...).
+    - Custom spell direction (outgoing, incoming, self).
+- Multiple devices per custom trigger.
+- UI to search through your triggers.
+- Delay start and stop patterns.
+- Custom device and motors.
+- Using RegExp for chat messages and spell names.
+- Define global threshold or threshold per motor.
+- Displaying battery life of devices.
+
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
+- [Intiface Desktop](https://intiface.com/desktop/)
 - [7-zip](https://www.7-zip.org/).
 - Visual Studio 2019 if you want to compile.
-- [Intiface Desktop](https://intiface.com/desktop/)
-
 
 ## Our TODO
 Our current ideas and feedbacks are in: [TODO List](./TODO.md)
@@ -68,4 +85,6 @@ please buy a bluetooth 5.0 dongle on amazon for 20$.
 - [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
 
 # Donors
+Please concider doing a small donation if you like this plugin. We work a lot and gave a lots of nights to design it, listening to everything people wanted.
+
 Thanks to: Maple
