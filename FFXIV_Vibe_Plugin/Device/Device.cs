@@ -17,9 +17,9 @@ namespace FFXIV_Vibe_Plugin.Device {
   }
 
   public class Device {
-    private readonly ButtplugClientDevice ButtplugClientDevice;
-    public int Id { get; set; }
-    public string Name { get; set; }
+    private readonly ButtplugClientDevice? ButtplugClientDevice;
+    public int Id = -1;
+    public string Name = "UnsetDevice";
     public bool CanVibrate = false;
     public int VibrateMotors = -1;
     public uint[] VibrateSteps = Array.Empty<uint>();
@@ -40,12 +40,14 @@ namespace FFXIV_Vibe_Plugin.Device {
     public int[] CurrentLinearIntensity = Array.Empty<int>();
 
     public Device(ButtplugClientDevice buttplugClientDevice) {
-      this.ButtplugClientDevice = buttplugClientDevice;
-      Id = (int)buttplugClientDevice.Index;
-      Name = buttplugClientDevice.Name;
-      this.SetCommands();
-      this.ResetMotors();
-      this.UpdateBatteryLevel();
+      if(this.ButtplugClientDevice != null) {
+        this.ButtplugClientDevice = buttplugClientDevice;
+        Id = (int)buttplugClientDevice.Index;
+        Name = buttplugClientDevice.Name;
+        this.SetCommands();
+        this.ResetMotors();
+        this.UpdateBatteryLevel();
+      }
     }
 
     public override string ToString() {

@@ -82,27 +82,33 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   public class TriggerDevice {
     public string Name = "";
     public bool IsEnabled = false;
-    public Device.Device? Device = null;
+    
     public bool ShouldVibrate = false;
     public bool ShouldRotate = false;
     public bool ShouldLinear = false;
     public bool ShouldStop = false;
 
-    public bool[] SelectedVibrateMotors;
-    public bool[] SelectedRotateMotors;
-    public bool[] SelectedLinearMotors;
+    public Device.Device? Device;
+    
+    public bool[]? SelectedVibrateMotors;
+    public bool[]? SelectedRotateMotors;
+    public bool[]? SelectedLinearMotors;
 
-    public int[] VibrateMotorsIntensity;
-    public int[] RotateMotorsIntensity;
-    public int[] LinearMotorsIntensity;
-    public int[] LinearMotorsDuration;
+    public int[]? VibrateMotorsIntensity;
+    public int[]? RotateMotorsIntensity;
+    public int[]? LinearMotorsIntensity;
+    public int[]? LinearMotorsDuration;
 
     private int Duration = 500;
 
-    public TriggerDevice(Device.Device device) {
+    public TriggerDevice() {
+
+    }
+
+    public void Set(Device.Device device) {
       this.Name = device.Name;
       this.Device = device;
-      
+
       // Init vibration array
       this.SelectedVibrateMotors = new bool[device.CanVibrate ? device.VibrateMotors : 0];
       this.VibrateMotorsIntensity = new int[device.CanVibrate ? device.VibrateMotors : 0];
@@ -112,7 +118,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.RotateMotorsIntensity = new int[device.CanRotate ? device.RotateMotors : 0];
 
       // Init linear array
-      
+
       this.SelectedLinearMotors = new bool[device.CanLinear ? device.LinearMotors : 0];
       this.LinearMotorsIntensity = new int[device.CanLinear ? device.LinearMotors : 0];
       this.LinearMotorsDuration = new int[device.CanLinear ? device.LinearMotors : 0];
