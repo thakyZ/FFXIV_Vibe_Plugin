@@ -75,7 +75,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
             Match m = Regex.Match(spellName, pattern, RegexOptions.IgnoreCase);
             if(m.Success) {
               // FIXME: only check the amounts when the trigger event is DamageAmount or heal Amount
-              if(trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.TRIGGER.HealAmount || trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.TRIGGER.DamageAmount) {
+              if(trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.HealAmount || trigger.Event == (int)FFXIV_Vibe_Plugin.Triggers.EVENT.DamageAmount) {
                 if(trigger.AmountMinValue <= spell.AmountAverage && spell.AmountAverage <= trigger.AmountMaxValue) {
                   this.Logger.Log($"{trigger.AmountMinValue} {trigger.AmountMaxValue} {spell.AmountAverage}");
                   triggers.Add(trigger);
