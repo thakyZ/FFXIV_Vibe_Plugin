@@ -615,7 +615,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TextColored(ImGuiColors.DalamudGrey, "Please add device(s)...");
             }
             
-            string[] patternNames = this.Patterns.Get().Select(p => p.Name).ToArray();
+            string[] patternNames = this.Patterns.GetAll().Select(p => p.Name).ToArray();
 
             for(int indexDevice = 0; indexDevice < triggerDevices.Count; indexDevice++) {
               string prefixLabel = $"###TRIGGER_FORM_COMBO_DEVICE_${indexDevice}";

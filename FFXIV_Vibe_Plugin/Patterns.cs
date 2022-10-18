@@ -15,8 +15,12 @@ namespace FFXIV_Vibe_Plugin {
       this.Add(new Pattern("bump", "10:500|20:1000|0:0"));
     }
 
-    public List<Pattern> Get() {
+    public List<Pattern> GetAll() {
       return this.List;
+    }
+
+    public Pattern Get(int index) {
+      return this.List[index];
     }
 
     public void Add(Pattern pattern) {
