@@ -57,6 +57,12 @@ should be able to use them with FFXIV Vibe Plugin.
 ## Our TODO
 Our current ideas and feedbacks are in: [TODO List](./Docs/TODO.md)
 
+A **profile selector (in game)** is scheduled to be developed. But since the
+begining of this project (28 Apr 2020), we have only reached a donation marker of
+20$. After so much effort, this plugin is not our priority anymore since we can
+not make a living from it.
+
+
 ## Build yourself
 You can build yourself, instructions are here: [Build yourself](./Docs/BUILD.md)
 
@@ -72,7 +78,7 @@ We recommend you to use a bluetooth dongle. Here is the one we are using: [TP-Li
 ### Troubleshooting
 1. Make sure your toy is not connected to another device (eg: your phone, your browser...). Disable the bluetooth on your phone.
 2. Make sure the addon is correctly installed (check the installation process again).
-3. Make sure you have the latest version.
+3. Make sure you have the latest version.)
 4. Upgrade your Intiface by clicking and installing any updates (`Settings` tab).
 5. Make sure the Intiface is up and running. Go to `Server status` > `Start Server`. You must have one green icon and one red icon on the top right side of the window.
 6. Ingame, make sure the addon is connected to Intiface. Click on `connect` (in the `Connect` tab). Now, go back to Intiface. You should have 2 green icons on the top right side of the window.
