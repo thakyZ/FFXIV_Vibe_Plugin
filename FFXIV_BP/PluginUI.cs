@@ -113,6 +113,8 @@ namespace FFXIV_BP {
       if(ImGui.Begin("FFXIV_BP Configuration", ref this.settingsVisible,
           ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
 
+
+
         // Checkbox DEBUG_VERBOSE
         bool config_DEBUG_VERBOSE = this.configuration.DEBUG_VERBOSE;
         if(ImGui.Checkbox("Verbose mode to display debug messages. ", ref config_DEBUG_VERBOSE)) {
@@ -120,10 +122,25 @@ namespace FFXIV_BP {
           this.configuration.Save();
         }
 
+        // Checkbox DEBUG_VERBOSE
+        bool config_AUTO_CONNECT = this.configuration.AUTO_CONNECT;
+        if(ImGui.Checkbox("Automatically connects. ", ref config_AUTO_CONNECT)) {
+          this.configuration.AUTO_CONNECT = config_AUTO_CONNECT;
+          this.configuration.Save();
+        }
+
         // Checkbox VIBE_HP_TOGGLE
         bool config_VIBE_HP_TOGGLE = this.configuration.VIBE_HP_TOGGLE;
-        if(ImGui.Checkbox("The less HP you have, the more vibes you take.", ref config_VIBE_HP_TOGGLE)) {
+        if(ImGui.Checkbox("Vibe on HP change.", ref config_VIBE_HP_TOGGLE)) {
           this.configuration.VIBE_HP_TOGGLE = config_VIBE_HP_TOGGLE;
+          this.configuration.Save();
+        }
+
+        // Checkbox VIBE_HP_TOGGLE
+        int config_VIBE_HP_MODE = this.configuration.VIBE_HP_MODE;
+        string[] VIBE_HP_MODES = new string[] { "normal", "shake" };
+        if(ImGui.Combo("Vibe mode.", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
+          this.configuration.VIBE_HP_MODE = config_VIBE_HP_MODE;
           this.configuration.Save();
         }
 

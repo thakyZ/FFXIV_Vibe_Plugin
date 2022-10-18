@@ -89,7 +89,7 @@ namespace FFXIV_BP {
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] CommandManager commandManager,
         [RequiredVersion("1.0")] ClientState clientState) {
-      
+
       this.PluginInterface = pluginInterface;
       this.CommandManager = commandManager;
       this.clientState = clientState;
@@ -98,7 +98,7 @@ namespace FFXIV_BP {
       this.Configuration.Initialize(this.PluginInterface);
 
       // you might normally want to embed resources and load them from the manifest stream
-      
+
       this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface, this);
 
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
@@ -118,6 +118,12 @@ namespace FFXIV_BP {
       this.playerStats = new PlayerStats(this.clientState);
       playerStats.event_CurrentHpChanged += this._player_currentHPChanged;
       playerStats.event_MaxHpChanged += this._player_currentHPChanged;
+
+      /** Experimental auto connect */
+      if(this.Configuration.AUTO_CONNECT) {
+        this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
+        this.sequencerTasks.Add(new SequencerTask("connect", 500));
+      }
     }
 
 
@@ -148,23 +154,21 @@ namespace FFXIV_BP {
 
     private void DrawUI() {
 
-      if(!this.firstUpdated) {
-        /*this.firstUpdated = true;
-        Print("Welcome");
-
-
-        // Automatically connects
-        this.ConnectButtplugs(""); 
-        */
-
-      }
       this.PluginUi.Draw();
 
       this.playerStats.update();
-
+      
       this.RunSequencer(this.sequencerTasks);
 
-      
+      this.draw_firstUpdated();
+
+    }
+
+    private void draw_firstUpdated() {
+      if(!this.firstUpdated) {
+        this.PrintDebug("First updated");
+      }
+      this.firstUpdated = true;
     }
 
     private void DisplayUI() {
@@ -176,33 +180,45 @@ namespace FFXIV_BP {
     }
 
     private void RunSequencer(List<SequencerTask> sequencerTasks) {
-      if(this.playSequence && this.sequencerTasks.Count > 0) {
+      if(sequencerTasks != null) {
+        
+        this.sequencerTasks = sequencerTasks;
+      }
 
-        SequencerTask st = sequencerTasks[0];
+      if(this.playSequence && this.sequencerTasks.Count > 0) {
+        
+        SequencerTask st = this.sequencerTasks[0];
+        
         if(st._startedTime == 0) {
           st.play();
-          string[] commandSplit = st.command.Split(':');
+          string[] commandSplit = st.command.Split(':', 2);
           string task = commandSplit[0];
-
-          if(task == "buttplug_sendVibe") {
-            float intensity = float.Parse(commandSplit[1]);
+          string param1 = commandSplit.Count() > 1 ? commandSplit[1] : "";
+          PrintDebug($"Playing sequence: {task} {param1}");
+          if(task == "connect") {
+            this.Command_ConnectButtplugs("connect");
+          } else if(task == "buttplug_sendVibe") {
+            float intensity = float.Parse(param1);
             this.buttplug_sendVibe(intensity);
           } else if(task == "print") {
-            string message = commandSplit[1];
-            this.Print(message);
+            this.Print(param1);
           } else if(task == "print_debug") {
-            string message = commandSplit[1];
-            this.PrintDebug(message);
+            this.PrintDebug(param1);
           } else if(task == "nothing") {
             // do nothing
+          } else {
+            PrintDebug($"Sequencer task unknown: {task} {param1}");
           }
+
         }
 
         if(st._startedTime + st.duration < this.getUnix()) {
           this.sequencerTasks[0]._startedTime = 0;
           this.sequencerTasks.RemoveAt(0);
-          PrintDebug("Playing next...");
+          
         }
+
+
       }
     }
 
@@ -439,7 +455,7 @@ Example:
        */
       this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
       this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0.1", 500));
+      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:1", 500));
       this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
     }
 
@@ -559,7 +575,6 @@ ID   Intensity   Text Match
         
         PrintDebug($"Intensity: {intensity.ToString()}");
         
-        
         // Set min and max limits
         if(intensity < 0) { intensity = 0.0f; }
         else if(intensity > 100) { intensity = 100; }
@@ -585,18 +600,30 @@ ID   Intensity   Text Match
       this.buttplug_sendVibe(intensity);
     }
     private void _player_currentHPChanged(object send, EventArgs e) {
-      /*float currentHP = this.playerStats.getCurrentHP();
+      float currentHP = this.playerStats.getCurrentHP();
       float maxHP = this.playerStats.getMaxHP();
       this.PrintDebug($"CurrentHP: {currentHP} / {maxHP}");
-      if(this.Configuration.HP_TOGGLE) {
-        float percentageHP = currentHP / maxHP;
-        float percentage = (1 - percentageHP)*100f;
+      if(this.Configuration.VIBE_HP_TOGGLE) {
+        float percentageHP = currentHP / maxHP * 100f;
+        float percentage = 100 - percentageHP;
         if(percentage == 0) {
           percentage = 0;
         }
-        this.PrintDebug($"CurrentPerentage: {percentage}");
-        this.sendVibes(percentage);
-      }*/
+        this.PrintDebug($"CurrentPercentage: {percentage}");
+        
+        int mode = this.Configuration.VIBE_HP_MODE;
+        if(mode == 0) { // normal
+          this.buttplug_sendVibe(percentage);
+        } else if(mode == 1) { // shake
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 100));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 2}", 100));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 100));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 4}", 100));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage / 2}", 100));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{percentage}", 500));
+          this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
+        }
+      }
     }
 
     private int getUnix() {

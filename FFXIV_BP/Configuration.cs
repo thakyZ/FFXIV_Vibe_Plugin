@@ -10,8 +10,10 @@ namespace FFXIV_BP {
     public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
 
     public bool VIBE_HP_TOGGLE { get; set; } = false;
+    public int VIBE_HP_MODE { get; set; } = 0;
     public int MAX_VIBE_THRESHOLD { get; set; } = 100;
     public bool DEBUG_VERBOSE { get; set; } = true;
+    public bool AUTO_CONNECT { get; set; } = true;
 
     // the below exist just to make saving less cumbersome
 
