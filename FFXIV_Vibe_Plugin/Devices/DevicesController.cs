@@ -329,7 +329,8 @@ namespace FFXIV_Vibe_Plugin.Device {
 
       // Make sure things stops by sending zero
       bool forceStop = false;
-      Thread tStopAfter = new Thread(delegate () {
+      Thread tStopAfter = new(delegate () {
+        if(StopAfter == 0) { return; }
         Thread.Sleep((int)StopAfter * 1000);
         if(startedUnixTime == this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
           forceStop = true;
@@ -339,9 +340,7 @@ namespace FFXIV_Vibe_Plugin.Device {
       });
       tStopAfter.Start();
 
-      Thread t = new Thread(delegate () {
-        
-        
+      Thread t = new(delegate () {
         Thread.Sleep((int)StartAfter * 1000);
         for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
 
