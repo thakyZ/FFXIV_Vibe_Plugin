@@ -10,3 +10,4 @@
 - Lumina: https://lumina.xiv.dev/docs/guides/basic-usage.html
 - Hook ActionEffect: https://github.com/lmcintyre/DamageInfoPlugin/blob/main/DamageInfoPlugin/DamageInfoPlugin.cs
 - https://github.com/aers/FFXIVClientStructs/tree/main/FFXIVClientStructs/FFXIV/
+- https://github.com/digital-pet/AetherSenseRedux/blob/master/AetherSenseRedux/Device.cs

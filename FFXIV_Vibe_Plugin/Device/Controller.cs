@@ -21,6 +21,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Buttplug related
     private ButtplugClient? ButtplugClient;
     private readonly List<Device> Devices = new();
+    private bool isScanning = false;
 
     // Internal variables
     private readonly static Mutex mut = new();
@@ -50,6 +51,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         this.ButtplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
         this.ButtplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
         this.ButtplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
+        this.ButtplugClient.ScanningFinished += ButtplugClient_OnScanComplete;
         string hostandport = host + ":" + port.ToString();
         
 
@@ -59,6 +61,7 @@ namespace FFXIV_Vibe_Plugin.Device{
           this.Logger.Log($"Connecting to {hostandport}.");
           Task task = this.ButtplugClient.ConnectAsync(connector);
           task.Wait();
+          this.ScanDevice();
         } catch(Exception e) {
           this.Logger.Error($"Could not connect to {hostandport}.", e);
         }
@@ -86,18 +89,42 @@ namespace FFXIV_Vibe_Plugin.Device{
       return isConnected;
     }
 
-    public void ScanToys() {
+    public void ScanDevice() {
       if(this.ButtplugClient == null) { return;  }
       this.Logger.Debug("Scanning for devices...");
       if(this.IsConnected()) {
         try {
+          this.isScanning = true;
           var task = this.ButtplugClient.StartScanningAsync();
           task.Wait();
         } catch(Exception e) {
+          this.isScanning = false;
           this.Logger.Error("Scanning issue. No 'Device Comm Managers' enabled on Intiface?");
           this.Logger.Error(e.Message);
         }
       }
+      
+    }
+    public bool IsScanning() {
+      return this.isScanning;
+    }
+
+    public void StopScanningDevice() {
+      if(this.ButtplugClient != null && this.IsConnected()) {
+        try {
+          Task task = this.ButtplugClient.StopScanningAsync();
+          task.Wait();
+        } catch(Exception) {
+          this.Logger.Debug("StopScanningDevice ignored: already stopped");
+        }
+      }
+      this.isScanning = false;
+    }
+
+    private void ButtplugClient_OnScanComplete(object? sender, EventArgs e) {
+      
+      // FIXME: this is not working, buttplug client emit the trigger instantly. Let's ignore for the moment.
+      // this.isScanning = false;
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
@@ -125,10 +152,12 @@ namespace FFXIV_Vibe_Plugin.Device{
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
       mut.WaitOne();
       int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
+
       Device device = Devices[index];
       this.Logger.Debug($"Removed {Devices[index]}");
       this.Devices.RemoveAt(index);
       device.IsConnected = false;
+      
       mut.ReleaseMutex();
     }
 

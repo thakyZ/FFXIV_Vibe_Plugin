@@ -246,8 +246,14 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.TextColored(ImGuiColors.DalamudViolet, "Actions");
       ImGui.BeginChild("###DevicesTab_General", new Vector2(-1, 40f), true);
       {
-        if(ImGui.Button("Scan toys", new Vector2(100, 24))) {
-          this.DeviceController.ScanToys();
+        if(this.DeviceController.IsScanning()) {
+          if(ImGui.Button("Stop scanning", new Vector2(100, 24))) {
+            this.DeviceController.StopScanningDevice();
+          }
+        } else {
+          if(ImGui.Button("Scan device", new Vector2(100, 24))) {
+            this.DeviceController.ScanDevice();
+          }
         }
 
         ImGui.SameLine();
@@ -326,10 +332,13 @@ namespace FFXIV_Vibe_Plugin {
       if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
         ImGui.Text($"--- Number of triggers {triggers.Count} ---");
         foreach(Triggers.Trigger trigger in triggers) {
-          string enabled = trigger.Enabled ? "" : "[disabled]";
-          if(ImGui.Selectable($"{enabled}{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
-            this.SelectedTrigger = trigger;
-            this.triggersViewMode = "edit";
+          if(trigger != null) {
+            string enabled = trigger.Enabled ? "" : "[disabled]";
+            string kind = Enum.GetName(typeof(Triggers.KIND), trigger.Kind).ToUpper()+": ";
+            if(ImGui.Selectable($"{enabled}{kind}{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
+              this.SelectedTrigger = trigger;
+              this.triggersViewMode = "edit";
+            }
           }
         }
         ImGui.EndChild();
