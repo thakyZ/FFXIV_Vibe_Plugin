@@ -554,17 +554,10 @@ namespace FFXIV_Vibe_Plugin {
               Triggers.TriggerDevice triggerDevice = triggerDevices[indexDevice];
               string deviceName = triggerDevice.Device != null ? triggerDevice.Device.Name : "UnknownDevice";
               if(ImGui.CollapsingHeader($"{deviceName}")) {
-                ImGui.Separator();
-
-                // TRIGGER FORM_TABLE_DEVICES
-                /*
-                ImGui.BeginTable($"###TRIGGER_FORM_TABLE_TRIGGER_DEVICE_SETTING_{indexDevice}", 2);
-                ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_TRIGGER_DEVICE_SETTING_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
-                ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_TRIGGER_DEVICE_SETTING_COL2", ImGuiTableColumnFlags.WidthStretch);
-                */
+                ImGui.Indent(10);
+               
                 if(triggerDevice != null && triggerDevice.Device != null) {
                   if(triggerDevice.Device.CanVibrate) {
-
                     ImGui.Text("Should Vibrate");
                     ImGui.SameLine();
                     ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE", ref triggerDevice.ShouldVibrate);
@@ -617,6 +610,7 @@ namespace FFXIV_Vibe_Plugin {
                     }
                   }
                   if(triggerDevice.Device.CanLinear) {
+                    ImGui.Separator();
                     ImGui.Text("Should Linear");
                     ImGui.SameLine();
                     ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR", ref triggerDevice.ShouldLinear);
@@ -657,9 +651,8 @@ namespace FFXIV_Vibe_Plugin {
                     this.Configuration.Save();
                   }
                 }
+                ImGui.Indent(-10);
               }
-
-              // ImGui.EndTable();
             }
             
 
