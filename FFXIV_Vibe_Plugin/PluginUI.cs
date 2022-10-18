@@ -26,7 +26,7 @@ namespace FFXIV_Vibe_Plugin {
     // Images
     private readonly Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new();
 
-    private string DonationLink = "http://paypal.me/kaciedev";
+    private readonly string DonationLink = "http://paypal.me/kaciedev";
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
