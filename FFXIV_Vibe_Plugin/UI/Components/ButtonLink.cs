@@ -4,7 +4,7 @@ using System.Diagnostics;
 using ImGuiNET;
 using FFXIV_Vibe_Plugin.Commons;
 
-namespace FFXIV_Vibe_Plugin.UIComponents {
+namespace FFXIV_Vibe_Plugin.UI.Components {
   internal class ButtonLink {
 
     public static void Draw(string text, string link, Dalamud.Interface.FontAwesomeIcon Icon, Logger Logger) {
