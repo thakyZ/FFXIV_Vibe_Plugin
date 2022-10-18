@@ -36,6 +36,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string SpellText = "";
     public int AmountMinValue = Trigger._initAmountMinValue;
     public int AmountMaxValue = Trigger._initAmountMaxValue;
+    public bool AmountInPercentage = false;
     public string FromPlayerName = "";
     public string ToPlayerName = "";
     public float StartAfter = 0;
