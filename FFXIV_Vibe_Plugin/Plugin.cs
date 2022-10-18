@@ -18,10 +18,6 @@ using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Objects;
 #endregion
 
-#region Other deps
-using Buttplug;
-#endregion
-
 #region FFXIV_Vibe_Plugin deps
 using FFXIV_Vibe_Plugin.Commons;
 using FFXIV_Vibe_Plugin.Hooks;
@@ -31,37 +27,6 @@ using FFXIV_Vibe_Plugin.Experimental;
 namespace FFXIV_Vibe_Plugin {
 
   public sealed class Plugin : IDalamudPlugin {
-    // Plugin definition
-    public string Name => "FFXIV Vibe Plugin";
-    public static readonly string ShortName = "FVP";
-    public readonly string commandName = "/fvp";
-
-    // Custom variables from Kacie
-    private readonly Logger Logger;
-    private readonly PlayerStats PlayerStats;
-    private bool _buttplugIsConnected = false;
-    private float _currentIntensity = -1;
-    private bool _firstUpdated = false;
-    private readonly FFXIV_Vibe_Plugin.Hooks.ActionEffect hook_ActionEffect;
-
-    // Experiments
-    private readonly FFXIV_Vibe_Plugin.Experimental.NetworkCapture experiment_networkCapture;
-
-    // Buttplug
-    public class ButtplugDevice {
-      public string Name { get; set; }
-      public int Id { get; set; }
-      public ButtplugDevice(int id, string name) {
-        Name = name;
-        Id= id;
-      }
-    }
-    public List<ButtplugDevice> ButtplugDevices = new();
-    
-    // Initialize buttplug
-    private Buttplug.ButtplugClient? buttplugClient;
-    private SortedSet<ChatTrigger> Triggers = new();
-
     [PluginService]
     [RequiredVersion("1.0")]
     private Dalamud.Game.Gui.ChatGui? DalamudChat { get; init; }
@@ -71,14 +36,24 @@ namespace FFXIV_Vibe_Plugin {
     private PluginUI PluginUi { get; init; }
     private GameNetwork GameNetwork { get; init; }
     private DataManager DataManager { get; init; }
+    private ClientState ClientState { get; init; }
 
-    // Others
-    private readonly ClientState ClientState;
+    // Plugin definition
+    public string Name => "FFXIV Vibe Plugin";
+    public static readonly string ShortName = "FVP";
+    public readonly string commandName = "/fvp";
+
+    // Custom variables from Kacie
+    private bool _firstUpdated = false;
+    private readonly Logger Logger;
+    private readonly ActionEffect hook_ActionEffect;
+    private readonly PlayerStats PlayerStats;
+    private readonly Device.Controller DeviceController;
     private string AuthorizedUser = "";
+    private SortedSet<ChatTrigger> Triggers = new();
 
-    // SequencerTask
-    private List<SequencerTask> sequencerTasks = new();
-    private readonly bool playSequence = true;
+    // Experiments
+    private readonly NetworkCapture experiment_networkCapture;
 
     // Chat types
     private readonly XivChatType[] allowedChatTypes = {
@@ -100,66 +75,57 @@ namespace FFXIV_Vibe_Plugin {
         [RequiredVersion("1.0")] SigScanner scanner,
         [RequiredVersion("1.0")] ObjectTable gameObjects,
         [RequiredVersion("1.0")] DataManager dataManager
-        )
-    {
+        ) {
 
+      // Init Plugin
       this.PluginInterface = pluginInterface;
       this.CommandManager = commandManager;
       this.GameNetwork = gameNetwork;
       this.ClientState = clientState;
       this.DataManager = dataManager;
-
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
       this.Configuration.Initialize(this.PluginInterface);
-      this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface, this);
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A vibe plugin for fun..."
       });
-
-      this.PluginInterface.UiBuilder.Draw += DrawUI;
-      this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
       if(DalamudChat != null && CheckForTriggers != null) {
         DalamudChat.ChatMessage += CheckForTriggers; // XXX: o.o
-      }
-
-
-      // Default values
-      this.AuthorizedUser = "";
-
-      /** Experimental */
-      this.PlayerStats = new PlayerStats(this.ClientState);
-      
-      PlayerStats.Event_CurrentHpChanged += this.Player_currentHPChanged;
-      PlayerStats.Event_MaxHpChanged += this.Player_currentHPChanged;
-
-      /** Experimental auto connect */
-      if(this.Configuration.AUTO_CONNECT) {
-        this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
-        this.sequencerTasks.Add(new SequencerTask("connect", 500));
       }
 
       // Initialize the logger
       this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
 
+      // Initialize player stats monitoring.
+      this.PlayerStats = new PlayerStats(this.ClientState);
+      PlayerStats.Event_CurrentHpChanged += this.Player_currentHPChanged;
+      PlayerStats.Event_MaxHpChanged += this.Player_currentHPChanged;
+
+      // Initialize the devices Controller
+      this.DeviceController = new Device.Controller(this.Logger, this.Configuration);
+      if(this.Configuration.AUTO_CONNECT) {
+        // TODO:
+        // this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
+        // this.sequencerTasks.Add(new SequencerTask("connect", 500));
+      }     
+
       // Initialize Hook ActionEffect
       this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
-
+      this.Logger.Log("okokokok");
+      
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
       
-      
-      
+      // UI
+      this.PluginUi = new PluginUI(this.PluginInterface, this.Configuration, this, this.DeviceController);
+      this.PluginInterface.UiBuilder.Draw += DrawUI;
+      this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
     }
-
-    private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
-      this.Logger.Info(args.Spell.ToString());
-    }
-
 
     public void Dispose() {
-      this.Logger.Debug("Plugin dispose...");
+      this.Logger.Debug("Disposing plugin...");
 
+      // Cleaning chat triggers.
       this.CommandManager.RemoveHandler(commandName);
       if(DalamudChat != null) {
         DalamudChat.ChatMessage -= CheckForTriggers;
@@ -172,20 +138,8 @@ namespace FFXIV_Vibe_Plugin {
       this.experiment_networkCapture.Dispose();
 
       this.PluginUi.Dispose();
-
-      // Check for buttplugClient
-      if(this.buttplugClient != null && this.buttplugClient.Connected) {
-        this.Logger.Debug("Buttplug disconnecting...");
-        try {
-          this.buttplugClient.DisconnectAsync();
-        } catch(Exception e) {
-          this.Logger.Error("Could not disconnect from buttplug. Was connected?", e);
-          return;
-        }
-      }
+      this.Logger.Debug("Plugin disposed!");
     }
-
-
 
     private void DrawUI() {
 
@@ -193,23 +147,17 @@ namespace FFXIV_Vibe_Plugin {
 
       this.PlayerStats.Update();
 
-      this.RunSequencer(this.sequencerTasks);
+      // TODO: this.RunSequencer(this.sequencerTasks);
 
-      this.Draw_firstUpdated();
-
-    }
-
-    private void Draw_firstUpdated() {
+      // Trigger first updated method
       if(!this._firstUpdated) {
         this.FirstUpdated();
-        this.Logger.Debug("First updated");
+        this._firstUpdated = true;
       }
-      this._firstUpdated = true;
-
-
     }
 
     private void FirstUpdated() {
+      this.Logger.Debug("First updated");
       this.LoadTriggersConfig();
     }
 
@@ -221,71 +169,14 @@ namespace FFXIV_Vibe_Plugin {
       this.PluginUi.Visible = true;
     }
 
-    private void RunSequencer(List<SequencerTask> sequencerTasks) {
-      if(sequencerTasks != null) {
-        this.sequencerTasks = sequencerTasks;
-      }
-
-      if(this.playSequence && this.sequencerTasks.Count > 0) {
-
-        SequencerTask st = this.sequencerTasks[0];
-
-        if(st._startedTime == 0) {
-          st.Play();
-          string[] commandSplit = st.Command.Split(':', 2);
-          string task = commandSplit[0];
-          string param1 = commandSplit.Length > 1 ? commandSplit[1] : "";
-          this.Logger.Debug($"Playing sequence: {task} {param1}");
-          if(task == "connect") {
-            this.Command_ConnectButtplugs("connect");
-          } else if(task == "buttplug_sendVibe") {
-            float intensity = float.Parse(param1);
-            this.Buttplug_sendVibe(intensity);
-          } else if(task == "print") {
-            this.Logger.Chat(param1);
-          } else if(task == "print_debug") {
-            this.Logger.Debug(param1);
-          } else if(task == "nothing") {
-            // do nothing
-          } else {
-            this.Logger.Debug($"Sequencer task unknown: {task} {param1}");
-          }
-        }
-
-        if(st._startedTime + st.Duration < GetUnix()) {
-          this.sequencerTasks[0]._startedTime = 0;
-          this.sequencerTasks.RemoveAt(0);
-        }
-      }
-    }
-
-   
-
-
-    private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
-      string sender = _sender.ToString();
-      if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
-        return;
-      }
-      string message = _message.ToString().ToLower();
-      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
-      if(matchingintensities.Any() && buttplugClient != null) {
-        int intensity = matchingintensities.Select(t => t.Intensity).Max();
-        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
-        this.Buttplug_sendVibe(intensity);
-      }
-    }
-
 
     public static string GetHelp(string command) {
       string helpMessage = $@"Usage:
-      
-      {command} connect [ip[:port]]
+      {command} config      
+      {command} connect
       {command} disconnect
-      {command} toys_list
       {command} save [file path]
       {command} load [file path]
-      {command} config
 
 Chat features
       {command} chat_list_triggers
@@ -325,7 +216,6 @@ party, a (cross) linkshell, or a free company chat.
 
     private void OnCommand(string command, string args) {
       if(args.Length == 0) {
-        PrintHelp();
         this.DisplayUI();
       } else {
         if(args.StartsWith("help")) {
@@ -333,11 +223,9 @@ party, a (cross) linkshell, or a free company chat.
         } else if(args.StartsWith("config")) {
           this.DisplayConfigUI();
         } else if(args.StartsWith("connect")) {
-          Command_ConnectButtplugs(args);
+          this.Command_DeviceController_Connect();
         } else if(args.StartsWith("disconnect")) {
-          this.DisconnectButtplugs();
-        } else if(args.StartsWith("toys_list")) {
-          this.Command_ToysList();
+          this.Command_DeviceController_Disconnect();
         } else if(args.StartsWith("chat_list_triggers")) {
           this.Command_ListTriggers();
         } else if(args.StartsWith("chat_add")) {
@@ -355,11 +243,11 @@ party, a (cross) linkshell, or a free company chat.
         } else if(args.StartsWith("threshold")) {
           this.Command_SetThreshold(args);
         } else if(args.StartsWith("send")) {
-          this.Command_SendIntensity(args);
+          // this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
-          this.Buttplug_sendVibe(0);
+          // this.Buttplug_sendVibe(0);
         } else if(args.StartsWith("play_pattern")) {
-          this.Play_pattern(args);
+          // this.Play_pattern(args);
         } else if(args.StartsWith("exp_network_start")) {
           this.experiment_networkCapture.StartNetworkCapture();
         } else if(args.StartsWith("exp_network_stop")) {
@@ -370,8 +258,43 @@ party, a (cross) linkshell, or a free company chat.
       }
     }
 
+    public void Command_DeviceController_Connect() {
+      string host = this.Configuration.BUTTPLUG_SERVER_HOST;
+      int port = this.Configuration.BUTTPLUG_SERVER_PORT;
+      this.DeviceController.Connect(host, port);
+    }
+
+    private void Command_DeviceController_Disconnect() {
+      this.DeviceController.Disconnect();
+    }
+
+
+    private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
+      this.Logger.Info(args.Spell.ToString());
+    }
+
+    /** LEGACY CODE IS BELLOW */
+
+
+
+    private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
+      string sender = _sender.ToString();
+      if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
+        return;
+      }
+      string message = _message.ToString().ToLower();
+      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
+      if(matchingintensities.Any() && this.DeviceController.IsConnected()) {
+        int intensity = matchingintensities.Select(t => t.Intensity).Max();
+        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
+        this.DeviceController.SendVibe(intensity);
+      }
+    }
+
+
+
     private void Command_LoadConfig(string args) {
-      string config; 
+      string config;
       try {
         string path = args.Split(" ")[1];
         config = File.ReadAllText(path);
@@ -419,129 +342,6 @@ party, a (cross) linkshell, or a free company chat.
       this.Logger.Chat($"Wrote current config to {path}");
     }
 
-
-    public void Command_ConnectButtplugs(string args) {
-      if(this._buttplugIsConnected) {
-        this.Logger.Debug("Disconnecting previous instance! Waiting 2sec...");
-        this.DisconnectButtplugs();
-        Thread.Sleep(200);
-      }
-
-      try {
-        this.buttplugClient = new("buttplugtriggers-dalamud");
-      } catch(Exception e) {
-        this.Logger.Error($"Can't load buttplug.io.", e);
-        return;
-      }
-      buttplugClient.ServerDisconnect += ButtplugClient_ServerDisconnected;
-      buttplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
-      buttplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
-      string host = this.Configuration.BUTTPLUG_SERVER_HOST;
-      int port = this.Configuration.BUTTPLUG_SERVER_PORT;
-      string hostandport = host + ":" + port.ToString();
-      if(args.Contains(" ")) {
-        hostandport = args.Split(" ", 2)[1];
-        if(!hostandport.Contains(":")) {
-          hostandport += port;
-        }
-      }
-
-      try {
-        var uri = new Uri($"ws://{hostandport}/buttplug");
-        var connector = new ButtplugWebsocketConnectorOptions(uri);
-        this.Logger.Chat($"Connecting to {hostandport}.");
-        Task task = buttplugClient.ConnectAsync(connector);
-        task.Wait();
-      } catch(Exception e) {
-        this.Logger.Error($"Could not connect to {hostandport}.", e);
-      }
-
-      Thread.Sleep(200);
-
-      if(buttplugClient.Connected) {
-        this.Logger.Chat($"Buttplug connected!");
-        this._buttplugIsConnected = true;
-      } else {
-        this.Logger.Error("Failed connecting (Intiface server is up?)");
-        return;
-      }
-
-      this.ScanToys();
-    }
-
-    private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
-      this.Logger.Debug("Server disconnected");
-      this.DisconnectButtplugs();
-      
-    }
-
-    public void ScanToys() {
-      this.Logger.Chat("Scanning for devices...");
-      if(buttplugClient != null) {
-        try {
-          buttplugClient.StartScanningAsync();
-        } catch(Exception e) {
-          this.Logger.Error("Scanning issue...", e);
-        }
-      }
-    }
-
-    private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
-      Thread.Sleep(500); // Make sure we are connected by waiting a bit
-      string name = e.Device.Name;
-      int index = (int)e.Device.Index;
-      this.Logger.Chat($"Added device: {index}:{name}");
-      this.ButtplugDevices.Add(new ButtplugDevice(index, name));
-
-      /**
-       * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
-       * Therefore, it is important to trigger a zero and some vibes before continuing further.
-       * Don't remove this part unless you want to debug for hours.
-       */
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:1", 500));
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
-    }
-
-    private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-      this.Logger.Log($"Removed device: {e.Device.Name}:{e.Device.Index}");
-      int index = this.ButtplugDevices.FindIndex(device => device.Id == e.Device.Index);
-      this.ButtplugDevices.RemoveAt(index);
-    }
-
-    public void DisconnectButtplugs() {
-      if(buttplugClient == null || !buttplugClient.Connected) {
-        this._buttplugIsConnected = false;
-        return;  }
-      try {
-        for(int i = 0; i < buttplugClient.Devices.Length; i++) {
-          this.Logger.Log($"Disconnecting device {i} {buttplugClient.Devices[i].Name}");
-          buttplugClient.Devices[i].Dispose();
-        }
-      } catch(Exception e) {
-        this.Logger.Error("Error while disconnecting device", e);
-      }
-      try {
-        Thread.Sleep(1000);
-        this.buttplugClient.DisconnectAsync();
-        this.Logger.Log("Disconnecting! Bye... Waiting 2sec...");
-      } catch(Exception e) {
-        // ignore exception, we are trying to do our best
-        this.Logger.Error("Error while disconnecting client", e);
-      }
-
-      this._buttplugIsConnected = false;
-      this.buttplugClient = null;
-    }
-
-    private void Command_ToysList() {
-      if(buttplugClient == null) { return; }
-      for(int i = 0; i < buttplugClient.Devices.Length; i++) {
-        string name = buttplugClient.Devices[i].Name;
-        this.Logger.Chat($"    {i}: {name}");
-      }
-    }
-
     private void Command_SetAuthorizedUser(string args) {
       try {
         AuthorizedUser = args.Split(" ", 2)[1];
@@ -555,8 +355,8 @@ party, a (cross) linkshell, or a free company chat.
     private void Command_ToggleHP() {
       bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
       this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
-      if(!hp_toggle && this._buttplugIsConnected) {
-        this.Buttplug_sendVibe(0); // Don't be cruel
+      if(!hp_toggle && this.DeviceController.IsConnected()) {
+        this.DeviceController.SendVibe(0); // Don't be cruel
       }
       this.Logger.Chat($"HP Toggle set to {hp_toggle}");
       this.Configuration.Save();
@@ -625,42 +425,10 @@ ID   Intensity   Text Match
       this.Logger.Chat(message);
     }
 
-
-    /**
-     * Sends an itensity vibe to all of the devices 
-     * @param {float} intensity
-     */
-    public void Buttplug_sendVibe(float intensity) {
-      if(this._currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
-        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
-
-        // Set min and max limits
-        if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
-        var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
-        for(int i = 0; i < buttplugClient.Devices.Length; i++) {
-          buttplugClient.Devices[i].SendVibrateCmd(newIntensity);
-        }
-        this._currentIntensity = newIntensity;
-      }
-    }
-
-    private void Command_SendIntensity(string args) {
-      string[] blafuckcsharp;
-      float intensity;
-      try {
-        blafuckcsharp = args.Split(" ", 2);
-        intensity = float.Parse(blafuckcsharp[1]);
-        this.Logger.Chat($"Command Send intensity {intensity}");
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for send [intensity].", e);
-        return;
-      }
-      this.Buttplug_sendVibe(intensity);
-    }
     private void Player_currentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
-      
+
       if(this.Configuration.VIBE_HP_TOGGLE) {
         float percentageHP = currentHP / maxHP * 100f;
         float percentage = 100 - percentageHP;
@@ -671,64 +439,15 @@ ID   Intensity   Text Match
 
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal
-          this.Buttplug_sendVibe(percentage);
+          this.DeviceController.SendVibe(percentage);
         } else if(mode == 1) { // shake
-          this.Play_patternShake(percentage);
+          this.DeviceController.Play_PatternShake(percentage);
         } else if(mode == 2) { // shake
-          this.Play_patternMountain(percentage);
+          this.DeviceController.Play_PatternMountain(percentage);
         }
       }
     }
 
-    private void Play_pattern(string args) {
-      try {
-        string[] param = args.Split(" ", 2);
-        string patternName = param[1];
-        this.Logger.Chat($"Play pattern {patternName}");
-        if(patternName == "shake") {
-          this.Play_patternShake(100);
-        } else if(patternName == "mountain") {
-          this.Play_patternMountain(30);
-        }
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for play_pattern [pattern_name] # shake, mountain", e);
-        return;
-      }
-    }
-
-    private void Play_patternShake(float from) {
-      this.sequencerTasks = new();
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 2}", 700));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from / 1.5}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
-    }
-
-    private void Play_patternMountain(float from) {
-      this.sequencerTasks = new();
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 50));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 1.5}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 200));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2.5}", 600));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from * 2}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{from}", 500));
-      this.sequencerTasks.Add(new SequencerTask($"buttplug_sendVibe:{0}", 200));
-    }
-
-    private static int GetUnix() {
-      return (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    }
-
-    public bool ButtplugIsConnected() {
-      return this._buttplugIsConnected;
-    }
-
-   
 
   }
 }
