@@ -4,7 +4,7 @@
     "Punchline": "Vibe controllers or toys",
     "Description": "Plugin that let you vibe your controller or toys",
     "RepoUrl": "https://github.com/kaciexx/FFXIV_Vibe_Plugin",
-    "InternalName": "ffxiv_vibe_plugin",
+    "InternalName": "FFXIV_Vibe_Plugin",
     "ApplicableVersion": "any",
     "Tags": [
         "vibe",
