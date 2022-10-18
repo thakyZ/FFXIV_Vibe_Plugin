@@ -21,7 +21,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Buttplug related
     private ButtplugClient? ButtplugClient;
     private readonly List<Device> Devices = new();
-    private readonly Dictionary<String, Device> VisitedDevice = new();
+    private readonly Dictionary<String, Device> VisitedDevices = new();
     private bool isScanning = false;
 
     // Internal variables
@@ -30,6 +30,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     public Controller(Logger logger, Configuration configuration) {
       this.Logger = logger;
       this.Configuration = configuration;
+      this.VisitedDevices = configuration.VISITED_DEVICES;
     }
 
     public void Dispose() {
@@ -135,8 +136,11 @@ namespace FFXIV_Vibe_Plugin.Device{
         device.IsConnected = true;
         this.Logger.Log($"{arg.Device.Name}, {buttplugClientDevice.Name}");
         this.Devices.Add(device);
-        if(!this.VisitedDevice.ContainsKey(device.Name)) {
-          this.VisitedDevice[device.Name] = device;
+        if(!this.VisitedDevices.ContainsKey(device.Name)) {
+          this.VisitedDevices[device.Name] = device;
+          this.Configuration.VISITED_DEVICES = this.VisitedDevices;
+          this.Configuration.Save();
+          this.Logger.Debug($"Adding device to visited list {device})");
         }
         this.Logger.Debug($"Added {device})");
       } finally {
@@ -213,7 +217,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     public Dictionary<String, Device> GetVisitedDevices() {
-      return this.VisitedDevice;
+      return this.VisitedDevices;
     }
 
     public void UpdateAllBatteryLevel() {

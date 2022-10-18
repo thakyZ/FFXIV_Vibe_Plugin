@@ -22,6 +22,8 @@ namespace FFXIV_Vibe_Plugin {
 
     public List<Triggers.Trigger> TRIGGERS { get; set; } = new();
     public SortedSet<ChatTrigger> CHAT_TRIGGERS { get; set; } = new SortedSet<ChatTrigger>();
+
+    public Dictionary<string, FFXIV_Vibe_Plugin.Device.Device> VISITED_DEVICES = new();
     
 
     // the below exist just to make saving less cumbersome

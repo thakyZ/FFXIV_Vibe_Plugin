@@ -366,7 +366,7 @@ namespace FFXIV_Vibe_Plugin {
             if(kindStr != null) {
               kindStr = kindStr.ToUpper();
             }
-            if(ImGui.Selectable($"{enabled}[{kindStr}]{trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
+            if(ImGui.Selectable($"{enabled} [{kindStr}] {trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
               this.SelectedTrigger = trigger;
               this.triggersViewMode = "edit";
             }
