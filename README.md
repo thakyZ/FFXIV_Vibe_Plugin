@@ -18,6 +18,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
     - Custom spell name.
     - Custom spell type (damage, heal...).
     - Custom spell direction (outgoing, incoming, self).
+    - Min and/or max dmg/heal values.
 - Multiple devices per custom trigger.
 - UI to search through your triggers.
 - Delay start and stop patterns.
@@ -26,6 +27,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 - Define global threshold or threshold per motor.
 - Displaying battery life of devices.
 - Custom patterns per motor (save, with easy import, export).
+- Vibe or trigger a pattern on HP Changed (the less HP you have the more it vibes)
 
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
