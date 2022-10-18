@@ -36,7 +36,7 @@ namespace SamplePlugin
 
         public void Dispose()
         {
-            this.goatImage.Dispose();
+            if (this.goatImage != null) this.goatImage.Dispose();
         }
 
         public void Draw()
