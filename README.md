@@ -18,7 +18,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 1. Download a [release here](https://github.com/kacie8989/FFXIV-Vibe-Plugin/releases)
 (or clone this repository and build the project using Visual Studio 2019)
 2. Go to FFXIV QuickLauncher folder (<kbd>WIN</kbd>+<kbd>R</kbd>, then `%appdata%\XIVLauncher\devPlugins`)
-3. Extract the compressed file (eg: `FFXIV_Vibe_Plugin_v0.0.8.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
+3. Extract the compressed file (eg: `FFXIV_Vibe_Plugin_v0.0.10.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
 
     - `C:\Users\<Username>\AppData\Roaming\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin`.
     - The folder should contain some DLL files.
@@ -27,9 +27,9 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 5. In game, type: `/xlplugins`. A red window should open. It's *Dalamud*, the plugin manage for FFXIV.
 6. In Dalamud go to: `Developer tools` > `Plugins in developement` > `Buttplug Triggers`
 7. Make sure the plugin is enabled
-8. Type: `/buttplugtriggers`. You should see a list of commands.
+8. Type: `/fvp`. You should see the configuration panel.
 9. Start `Intiface` and click on `Start Server`. Power on your toy, scan toys and make sure it is connected to Intiface.
-10. Back in to the game, start the connect command: `/buttplugtriggers connect`
+10. Back in to the game, start the connect command: `/fvp connect`
 
 Well done ! You have now FFXIV connected to Intiface and your toys. 
 
