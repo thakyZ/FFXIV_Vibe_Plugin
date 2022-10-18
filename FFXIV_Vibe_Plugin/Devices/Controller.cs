@@ -263,10 +263,11 @@ namespace FFXIV_Vibe_Plugin.Device{
               if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsIntensity != null) {
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.LinearMotorsIntensity[motorId];
+                int motorDuration = triggerDevice.LinearMotorsDuration[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}!");
-                    this.SendLinear(device, motorIntensitiy, motorId);
+                    this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}, duration: {motorDuration}!");
+                    this.SendLinear(device, motorIntensitiy, motorDuration, motorId);
                   } else {
                     // TODO: use pattern !!!
                   }
