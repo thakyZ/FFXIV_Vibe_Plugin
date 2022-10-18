@@ -19,9 +19,8 @@ namespace FFXIV_Vibe_Plugin {
         return $"{Intensity} {Text}";
       }
       public int CompareTo(object? obj) {
-        ChatTrigger? that = obj as ChatTrigger;
-        int thatintensity = that != null ? that.Intensity : 0;
-        return this.Intensity.CompareTo(thatintensity);
+      int thatintensity = obj is ChatTrigger that ? that.Intensity : 0;
+      return this.Intensity.CompareTo(thatintensity);
       }
     }
   
