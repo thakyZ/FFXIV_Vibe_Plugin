@@ -265,6 +265,7 @@ These commands let anyone whose name contains 'Alice' control all your connected
 
       if(spell.name != null) {
         // Experimentation
+        return;
         if(spell.name.StartsWith("16141:Tranchage")) {
           this.DeviceController.SendVibeToAll(10);
         }
