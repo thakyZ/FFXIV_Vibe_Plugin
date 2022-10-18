@@ -174,7 +174,10 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.EndTabItem();
             }
           }
-
+          if(ImGui.BeginTabItem("Patterns")) {
+            this.DrawPatternsTab();
+            ImGui.EndTabItem();
+          }
           if(ImGui.BeginTabItem("Help")) {
             this.DrawHelpTab();
             ImGui.EndTabItem();
@@ -867,6 +870,10 @@ namespace FFXIV_Vibe_Plugin {
         this.triggersViewMode = "delete";
       }
 
+    }
+
+    public void DrawPatternsTab() {
+      ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
     }
 
     public void DrawHelpTab() {
