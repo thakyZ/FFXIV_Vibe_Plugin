@@ -82,6 +82,19 @@ This is not related to this plugin. You probably should not use Bluetooth.
 Please stop using Lovense Dongle. Connect using the Lovense Connect or bluetooth. If you don't have bluetooth
 please buy a bluetooth 5.0 dongle on amazon for 20$. 
 
+### The plugin does not connect to Intiface
+Please make sure you are doing it right. 
+1. Open Intiface and click on the top right side **red** icon.
+2. Uncheck everything but not *WebSocket* and *Bluetooth*. WebSocket should have the following text: "on [All Interfaces]:12345"
+3. Click on Start Server (now you should have one *green* icon and one *red* icon on the top right side).
+4. Go to the plugin and click connect (you should have two *green* icons). 
+If this is not working: please try change the IP Address to 127.0.0.1 or your computer IP Address. Also make sure the port
+is 12345 or correspond to the one in Intiface.
+
+### How do I share my configuration
+You can copy/past the file located at: `%AppData%\XIVLauncher\pluginConfigs\FFXIV_Vibe_Plugin.json`.
+Be aware: this will overrides everything.
+
 
 # Discord
 - [This plugin discord](https://discord.gg/JnCGxa3gGa) 
