@@ -208,7 +208,7 @@ namespace FFXIV_Vibe_Plugin {
       // Checkbox MAX_VIBE_THRESHOLD
       int config_MAX_VIBE_THRESHOLD = this.Configuration.MAX_VIBE_THRESHOLD;
       ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("Maximum vibration threshold", ref config_MAX_VIBE_THRESHOLD, 0, 100)) {
+      if(ImGui.SliderInt("Maximum vibration threshold", ref config_MAX_VIBE_THRESHOLD, 5, 100)) {
         this.Configuration.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
         this.Configuration.Save();
       }
