@@ -42,14 +42,33 @@ namespace FFXIV_Vibe_Plugin.Triggers {
             triggerChatText = triggerChatText.ToLower();
           }
           if(ChatMsg.Contains(triggerChatText)){
-            Logger.Log($"{ChatMsg} {triggerChatText}");
-            Logger.Log(trigger.Name);
+            Logger.Log($"{trigger.Name}:{ChatMsg} {triggerChatText}");
             triggerFound = trigger;
           }
         }
       }
       return triggerFound;
+    }
 
+    public Trigger? CheckTrigger_Spell(Structures.Spell spell) {
+      Trigger? triggerFound = null;
+      string spellName = spell.name;
+      foreach(Trigger trigger in this.Triggers) {
+        if(trigger.Kind == (int)KIND.Spell) {
+          string triggerSpellText = trigger.SpellText;
+          if(!trigger.caseInsensitive) {
+            spellName = spellName.ToLower();
+            triggerSpellText = triggerSpellText.ToLower();
+          }
+          if(spellName.Contains(triggerSpellText)) {
+            Logger.Log($"{trigger.Name}:{spellName} {triggerSpellText}");
+            triggerFound = trigger;
+          }
+        }
+      }
+      return triggerFound;
     }
   }
+  
+
 }

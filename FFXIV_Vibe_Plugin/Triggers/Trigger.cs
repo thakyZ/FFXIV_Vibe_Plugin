@@ -15,8 +15,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   enum TRIGGER {
     Damage,
     Heal,
-    SpellDamage,
-    SpellHeal,
+    DamageAmount,
+    HealAmount,
     Miss,
     SelfMount
   }
@@ -37,8 +37,9 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string Name = "";
     public int Kind = (int)KIND.Chat;
     public int Event = (int)TRIGGER.Damage;
-    public int Direction = (int)DIRECTION.Incoming;
+    public int Direction = (int)DIRECTION.Outgoing;
     public string ChatText = "";
+    public string SpellText = "";
     public int Intensity = 0;
     public bool caseInsensitive = false;
 
