@@ -111,7 +111,6 @@ namespace FFXIV_Vibe_Plugin {
       // Initialize Hook ActionEffect
       this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
-      this.Logger.Log("okokokok");
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
@@ -124,6 +123,11 @@ namespace FFXIV_Vibe_Plugin {
 
     public void Dispose() {
       this.Logger.Debug("Disposing plugin...");
+
+      // Cleaning device controller.
+      if(this.DeviceController != null) {
+        this.DeviceController.Dispose();
+      }
 
       // Cleaning chat triggers.
       this.CommandManager.RemoveHandler(commandName);
