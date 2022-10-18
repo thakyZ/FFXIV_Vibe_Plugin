@@ -28,6 +28,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       ComboSucceed = 28,
       Knockback = 33,
       Mount = 40,
+      MountJapaneseVersion = 240,
       VFX = 59,
       Transport = 60,
     };
