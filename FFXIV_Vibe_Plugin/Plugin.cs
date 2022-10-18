@@ -252,7 +252,7 @@ namespace FFXIV_Vibe_Plugin {
 
       Structures.Spell spell = args.Spell;
       if(this.Configuration.VERBOSE_SPELL) {
-        this.Logger.Debug($"{spell}");
+        this.Logger.Debug($"VERBOSE_SPELL: {spell}");
       }
       List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
       foreach(Trigger trigger in triggers) {
@@ -266,7 +266,10 @@ namespace FFXIV_Vibe_Plugin {
         return;
       }
       string fromPlayerName = _sender.ToString();
-
+      if(this.Configuration.VERBOSE_CHAT) {
+        string XivChatTypeName = ((XivChatType)chatType).ToString();
+        this.Logger.Debug($"VERBOSE_CHAT: {fromPlayerName} type={XivChatTypeName}: {_message.ToString()}");
+      }
       List<Trigger> triggers = this.TriggersController.CheckTrigger_Chat(chatType, fromPlayerName, _message.TextValue);
       foreach(Trigger trigger in triggers) {
         this.DeviceController.SendTrigger(trigger);
