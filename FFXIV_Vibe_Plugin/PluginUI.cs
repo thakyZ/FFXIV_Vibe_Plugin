@@ -31,6 +31,8 @@ namespace FFXIV_Vibe_Plugin {
       set { this.visible = value; }
     }
 
+    private bool _expandedOnce = false;
+
     private readonly int WIDTH = 650;
     private readonly int HEIGHT = 700;
 
@@ -60,6 +62,11 @@ namespace FFXIV_Vibe_Plugin {
       this.DeviceController = deviceController;
       this.TriggerController = triggersController;
       this.LoadImages();
+    }
+
+    public void Display() {
+      this.Visible = true;
+      this._expandedOnce = false;
     }
 
     /**
@@ -92,8 +99,7 @@ namespace FFXIV_Vibe_Plugin {
       // it actually makes sense.
       // There are other ways to do this, but it is generally best to keep the number of
       // draw delegates as low as possible.
-
-      DrawMainWindow();
+        DrawMainWindow();
 
     }
 
@@ -101,14 +107,16 @@ namespace FFXIV_Vibe_Plugin {
       if(!Visible) {
         return;
       }
+      if(!this._expandedOnce) {
+        ImGui.SetNextWindowCollapsed(false);
+        this._expandedOnce = true;
+      }
+      
       ImGui.SetNextWindowPos(new Vector2(100, 100), ImGuiCond.Appearing);
       ImGui.SetNextWindowSize(new Vector2(this.WIDTH, this.HEIGHT), ImGuiCond.Appearing);
       ImGui.SetNextWindowSizeConstraints(new Vector2(this.WIDTH, this.HEIGHT), new Vector2(float.MaxValue, float.MaxValue));
       if(ImGui.Begin("FFXIV Vibe Plugin", ref this.visible, ImGuiWindowFlags.None)) {
-
         ImGui.Spacing();
-
-
 
         ImGuiScene.TextureWrap imgLogo = this.loadedImages["logo.png"];
         ImGui.Columns(2, "###main_header", false);
@@ -706,6 +714,9 @@ namespace FFXIV_Vibe_Plugin {
 
     }
 
+    
 
   }
+
+
 }

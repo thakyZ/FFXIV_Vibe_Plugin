@@ -173,11 +173,11 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     private void DisplayUI() {
-      this.PluginUi.Visible = true;
+      this.PluginUi.Display();
     }
 
     private void DisplayConfigUI() {
-      this.PluginUi.Visible = true;
+      this.PluginUi.Display();
     }
 
 
