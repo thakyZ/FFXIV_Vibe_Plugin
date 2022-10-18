@@ -105,10 +105,10 @@ namespace FFXIV_Vibe_Plugin.Device{
       ButtplugClientDevice buttplugClientDevice = arg.Device;
       Device device = new(buttplugClientDevice);
       this.Devices.Add(device);
-      mut.ReleaseMutex();
-      device.IsConnected = true;
       this.Logger.Debug($"Added {device})");
-      
+      device.IsConnected = true;
+      mut.ReleaseMutex();
+
 
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
@@ -126,10 +126,10 @@ namespace FFXIV_Vibe_Plugin.Device{
       mut.WaitOne();
       int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
       Device device = Devices[index];
-      this.Devices.RemoveAt(index);
-      mut.ReleaseMutex();
       this.Logger.Debug($"Removed {Devices[index]}");
+      this.Devices.RemoveAt(index);
       device.IsConnected = false;
+      mut.ReleaseMutex();
     }
 
     public void Disconnect() {
@@ -137,8 +137,10 @@ namespace FFXIV_Vibe_Plugin.Device{
         return;
       }
       try {
-        var task = this.ButtplugClient.StopScanningAsync();
-        task.Wait();
+        if(this.ButtplugClient.IsScanning) {
+          var task = this.ButtplugClient.StopScanningAsync();
+          task.Wait();
+        }
       } catch(Exception e) {
         this.Logger.Error("Couldn't stop scanning device... Unknown reason.");
         this.Logger.Error(e.Message);
