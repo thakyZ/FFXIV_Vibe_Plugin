@@ -217,7 +217,6 @@ namespace FFXIV_Vibe_Plugin {
     public void DrawDevicesTab() {
       ImGui.Spacing();
 
-
       ImGui.TextColored(ImGuiColors.DalamudViolet, "Actions");
       ImGui.BeginChild("###DevicesTab_General", new Vector2(-1, 40f), true);
       {
@@ -232,6 +231,7 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.SameLine();
         if(ImGui.Button("Stop All", new Vector2(100, 24))) {
           this.DeviceController.StopAll();
+          this.simulator_currentAllIntensity = 0;
         }
       }
       ImGui.EndChild();
@@ -256,7 +256,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Vibrate Motor {i}", ref device.CurrentVibrateIntensity[i], 0, 100)) {
-                device.SendVibrate(device.CurrentVibrateIntensity[i], i);
+                this.DeviceController.SendVibrate(device, device.CurrentVibrateIntensity[i], i);
               }
             }
             ImGui.Unindent(10);
@@ -270,7 +270,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Rotate Motor {i}", ref device.CurrentRotateIntensity[i], 0, 100)) {
-                device.SendRotate(device.CurrentRotateIntensity[i], true, i);
+                this.DeviceController.SendRotate(device, device.CurrentRotateIntensity[i], true, i);
               }
             }
             ImGui.Unindent(10);
@@ -284,7 +284,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Linear Motor {i}", ref device.CurrentLinearIntensity[i], 0, 100)) {
-                device.SendLinear(device.CurrentLinearIntensity[i], 500, i);
+                this.DeviceController.SendLinear(device, device.CurrentLinearIntensity[i], 500, i);
               }
             }
             ImGui.Unindent(10);
