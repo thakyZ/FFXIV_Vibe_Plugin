@@ -35,7 +35,7 @@ namespace FFXIV_BP {
     }
 
     private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
-    private bool playSequence = false;
+    private bool playSequence = true;
 
     private class Trigger : IComparable {
 
@@ -75,7 +75,6 @@ namespace FFXIV_BP {
     // Custom variables from Kacie
     private bool buttplugIsConnected = false;
     private float currentIntensity = 0;
-    private bool verbose = true;
     private bool firstUpdated = false;
     private PlayerStats playerStats;
 
@@ -100,14 +99,14 @@ namespace FFXIV_BP {
 
       // you might normally want to embed resources and load them from the manifest stream
       
-      this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface);
+      this.PluginUi = new PluginUI(this.Configuration, this.PluginInterface, this);
 
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
-        HelpMessage = "A simple text triggers to buttplug.io plugin, and more..."
+        HelpMessage = "A buttplug plugin for fun..."
       });
 
       this.PluginInterface.UiBuilder.Draw += DrawUI;
-      this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+      this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
       if(Chat != null && CheckForTriggers != null) {
         Chat.ChatMessage += CheckForTriggers; // XXX: o.o
       }
@@ -142,7 +141,7 @@ namespace FFXIV_BP {
       var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch));
       if(matchingintensities.Any() && buttplugClient != null) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
-        this.sendVibes(intensity);
+        this.buttplug_sendVibe(intensity);
       }
     }
 
@@ -168,31 +167,42 @@ namespace FFXIV_BP {
       
     }
 
-    private void DrawConfigUI() {
+    private void DisplayUI() {
+      this.PluginUi.Visible = true;
+    }
+
+    private void DisplayConfigUI() {
       this.PluginUi.SettingsVisible = true;
     }
 
     private void RunSequencer(List<SequencerTask> sequencerTasks) {
       if(this.playSequence && this.sequencerTasks.Count > 0) {
 
-        SequencerTask st = this.sequencerTasks[0];
+        SequencerTask st = sequencerTasks[0];
         if(st._startedTime == 0) {
           st.play();
           string[] commandSplit = st.command.Split(':');
-          string operation = commandSplit[0];
-          int intensity = int.Parse(commandSplit[1]);
+          string task = commandSplit[0];
 
-          if(operation == "sendVibes") {
-            this.sendVibes(intensity);
+          if(task == "buttplug_sendVibe") {
+            float intensity = float.Parse(commandSplit[1]);
+            this.buttplug_sendVibe(intensity);
+          } else if(task == "print") {
+            string message = commandSplit[1];
+            this.Print(message);
+          } else if(task == "print_debug") {
+            string message = commandSplit[1];
+            this.PrintDebug(message);
+          } else if(task == "nothing") {
+            // do nothing
           }
         }
 
         if(st._startedTime + st.duration < this.getUnix()) {
           this.sequencerTasks[0]._startedTime = 0;
           this.sequencerTasks.RemoveAt(0);
-          if(this.verbose) {
-            PrintDebug("Playing next...");
-          }
+          PrintDebug("Playing next...");
+          
         }
       }
     }
@@ -215,15 +225,14 @@ namespace FFXIV_BP {
           return;
         }
       }
-      
     }
 
-    private void Print(string message) {
+    public void Print(string message) {
       Chat.Print($"FFXIV_BP> {message}");
     }
 
     private void PrintDebug(string message) {
-      if(this.verbose) {
+      if(this.Configuration.DEBUG_VERBOSE) {
         Chat.Print($"FFXIV_BP Debug> {message}");
       }
     }
@@ -234,12 +243,14 @@ namespace FFXIV_BP {
 
     private void PrintHelp(string command) {
       string helpMessage = $@"Usage:
+      
       {command} connect [ip[:port]]
       {command} disconnect
       {command} scan
       {command} toys_list
       {command} save [file path]
       {command} load [file path]
+      {command} config
 
 Chat features
       {command} chat_list_triggers
@@ -256,7 +267,7 @@ New features
       {command} stop
 
 Current values:
-      HP_TOGGLE: {this.Configuration.HP_TOGGLE} | THRESHOLD: {this.Configuration.THRESHOLD} | USER: {this.AuthorizedUser}
+      HP_TOGGLE: {this.Configuration.VIBE_HP_TOGGLE} | THRESHOLD: {this.Configuration.MAX_VIBE_THRESHOLD} | USER: {this.AuthorizedUser}
 
 Example:
        {command} connect
@@ -276,9 +287,10 @@ Example:
     private void OnCommand(string command, string args) {
       if(args.Length == 0) {
         PrintHelp(command);
+        this.DisplayUI();
       } else {
-        if(args.StartsWith("test")) {
-          this.PluginUi.Visible = true;
+        if(args.StartsWith("config")) {
+          this.DisplayConfigUI();
         } else if(args.StartsWith("connect")) {
           ConnectButtplugs(args);
         } else if(args.StartsWith("disconnect")) {
@@ -286,48 +298,43 @@ Example:
         } else if(args.StartsWith("scan")) {
           ScanToys();
         } else if(args.StartsWith("toys_list")) {
-          this.ToysList();
+          this.Command_ToysList();
         } else if(args.StartsWith("chat_list_triggers")) {
-          this.ListTriggers();
+          this.Command_ListTriggers();
         } else if(args.StartsWith("chat_add")) {
-          this.AddTrigger(args);
+          this.Command_AddTrigger(args);
         } else if(args.StartsWith("chat_remove")) {
-          this.RemoveTrigger(args);
+          this.Command_RemoveTrigger(args);
         } else if(args.StartsWith("chat_user")) {
-          this.SetAuthorizedUser(args);
+          this.Command_SetAuthorizedUser(args);
         } else if(args.StartsWith("save")) {
-          SaveConfig(args);
+          Command_SaveConfig(args);
         } else if(args.StartsWith("load")) {
-          LoadConfig(args);
+          Command_LoadConfig(args);
         } else if(args.StartsWith("hp_toggle")) {
-          this.ToggleHP();
+          this.Command_ToggleHP();
         } else if(args.StartsWith("threshold")) {
-          this.SetThreshold(args);
+          this.Command_SetThreshold(args);
         } else if(args.StartsWith("send")) {
-          this.SendIntensity(args);
+          this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
-          this.sendVibes(0);
+          this.buttplug_sendVibe(0);
         } else if(args.StartsWith("play_sequence")) {
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:10", 500));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:29", 2000));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 500));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:20", 1000));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:100", 5000));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:50", 1000));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:20", 2000));
-          this.sequencerTasks.Add(new SequencerTask("sendVibes:0", 1));
-          this.playSequence = true;
-
+          this.sequencerTasks.Add(new SequencerTask("nothing", 5000));
+          this.sequencerTasks.Add(new SequencerTask("print_debug:hello world", 1000));
+          /*
+          this.sequencerTasks.Add(new SequencerTask("vibe:10", 1000));
+          this.sequencerTasks.Add(new SequencerTask("vibe:0", 500));*/
         } else if(args.StartsWith("verbose")) {
-          this.verbose = !this.verbose;
-          Print($"Verbose: {verbose}");
+          this.Configuration.DEBUG_VERBOSE = !this.Configuration.DEBUG_VERBOSE;
+          Print($"Verbose: {this.Configuration.DEBUG_VERBOSE}");
         } else {
           Print($"Unknown subcommand: {args}");
         }
       }
     }
 
-    private void LoadConfig(string args) {
+    private void Command_LoadConfig(string args) {
       string config = "";
       string path = "";
       try {
@@ -350,7 +357,7 @@ Example:
       }
     }
 
-    private void SaveConfig(string args) {
+    private void Command_SaveConfig(string args) {
       string path;
       var config = string.Join("\n", Triggers.Select(t => t.ToString()));
       try {
@@ -422,7 +429,7 @@ Example:
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs e) {
-      Thread.Sleep(500);
+      Thread.Sleep(500); // Make sure we are connected by waiting a bit
       string name = e.Device.Name;
       int index = (int)e.Device.Index;
       Print($"Added device: {index}:{name}" );
@@ -431,15 +438,15 @@ Example:
        * Therefore, it is important to trigger a zero and some vibes before continuing further.
        * Don't remove this part unless you want to debug for hours.
        */
-      
-      this.sendVibes(0, false); // Needed to make sure we can play with the toys again
-      this.sendVibes(0.1f, false);
-      Thread.Sleep(500);
-      this.sendVibes(0f, false);
+      this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
+      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
+      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0.1", 500));
+      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
       Print("Removed device: " + e.Device.Name);
+      PrintDebug("Disconnecting buttplug... (we probably should not)");
       this.DisconnectButtplugs();
     }
 
@@ -456,7 +463,7 @@ Example:
       this.buttplugIsConnected = false;
     }
 
-    private void ToysList() {
+    private void Command_ToysList() {
       Print("Listing toys");
       for(int i = 0; i < buttplugClient.Devices.Length; i++) {
         string name = buttplugClient.Devices[i].Name;
@@ -464,23 +471,7 @@ Example:
       }
     }
 
-    private void RemoveTrigger(string args) {
-      int id = -1;
-      try {
-        id = int.Parse(args.Split(" ")[1]);
-        if(id < 0) {
-          throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
-        }
-      } catch(FormatException) {
-        PrintError("Malformed argument for [chat_remove]");
-        return; // XXX: exceptional control flow
-      }
-      Trigger removed = Triggers.ElementAt(id);
-      Triggers.Remove(removed);
-      Print($"Removed Trigger: {removed}");
-    }
-
-    private void SetAuthorizedUser(string args) {
+    private void Command_SetAuthorizedUser(string args) {
       try {
         AuthorizedUser = args.Split(" ", 2)[1];
       } catch(IndexOutOfRangeException) {
@@ -490,18 +481,17 @@ Example:
       Print($"Authorized user set to '{AuthorizedUser}'");
     }
 
-
-    private void ToggleHP() {
-      bool hp_toggle = !this.Configuration.HP_TOGGLE;
-      this.Configuration.HP_TOGGLE = hp_toggle;
+    private void Command_ToggleHP() {
+      bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
+      this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
        if(!hp_toggle && this.buttplugIsConnected) {
-        this.sendVibes(0); // Don't be cruel
+        this.buttplug_sendVibe(0); // Don't be cruel
       }
       Print($"HP Toggle set to {hp_toggle}");
       this.Configuration.Save();
     }
 
-    private void SetThreshold(string args) {
+    private void Command_SetThreshold(string args) {
       string[] blafuckcsharp = args.Split(" ", 2);
       int threshold = 0;
       try {
@@ -510,12 +500,12 @@ Example:
         PrintError($"Malformed arguments for [threshold].");
         return;
       }
-      this.Configuration.THRESHOLD = threshold;
+      this.Configuration.MAX_VIBE_THRESHOLD = threshold;
       this.Configuration.Save();
       Print($"Threshold set to {threshold}");
     }
 
-    private void AddTrigger(string args) {
+    private void Command_AddTrigger(string args) {
       string[] blafuckcsharp;
       int intensity;
       string text;
@@ -535,8 +525,23 @@ Example:
         PrintError($"Failed. Possible duplicate for intensity {intensity}");
       }
     }
+    private void Command_RemoveTrigger(string args) {
+      int id = -1;
+      try {
+        id = int.Parse(args.Split(" ")[1]);
+        if(id < 0) {
+          throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
+        }
+      } catch(FormatException) {
+        PrintError("Malformed argument for [chat_remove]");
+        return; // XXX: exceptional control flow
+      }
+      Trigger removed = Triggers.ElementAt(id);
+      Triggers.Remove(removed);
+      Print($"Removed Trigger: {removed}");
+    }
 
-    private void ListTriggers() {
+    private void Command_ListTriggers() {
       string message =
           @"Configured triggers:
 ID   Intensity   Text Match
@@ -552,24 +557,24 @@ ID   Intensity   Text Match
      * Sends an itensity vibe to all of the devices 
      * @param {float} intensity
      */
-    private void sendVibes(float intensity, bool log=true) {
+    private void buttplug_sendVibe(float intensity) {
       if(this.currentIntensity != intensity && this.buttplugIsConnected && this.buttplugClient != null) {
-        if(log) {
-          PrintDebug($"Intensity: {intensity.ToString()}");
-        }
-        for(int i = 0; i < buttplugClient.Devices.Length; i++) {
-          if(intensity == 0) {
-            buttplugClient.Devices[i].SendVibrateCmd(0.0); // Make sure we send a real zero and not a float (eg: 0.01)
-          } else {
-            // FIXME: should take the threshold in account
-            buttplugClient.Devices[i].SendVibrateCmd(intensity / (100.0f/this.Configuration.THRESHOLD) / 100.0f); 
-          }
+        
+        PrintDebug($"Intensity: {intensity.ToString()}");
+        
+        
+        // Set min and max limits
+        if(intensity < 0) { intensity = 0.0f; }
+        else if(intensity > 100) { intensity = 100; }
+
+        for(int i = 0; i < buttplugClient.Devices.Length; i++) {  
+          buttplugClient.Devices[i].SendVibrateCmd(intensity / (100.0f/this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f); 
         }
         this.currentIntensity = intensity;
       }
     }
 
-    private void SendIntensity(string args) {
+    private void Command_SendIntensity(string args) {
       string[] blafuckcsharp;
       float intensity;
       try {
@@ -580,7 +585,7 @@ ID   Intensity   Text Match
         PrintError($"Malformed arguments for send [intensity].");
         return;
       }
-      this.sendVibes(intensity);
+      this.buttplug_sendVibe(intensity);
     }
     private void _player_currentHPChanged(object send, EventArgs e) {
       /*float currentHP = this.playerStats.getCurrentHP();
