@@ -51,6 +51,7 @@ namespace FFXIV_Vibe_Plugin {
     private readonly PlayerStats PlayerStats;
     private readonly Device.Controller DeviceController;
     private readonly Triggers.Controller TriggersController;
+    private readonly Patterns Patterns;
     private readonly Sequencer Sequencer; // TODO: complete me
 
     // Experiments
@@ -119,9 +120,12 @@ namespace FFXIV_Vibe_Plugin {
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
-      
+
+      // Patterns
+      this.Patterns = new Patterns();
+
       // UI
-      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController);
+      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController, this.Patterns);
       this.PluginInterface.UiBuilder.Draw += DrawUI;
       this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
     }
@@ -263,7 +267,11 @@ namespace FFXIV_Vibe_Plugin {
       }
       List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
       foreach(Trigger trigger in triggers) {
-        this.DeviceController.SendTrigger(trigger);
+        if(trigger.StartAfter > 0 || trigger.StopAfter > 0) {
+          this.DeviceController.AddTriggerTask(trigger);
+        } else {
+          this.DeviceController.SendTrigger(trigger);
+        }
       }
     }
 

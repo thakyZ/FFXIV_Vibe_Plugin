@@ -146,18 +146,6 @@ namespace FFXIV_Vibe_Plugin.Device{
       } finally {
         mut.ReleaseMutex();
       }
-
-
-      /**
-       * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
-       * Therefore, it is important to trigger a zero and some vibes before continuing further.
-       * Don't remove this part unless you want to debug for hours.
-       */
-      /* TODO:
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:1", 500));
-      this.sequencerTasks.Add(new SequencerTask("buttplug_sendVibe:0", 0));
-      */
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
@@ -239,9 +227,9 @@ namespace FFXIV_Vibe_Plugin.Device{
         if(device != null && triggerDevice != null) {
           
           if(triggerDevice.ShouldVibrate) {
-            for(int motorId = 0; motorId < triggerDevice.SelectedVibrateMotors?.Length; motorId++) {
-              if(triggerDevice.SelectedVibrateMotors != null && triggerDevice.VibrateMotorsIntensity != null) {
-                bool motorEnabled = triggerDevice.SelectedVibrateMotors[motorId];
+            for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
+              if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
@@ -251,9 +239,9 @@ namespace FFXIV_Vibe_Plugin.Device{
             }
           }
           if(triggerDevice.ShouldRotate) {
-            for(int motorId = 0; motorId < triggerDevice.SelectedRotateMotors?.Length; motorId++) {
-              if(triggerDevice.SelectedRotateMotors != null && triggerDevice.RotateMotorsIntensity != null) {
-                bool motorEnabled = triggerDevice.SelectedRotateMotors[motorId];
+            for(int motorId = 0; motorId < triggerDevice.RotateSelectedMotors?.Length; motorId++) {
+              if(triggerDevice.RotateSelectedMotors != null && triggerDevice.RotateMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.RotateMotorsIntensity[motorId];
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
@@ -263,9 +251,9 @@ namespace FFXIV_Vibe_Plugin.Device{
             }
           }
           if(triggerDevice.ShouldLinear) {
-            for(int motorId = 0; motorId < triggerDevice.SelectedLinearMotors?.Length; motorId++) {
-              if(triggerDevice.SelectedLinearMotors != null && triggerDevice.LinearMotorsIntensity != null) {
-                bool motorEnabled = triggerDevice.SelectedLinearMotors[motorId];
+            for(int motorId = 0; motorId < triggerDevice.LinearSelectedMotors?.Length; motorId++) {
+              if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
                 int motorIntensitiy = triggerDevice.LinearMotorsIntensity[motorId];
                 if(motorEnabled) {
                   this.Logger.Debug($"Sending {device.Name} linear to motor: {motorId} with intensity: {motorIntensitiy}!");
@@ -299,7 +287,6 @@ namespace FFXIV_Vibe_Plugin.Device{
      */
     public void SendVibeToAll(int intensity) {
       if(this.IsConnected() && this.ButtplugClient != null) {
-        // DEBUG: this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
         foreach(Device device in this.Devices) {
           device.SendVibrate(intensity, -1, this.Configuration.MAX_VIBE_THRESHOLD);
           device.SendRotate(intensity, true, -1 , this.Configuration.MAX_VIBE_THRESHOLD);
@@ -325,9 +312,11 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     /**
+     * Experimental
      * Send a command to a foundable device using a text string as identifier.
      * It will try to guess to which device to send. 
      * To send to a second device that has the same name use the following format "device name:number".
+     * TODO: use 'UsableCommand' ?
      */
     public void Send(String textOfDevice, UsableCommand command) {
       this.Logger.Log("GENERIC SEND FUNCTION NOT IMPLEMENTED(TODO)");
@@ -346,6 +335,10 @@ namespace FFXIV_Vibe_Plugin.Device{
           // TODO: this.SendStop(deviceFound)
           break;
       }
+    }
+
+    public void AddTriggerTask(Triggers.Trigger trigger) {
+      this.Logger.Log($"Adding trigger task: {trigger}");
     }
 
 
