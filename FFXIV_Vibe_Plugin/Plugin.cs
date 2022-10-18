@@ -324,7 +324,7 @@ namespace FFXIV_Vibe_Plugin {
         percentage = 0;
       }
 
-      List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged();
+      List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged((int)currentHP);
       // Overwrites the threshold for every motors
       foreach(Trigger trigger in triggers) {
         this.DeviceController.SendTrigger(trigger, (int)percentage);

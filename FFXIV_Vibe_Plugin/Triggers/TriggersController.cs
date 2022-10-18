@@ -107,7 +107,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       return triggers;
     }
 
-    public List<Trigger> CheckTrigger_HPChanged() {
+    public List<Trigger> CheckTrigger_HPChanged(int currentHP) {
       List<Trigger> triggers = new();
      
       for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) {
@@ -115,16 +115,16 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
         // Ignore if not enabled
         if(!trigger.Enabled) { continue; }
-
+        
+        if(trigger.AmountMinValue >= currentHP) { continue; }
+        if(trigger.AmountMaxValue <= currentHP) { continue; }
+        
         if(trigger.Kind == (int)KIND.HPChange) {
           triggers.Add(trigger);
         }
       }
       return triggers;
     }
-
-
-
 
     public FFXIV_Vibe_Plugin.Triggers.DIRECTION GetSpellDirection(Structures.Spell spell) {
       string myName = this.PlayerStats.GetPlayerName();
