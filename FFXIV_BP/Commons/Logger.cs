@@ -3,95 +3,130 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dalamud.Logging;
+
+using Dalamud.Plugin;
+using Dalamud.IoC;
 
 namespace FFXIV_Vibe_Plugin.Commons {
 
   internal class Logger {
+
     // Initialize the Dalamud.Gui system.
-    private Dalamud.Game.Gui.ChatGui? DalamudChatGui { get; init; }
+    private readonly Dalamud.Game.Gui.ChatGui? DalamudChatGui;
 
     // Name used as prefix.
     private readonly string name;
 
     // Current log level.
-    private readonly LogLevel log_level = LogLevel.INFO;
+    private readonly LogLevel log_level = LogLevel.DEBUG;
+
+    // The prefix symbol of the log message.
+    private readonly string prefix = ">";
 
     // Available log levels.
     public enum LogLevel {
-      DEBUG, LOG, INFO, WARN, ERROR, FATAL,
+      VERBOSE, DEBUG, LOG, INFO, WARN, ERROR, FATAL,
     }
 
     /** Constructor */
-    public Logger(string name, LogLevel log_level) {
+    public Logger(Dalamud.Game.Gui.ChatGui DalamudChatGuit, string name, LogLevel log_level) {
+      this.DalamudChatGui = DalamudChatGuit;
       this.name = name;
       this.log_level = log_level;
     }
 
     /** Printing in the chat gui a message. */
     public void Chat(string msg) {
-      DalamudChatGui?.Print($"{this.name}▹{msg}");
+      string m = this.FormatMessage(LogLevel.LOG, msg);
+      DalamudChatGui?.Print(m);
     }
 
     /** Printing in the chat gui an error message. */
     public void ChatError(string msg) {
-      DalamudChatGui?.PrintError(msg);
+      string m = this.FormatMessage(LogLevel.ERROR, msg);
+      DalamudChatGui?.PrintError(m);
       this.Error(msg);
     }
 
     /** Printing in the chat gui an error message with an exception. */
     public void ChatError(string msg, Exception e) {
-      string m = $"{this.name} ERROR▹{msg}\n{e}";
+      string m = this.FormatMessage(LogLevel.ERROR, msg, e);
       DalamudChatGui?.PrintError(m);
       this.Error(m);
     }
 
     /** Log message as 'debug' to logs. */
+    public void Verbose(string msg) {
+      if(this.log_level > LogLevel.VERBOSE) { return; }
+      string m = this.FormatMessage(LogLevel.VERBOSE, msg);
+      Dalamud.Logging.PluginLog.LogVerbose(m);
+    }
+
+    /** Log message as 'debug' to logs. */
     public void Debug(string msg) {
       if(this.log_level > LogLevel.DEBUG) { return; }
-      Dalamud.Logging.PluginLog.LogDebug(msg);
+      string m = this.FormatMessage(LogLevel.DEBUG, msg);
+      Dalamud.Logging.PluginLog.LogDebug(m);
     }
 
     /** Log message as 'log' to logs. */
     public void Log(string msg) {
       if(this.log_level > LogLevel.LOG) { return; }
-      Dalamud.Logging.PluginLog.Log(msg);
+      string m = this.FormatMessage(LogLevel.LOG, msg);
+      Dalamud.Logging.PluginLog.Log(m);
     }
 
     /** Log message as 'info' to logs. */
     public void Info(string msg) {
       if(this.log_level > LogLevel.INFO) { return; }
-      Dalamud.Logging.PluginLog.Information(msg);
+      string m = this.FormatMessage(LogLevel.INFO, msg);
+      Dalamud.Logging.PluginLog.Information(m);
     }
 
     /** Log message as 'warning' to logs. */
     public void Warn(string msg) {
       if(this.log_level > LogLevel.WARN) { return; }
-      Dalamud.Logging.PluginLog.Warning(msg);
+      string m = this.FormatMessage(LogLevel.WARN, msg);
+      Dalamud.Logging.PluginLog.Warning(m);
     }
 
     /** Log message as 'error' to logs. */
     public void Error(string msg) {
       if(this.log_level > LogLevel.ERROR) { return; }
-      Dalamud.Logging.PluginLog.Error(msg);
+      string m = this.FormatMessage(LogLevel.ERROR, msg);
+      Dalamud.Logging.PluginLog.Error(m);
     }
 
     /** Log message as 'error' to logs with an exception. */
-    public void Error(Exception e, string msg) {
+    public void Error(string msg, Exception e) {
       if(this.log_level > LogLevel.ERROR) { return; }
-      Dalamud.Logging.PluginLog.Error($"{msg}\n{e}");
+      string m = this.FormatMessage(LogLevel.ERROR, msg, e);
+      Dalamud.Logging.PluginLog.Error(m);
     }
 
     /** Log message as 'fatal' to logs. */
     public void Fatal(string msg) {
       if(this.log_level > LogLevel.FATAL) { return; }
-      Dalamud.Logging.PluginLog.Fatal(msg);
+      string m = this.FormatMessage(LogLevel.FATAL, msg);
+      Dalamud.Logging.PluginLog.Fatal(m);
     }
 
     /** Log message as 'fatal' to logs with an exception. */
-    public void Fatal(Exception e, string msg) {
+    public void Fatal(string msg, Exception e) {
       if(this.log_level > LogLevel.FATAL) { return; }
-      Dalamud.Logging.PluginLog.Fatal($"{msg}\n{e}");
+      string m = this.FormatMessage(LogLevel.FATAL, msg, e);
+      Dalamud.Logging.PluginLog.Fatal(m);
+    }
+
+    private string FormatMessage(LogLevel type, string msg) {
+      return $"{this.name} {type} {this.prefix} {msg}";
+    }
+    private string FormatMessage(LogLevel type, string msg, Exception e) {
+      return $"{this.name} {type} {this.prefix} {e.Message}\\n{msg}";
+    }
+
+    public void Dispose() {
+
     }
   }
 }

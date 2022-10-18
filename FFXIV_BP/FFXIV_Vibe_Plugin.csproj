@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors></Authors>
     <Company></Company>
-    <Version>0.0.0.1</Version>
+    <Version>0.0.0.2</Version>
     <Description>A plugin to help you vibe your controller or toys</Description>
     <Copyright>kacie8989</Copyright>
     <PackageProjectUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</PackageProjectUrl>
@@ -40,7 +40,7 @@
 
   <ItemGroup>
     <PackageReference Include="Buttplug" Version="2.0.5" />
-    <PackageReference Include="DalamudPackager" Version="2.1.4" />
+    <PackageReference Include="DalamudPackager" Version="2.1.5" />
     <Reference Include="0Harmony">
       <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\0Harmony.dll</HintPath>
     </Reference>
