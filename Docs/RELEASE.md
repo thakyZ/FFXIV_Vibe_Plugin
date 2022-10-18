@@ -1,5 +1,6 @@
 # Internal release process reminder
-1. bump the assembly version
-2. Update the FFXIV_Vibe_Plugin.json version number
-3. Update the repo.json version, timestamp, downloadCount and download links version number
-4. Publish the github zip
+1. Bump the C# assembly project version.
+2. Build in release mode and rename the ZIP to the corresponding version.
+3. Update the repo.json version, timestamp, downloadCount and download links.
+4. Publish the github release and ZIP.
+5. [Optional] PR to official repository.
