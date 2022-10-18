@@ -15,6 +15,8 @@ namespace FFXIV_Vibe_Plugin {
 
   class PluginUI : IDisposable {
 
+    private int frameCounter = 0;
+
     private readonly DalamudPluginInterface PluginInterface;
     private readonly Configuration Configuration;
     private ConfigurationProfile ConfigurationProfile;
@@ -131,6 +133,7 @@ namespace FFXIV_Vibe_Plugin {
       // There are other ways to do this, but it is generally best to keep the number of
       // draw delegates as low as possible.
       DrawMainWindow();
+      frameCounter = (frameCounter+1) % 400;
 
     }
 
@@ -149,7 +152,7 @@ namespace FFXIV_Vibe_Plugin {
       if(ImGui.Begin("FFXIV Vibe Plugin", ref this.visible, ImGuiWindowFlags.None)) {
         ImGui.Spacing();
 
-        FFXIV_Vibe_Plugin.UI.UIBanner.Draw(this.Logger, this.loadedImages["logo.png"], this.DonationLink, this.DevicesController);
+        FFXIV_Vibe_Plugin.UI.UIBanner.Draw(this.frameCounter, this.Logger, this.loadedImages["logo.png"], this.DonationLink, this.DevicesController);
 
         // Back to on column
         ImGui.Columns(1);
