@@ -2,8 +2,9 @@
 using System;
 using System.IO;
 using System.Numerics;
-using Dalamud.Interface;
 using Dalamud.Plugin;
+using Dalamud.Interface.Colors;
+using Dalamud;
 using System.Collections.Generic;
 using static FFXIV_Vibe_Plugin.Plugin;
 using System.Threading;
@@ -28,17 +29,17 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     private readonly int WIDTH = 400;
-    private readonly int HEIGHT = 500;
+    private readonly int HEIGHT = 700;
 
     // The value to send as a test for vibes.
-    private int test_sendVibeValue = 0;
+    private int simulator_currentAllIntensity = 0;
 
-    
+
 
     /** Constructor */
     public PluginUI(
       DalamudPluginInterface pluginInterface,
-      Configuration configuration,       
+      Configuration configuration,
       Plugin currentPlugin,
       Device.Controller deviceController
     ) {
@@ -98,15 +99,29 @@ namespace FFXIV_Vibe_Plugin {
         ImGui.Indent(120);
         ImGuiScene.TextureWrap imgLogo = this.loadedImages["logo.png"];
         ImGui.Image(imgLogo.ImGuiHandle, new Vector2(imgLogo.Width * 0.2f, imgLogo.Height * 0.2f));
+        if(this.DeviceController.IsConnected()) {
+          ImGui.TextColored(ImGuiColors.ParsedGreen, "Your are connected!");
+        } else {
+          ImGui.Unindent(20);
+          ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
+          ImGui.Indent(20);
+        }
         ImGui.Unindent(120);
+
+
 
         // Experimental
         if(ImGui.BeginTabBar("##ConfigTabBar", ImGuiTabBarFlags.None)) {
-          if(ImGui.BeginTabItem("Settings")) {
-            this.DrawSettingsTab();
+          if(ImGui.BeginTabItem("Connect")) {
+            this.DrawConnectTab();
             ImGui.EndTabItem();
           }
+
           if(this.DeviceController.IsConnected()) {
+            if(ImGui.BeginTabItem("Options")) {
+              this.DrawOptionsTab();
+              ImGui.EndTabItem();
+            }
             if(ImGui.BeginTabItem("Simulator")) {
               this.DrawSimulatorTab();
               ImGui.EndTabItem();
@@ -116,7 +131,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.EndTabItem();
             }
           }
-        
+
           if(ImGui.BeginTabItem("Help")) {
             this.DrawHelpTab();
             ImGui.EndTabItem();
@@ -127,50 +142,56 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.End();
     }
 
-    public void DrawSettingsTab() {
-      
+    public void DrawConnectTab() {
       ImGui.Spacing();
-      
-      // Connect/disconnect button
-      ImGui.Columns(3);
-      string config_BUTTPLUG_SERVER_HOST = this.Configuration.BUTTPLUG_SERVER_HOST;
-      ImGui.SetNextItemWidth(120);
-      if(ImGui.InputText("##serverHost", ref config_BUTTPLUG_SERVER_HOST, 99)) {
-        this.Configuration.BUTTPLUG_SERVER_HOST = config_BUTTPLUG_SERVER_HOST.Trim().ToLower();
-        this.Configuration.Save();
-      }
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Server address & port");
+      ImGui.BeginChild("###Server", new Vector2(-1, 40f), true);
+      {
 
-      ImGui.NextColumn();
-      int config_BUTTPLUG_SERVER_PORT = this.Configuration.BUTTPLUG_SERVER_PORT;
-      ImGui.SetNextItemWidth(120);
-      if(ImGui.InputInt("##serverPort", ref config_BUTTPLUG_SERVER_PORT, 10)) {
-        this.Configuration.BUTTPLUG_SERVER_PORT = config_BUTTPLUG_SERVER_PORT;
-        this.Configuration.Save();
-      }
-
-      ImGui.NextColumn();
-      if(!this.DeviceController.IsConnected()) {
-        if(ImGui.Button("Connect", new Vector2(100, 24))) {
-          this.CurrentPlugin.Command_DeviceController_Connect();
+        // Connect/disconnect button
+        string config_BUTTPLUG_SERVER_HOST = this.Configuration.BUTTPLUG_SERVER_HOST;
+        ImGui.SetNextItemWidth(200);
+        if(ImGui.InputText("##serverHost", ref config_BUTTPLUG_SERVER_HOST, 99)) {
+          this.Configuration.BUTTPLUG_SERVER_HOST = config_BUTTPLUG_SERVER_HOST.Trim().ToLower();
+          this.Configuration.Save();
         }
-      } else {
-        if(ImGui.Button("Disconnect", new Vector2(100, 24))) {
-          this.DeviceController.Disconnect();
+
+        ImGui.SameLine();
+        int config_BUTTPLUG_SERVER_PORT = this.Configuration.BUTTPLUG_SERVER_PORT;
+        ImGui.SetNextItemWidth(100);
+        if(ImGui.InputInt("##serverPort", ref config_BUTTPLUG_SERVER_PORT, 10)) {
+          this.Configuration.BUTTPLUG_SERVER_PORT = config_BUTTPLUG_SERVER_PORT;
+          this.Configuration.Save();
         }
       }
+      ImGui.EndChild();
 
-      ImGui.Columns(1);
       ImGui.Spacing();
+      ImGui.BeginChild("###Main_Connection", new Vector2(-1, 40f), true);
+      {
+        if(!this.DeviceController.IsConnected()) {
+          if(ImGui.Button("Connect", new Vector2(100, 24))) {
+            this.CurrentPlugin.Command_DeviceController_Connect();
+          }
+        } else {
+          if(ImGui.Button("Disconnect", new Vector2(100, 24))) {
+            this.DeviceController.Disconnect();
+          }
+        }
 
-      // Checkbox AUTO_CONNECT
-      bool config_AUTO_CONNECT = this.Configuration.AUTO_CONNECT;
-      if(ImGui.Checkbox("Automatically connects. ", ref config_AUTO_CONNECT)) {
-        this.Configuration.AUTO_CONNECT = config_AUTO_CONNECT;
-        this.Configuration.Save();
+        // Checkbox AUTO_CONNECT
+        ImGui.SameLine();
+        bool config_AUTO_CONNECT = this.Configuration.AUTO_CONNECT;
+        if(ImGui.Checkbox("Automatically connects. ", ref config_AUTO_CONNECT)) {
+          this.Configuration.AUTO_CONNECT = config_AUTO_CONNECT;
+          this.Configuration.Save();
+        }
       }
+      ImGui.EndChild();
+    }
 
-      // Shortcut and hide next options
-      if(!this.DeviceController.IsConnected()) { return; }
+    public void DrawOptionsTab() {
+      ImGui.Spacing();
 
       // Checkbox VIBE_HP_TOGGLE
       bool config_VIBE_HP_TOGGLE = this.Configuration.VIBE_HP_TOGGLE;
@@ -198,38 +219,88 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawSimulatorTab() {
-      if(!this.DeviceController.IsConnected()) { return;  }
-
-      if(ImGui.Button("Scan toys", new Vector2(100, 24))) {
-        this.DeviceController.ScanToys();
+      ImGui.Spacing();
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Send to all:");
+      ImGui.BeginChild("###Simulator_sendAll", new Vector2(-1, 40f), true);
+      {
+        ImGui.SetNextItemWidth(200);
+        if(ImGui.SliderInt("Intensity", ref this.simulator_currentAllIntensity, 0, 100)) {
+          this.DeviceController.SendVibe(this.simulator_currentAllIntensity);
+        }
+        ImGui.SameLine();
+        if(ImGui.Button("Stop", new Vector2(100, 24))) {
+          this.DeviceController.SendVibe(0f);
+          simulator_currentAllIntensity = 0;
+        }
       }
-
-      ImGui.Text("Send to all:");
-
-      // Test of the vibe
-      ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("Intensity", ref this.test_sendVibeValue, 0, 100)) {
-        this.DeviceController.SendVibe(this.test_sendVibeValue);
-      }
-      if(ImGui.Button("Stop vibe", new Vector2(100, 24))) {
-        this.test_sendVibeValue = 0;
-      }
-      ImGui.Columns(1);
+      ImGui.EndChild();
     }
 
     public void DrawDevicesTab() {
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Actions");
+      ImGui.BeginChild("###DevicesTab_General", new Vector2(-1, 40f), true);
+      {
+        if(ImGui.Button("Scan toys", new Vector2(100, 24))) {
+          this.DeviceController.ScanToys();
+        }
+
+        ImGui.SameLine();
+        if(ImGui.Button("Update Battery", new Vector2(100, 24))) {
+          this.DeviceController.UpdateAllBatteryLevel();
+        }
+        ImGui.SameLine();
+        if(ImGui.Button("Stop All", new Vector2(100, 24))) {
+          this.DeviceController.StopAll();
+        }
+      }
+      ImGui.EndChild();
+
       if(!this.DeviceController.IsConnected()) { return; }
-      /* TODO: 
-      foreach(ButtplugDevice device in this.DeviceController.ButtplugDevices) {
-        string deviceEntry = $"{device.Id}:{device.Name}";
-        ImGui.Text(deviceEntry);
-      }*/
+      foreach(Device.Device device in this.DeviceController.GetDevices()) {
+        if(ImGui.CollapsingHeader($"{device.Id} {device.Name} - {device.GetBatteryPercentage()}")) {
+          ImGui.TextWrapped(device.ToString());
+          if(device.CanVibrate) {
+            ImGui.Text("Vibrate:");
+            for(int i = 0; i < device.VibrateMotors; i++) {
+              ImGui.Text($"Motor {i+1}: ");
+              ImGui.SameLine();
+              ImGui.SetNextItemWidth(200);
+              if(ImGui.SliderInt($"###{device.Id} Intensity Vibrate Motor {i}", ref device.CurrentVibrateIntensity[i], 0, 100)) {
+                device.SendVibrate(device.CurrentVibrateIntensity[i], i);
+              }
+            }
+          }
+          if(device.CanRotate) {
+            ImGui.Text("Rotate:");
+            for(int i = 0; i < device.RotateMotors; i++) {
+              ImGui.Text($"Motor {i+1}: ");
+              ImGui.SameLine();
+              ImGui.SetNextItemWidth(200);
+              if(ImGui.SliderInt($"###{device.Id} Intensity Rotate Motor {i}", ref device.CurrentRotateIntensity[i], 0, 100)) {
+                device.SendRotate(device.CurrentRotateIntensity[i], true, i);
+              }
+            }
+          }
+          if(device.CanLinear) {
+            ImGui.Text("Linear:");
+            for(int i = 0; i < device.LinearMotors; i++) {
+              ImGui.Text($"Motor {i+1}: ");
+              ImGui.SameLine();
+              ImGui.SetNextItemWidth(200);
+              if(ImGui.SliderInt($"###{device.Id} Intensity Linear Motor {i}", ref device.CurrentLinearIntensity[i], 0, 100)) {
+                device.SendLinear(device.CurrentLinearIntensity[i], 500, i);
+              }
+            }
+          }
+        }
+
+      }
     }
 
     public void DrawHelpTab() {
       string help = Plugin.GetHelp(this.CurrentPlugin.commandName);
-      ImGui.Text(help);
-      
+      ImGui.TextWrapped(help);
+
     }
   }
 }

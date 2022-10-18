@@ -103,9 +103,8 @@ namespace FFXIV_Vibe_Plugin {
       // Initialize the devices Controller
       this.DeviceController = new Device.Controller(this.Logger, this.Configuration);
       if(this.Configuration.AUTO_CONNECT) {
-        // TODO:
-        // this.sequencerTasks.Add(new SequencerTask("nothing", 1000));
-        // this.sequencerTasks.Add(new SequencerTask("connect", 500));
+        Task.Delay(2000);
+        this.Command_DeviceController_Connect();
       }     
 
       // Initialize Hook ActionEffect
@@ -163,6 +162,7 @@ namespace FFXIV_Vibe_Plugin {
     private void FirstUpdated() {
       this.Logger.Debug("First updated");
       this.LoadTriggersConfig();
+      this.DisplayUI();
     }
 
     private void DisplayUI() {
@@ -206,10 +206,7 @@ Example:
        {command} hp_toggle
        {command} threshold 90
 
-These commands let anyone whose name contains 'Alice'
-control all your connected toys with the appropriate 
-phrases, as long as those are uttered in a tell, a 
-party, a (cross) linkshell, or a free company chat.
+These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
       return helpMessage;
     }

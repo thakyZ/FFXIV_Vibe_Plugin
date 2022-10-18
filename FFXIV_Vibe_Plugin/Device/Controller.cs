@@ -23,6 +23,7 @@ namespace FFXIV_Vibe_Plugin.Device{
     private readonly List<Device> Devices = new();
 
     // Internal variables
+    private static Mutex mut = new Mutex();
     private float _currentIntensity = -1;
 
     public Controller(Logger logger, Configuration configuration) {
@@ -102,12 +103,13 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_DeviceAdded(object? sender, DeviceAddedEventArgs arg) {
-      Thread.Sleep(500); // Make sure we are connected by waiting a bit
+      mut.WaitOne();
       ButtplugClientDevice buttplugClientDevice = arg.Device;
       Device device = new(buttplugClientDevice);
       device.IsConnected = true;
       this.Devices.Add(device);
       this.Logger.Chat($"Added {device})");
+      mut.ReleaseMutex();
 
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
@@ -122,11 +124,13 @@ namespace FFXIV_Vibe_Plugin.Device{
     }
 
     private void ButtplugClient_DeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
+      mut.WaitOne();
       int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
       Device device = Devices[index];
       device.IsConnected = false;
       this.Logger.Log($"Removed {Devices[index]}");
       this.Devices.RemoveAt(index);
+      mut.ReleaseMutex();
     }
 
     public void Disconnect() {
@@ -154,6 +158,51 @@ namespace FFXIV_Vibe_Plugin.Device{
       this.ButtplugClient = null;
     }
 
+    public List<Device> GetDevices() {
+      return this.Devices;
+    }
+
+    public void UpdateAllBatteryLevel() {
+      foreach(Device device in this.GetDevices()) {
+        device.UpdateBatteryLevel();
+      }
+    }
+
+    public void StopAll() {
+      foreach(Device device in this.GetDevices()) {
+        device.Stop();
+      }
+    }
+
+    /**
+     * Sends an itensity vibe to all of the devices 
+     * @param {float} intensity
+     */
+    public void SendVibe(float intensity, int motor=-1) {
+      if(this._currentIntensity != intensity && this.IsConnected() && this.ButtplugClient != null) {
+        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+
+        // Set min and max limits
+        if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
+        var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
+        Dictionary<uint,double> intensityPair = new Dictionary<uint,double>();
+        if(motor != -1) {
+          intensityPair.Add((uint)motor, newIntensity);
+        }
+        //this.Devices[deviceId].SendVibrateCmd(intensityPair);
+        this._currentIntensity = newIntensity;
+      }
+    }
+
+
+
+
+
+
+
+    /************ LEGACY ************/
+
+
     private void Command_ToysList() {
       if(this.ButtplugClient == null) { return; }
       for(int i = 0; i < this.ButtplugClient.Devices.Length; i++) {
@@ -161,23 +210,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         this.Logger.Chat($"    {i}: {name}");
       }
     }
-    /**
-     * Sends an itensity vibe to all of the devices 
-     * @param {float} intensity
-     */
-    public void SendVibe(float intensity) {
-      if(this._currentIntensity != intensity && this.IsConnected() && this.ButtplugClient != null) {
-        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
 
-        // Set min and max limits
-        if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
-        var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
-        for(int i = 0; i < this.ButtplugClient.Devices.Length; i++) {
-          this.ButtplugClient.Devices[i].SendVibrateCmd(newIntensity);
-        }
-        this._currentIntensity = newIntensity;
-      }
-    }
 
     private void Command_SendIntensity(string args) {
       string[] blafuckcsharp;

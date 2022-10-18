@@ -13,29 +13,34 @@ namespace FFXIV_Vibe_Plugin.Device {
     public string Name { get; set; }
     public bool CanVibrate = false;
     public int VibrateMotors = -1;
-    public uint[]? VibrateSteps;
+    public uint[] VibrateSteps = { };
     public bool CanRotate = false;
     public int RotateMotors = -1;
-    public uint[]? RotateSteps;
+    public uint[] RotateSteps = { };
     public bool CanLinear = false;
     public int LinearMotors = -1;
-    public uint[]? LinearSteps;
+    public uint[] LinearSteps = { };
     public bool CanBattery = false;
     public bool CanStop = false;    
     public bool IsConnected = false;
     public double BatteryLevel = -1;
+
+    public int[] CurrentVibrateIntensity;
+    public int[] CurrentRotateIntensity;
+    public int[] CurrentLinearIntensity;
 
     public Device(ButtplugClientDevice buttplugClientDevice) {
       this.ButtplugClientDevice = buttplugClientDevice;
       Id = (int)buttplugClientDevice.Index;
       Name = buttplugClientDevice.Name;
       this.SetCommands();
+      this.ResetMotors();
       this.UpdateBatteryLevel();
     }
 
     public override string ToString() {
       List<string> commands = this.GetCommands();
-      return $"Device: {Id}:{Name} (connected={IsConnected}, commands={String.Join(",", commands)})";
+      return $"Device: {Id}:{Name} (connected={IsConnected}, battery={GetBatteryPercentage()}, commands={String.Join(",", commands)})";
     }
 
     private void SetCommands() {
@@ -57,6 +62,22 @@ namespace FFXIV_Vibe_Plugin.Device {
         } else if(cmd.Key == ServerMessage.Types.MessageAttributeType.StopDeviceCmd) {
           this.CanStop = true;
         }
+      }
+    }
+
+    /** Init all current motors intensity and default to zero */
+    private void ResetMotors() {
+      if(this.CanVibrate) {
+        this.CurrentVibrateIntensity = new int[this.VibrateMotors];
+        for(int i=0; i<this.VibrateMotors; i++) { this.CurrentVibrateIntensity[i] = 0; };
+      }
+      if(this.CanRotate) {
+        this.CurrentRotateIntensity = new int[this.RotateMotors];
+        for(int i = 0; i < this.RotateMotors; i++) { this.CurrentRotateIntensity[i] = 0; };
+      }
+      if(this.CanLinear) {
+        this.CurrentLinearIntensity = new int[this.LinearMotors];
+        for(int i = 0; i < this.LinearMotors; i++) { this.CurrentLinearIntensity[i] = 0; };
       }
     }
 
@@ -84,8 +105,56 @@ namespace FFXIV_Vibe_Plugin.Device {
       return this.BatteryLevel;
     }
 
-    public double GetBatteryLevel() {
-      return this.BatteryLevel;
+    public string GetBatteryPercentage() {
+      return $"{this.BatteryLevel*100}%";
+    }
+
+    public void Stop() {
+      if(CanStop) {
+        this.ButtplugClientDevice.SendStopDeviceCmd();
+      }
+      if(CanVibrate) {
+        this.ButtplugClientDevice.SendVibrateCmd(0);
+      }
+      if(CanRotate) {
+        this.ButtplugClientDevice.SendRotateCmd(0f, true);
+      }
+      ResetMotors();
+    }
+
+    public void SendVibrate(int intensity, int motorId=-1) {
+      Dictionary<uint, double> motorIntensity = new();
+      for(int i=0; i < this.VibrateMotors; i++) {
+        if(motorId == -1 || motorId == i) {
+          this.CurrentVibrateIntensity[i] = intensity;
+          motorIntensity.Add((uint)i, intensity / 100.0);
+        }
+      }
+      this.ButtplugClientDevice.SendVibrateCmd(motorIntensity);
+    }
+
+    public void SendRotate(int intensity, bool clockWise, int motorId=-1) {
+      Dictionary<uint, (double, bool)> motorIntensity = new();
+      for(int i = 0; i < this.RotateMotors; i++) {
+        if(motorId == -1 || motorId == i) {
+          this.CurrentRotateIntensity[i] = intensity;
+          (double, bool) values = (intensity/100.0, clockWise);
+          motorIntensity.Add((uint)i, values);
+        }
+      }
+      this.ButtplugClientDevice.SendRotateCmd(motorIntensity);
+    }
+
+    public void SendLinear(int intensity, int duration, int motorId = -1) {
+      Dictionary<uint, (uint, double)> motorIntensity = new();
+      for(int i = 0; i < this.LinearMotors; i++) {
+        if(motorId == -1 || motorId == i) {
+          this.CurrentLinearIntensity[i] = intensity;
+          (uint, double) values = ((uint)duration, intensity / 100.0);
+          motorIntensity.Add((uint)i, values);
+        }
+      }
+      this.ButtplugClientDevice.SendLinearCmd(motorIntensity);
     }
   }
 }
