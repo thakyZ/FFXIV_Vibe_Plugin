@@ -102,6 +102,19 @@ Please make sure you are doing it right.
 If this is not working: please try change the IP Address to 127.0.0.1 or your computer IP Address. Also make sure the port
 is 12345 or correspond to the one in Intiface.
 
+### The device disconnect every now and then.
+Please make sure to follow those steps before asking for help:
+1. Disable all triggers.
+2. Create a new and very simple trigger (eg: vibration on a message). **Make sure it is correctly working**.
+3. Wait twice the amount of time needed to have the issue again. (eg: if it was around 30min, then wait 60min or more).
+
+If it works, then it's a trigger issue from one you have created. If not:
+1. **Don't stop** the game, **don't stop** Intiface.
+2. Turn **off and on** your controller device.
+3. Let it reconnect to intiface (without restarting intiface app).
+4. Test your trigger again.
+If it works, then it probably a bluetooth issue. Nothing we can do about.
+
 ### How do I share my configuration
 You can copy/past the file located at: `%AppData%\XIVLauncher\pluginConfigs\FFXIV_Vibe_Plugin.json`.
 Be aware: this will overrides everything.
