@@ -12,20 +12,10 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     Spell
   }
 
-  enum EVENT {
-    Any,
-    Damage,
-    Heal,
-    DamageAmount,
-    HealAmount,
-    Miss,
-    SelfMount
-  }
-
   enum DIRECTION {
     Any,
-    Incoming,
     Outgoing,
+    Incoming,
     Self
   }
 
@@ -39,7 +29,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public readonly string Id = "";
     public string Name = "";
     public int Kind = (int)KIND.Chat;
-    public int Event = (int)EVENT.Damage;
+    public int ActionEffectType = (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Nothing;
     public int Direction = (int)DIRECTION.Outgoing;
     public string ChatText = "";
     public string SpellText = "";
