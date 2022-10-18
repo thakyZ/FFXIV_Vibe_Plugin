@@ -106,4 +106,4 @@ Be aware: this will overrides everything.
 # Donors
 Please concider doing a small donation if you like this plugin. We work a lot and gave a lots of nights to design it, listening to everything people wanted.
 
-Thanks to: Maple
+Thanks to: Maple (20$)
