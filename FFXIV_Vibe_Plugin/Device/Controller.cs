@@ -178,19 +178,18 @@ namespace FFXIV_Vibe_Plugin.Device{
      * Sends an itensity vibe to all of the devices 
      * @param {float} intensity
      */
-    public void SendVibe(float intensity, int motor=-1) {
-      if(this._currentIntensity != intensity && this.IsConnected() && this.ButtplugClient != null) {
-        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+    public void SendVibeToAll(int intensity) {
+      if(this.IsConnected() && this.ButtplugClient != null) {
+        // Clamp value
+        if(intensity < 0) { intensity = 0; } else if(intensity > 100) { intensity = 100; }
 
-        // Set min and max limits
-        if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
-        var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
-        Dictionary<uint,double> intensityPair = new Dictionary<uint,double>();
-        if(motor != -1) {
-          intensityPair.Add((uint)motor, newIntensity);
+        // Compute intensity using the threshold
+        int newIntensity = (int)(intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD));
+        this.Logger.Debug($"Intensity: {newIntensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+        foreach(Device device in this.Devices) {
+          device.SendVibrate(newIntensity);
+          device.SendRotate(newIntensity);
         }
-        //this.Devices[deviceId].SendVibrateCmd(intensityPair);
-        this._currentIntensity = newIntensity;
       }
     }
 
@@ -214,16 +213,16 @@ namespace FFXIV_Vibe_Plugin.Device{
 
     private void Command_SendIntensity(string args) {
       string[] blafuckcsharp;
-      float intensity;
+      int intensity;
       try {
         blafuckcsharp = args.Split(" ", 2);
-        intensity = float.Parse(blafuckcsharp[1]);
+        intensity = int.Parse(blafuckcsharp[1]);
         this.Logger.Chat($"Command Send intensity {intensity}");
       } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
         this.Logger.Error($"Malformed arguments for send [intensity].", e);
         return;
       }
-      this.SendVibe(intensity);
+      this.SendVibeToAll(intensity);
     }
     
 

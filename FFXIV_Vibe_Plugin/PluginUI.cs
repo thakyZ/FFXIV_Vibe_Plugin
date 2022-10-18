@@ -122,10 +122,6 @@ namespace FFXIV_Vibe_Plugin {
               this.DrawOptionsTab();
               ImGui.EndTabItem();
             }
-            if(ImGui.BeginTabItem("Simulator")) {
-              this.DrawSimulatorTab();
-              ImGui.EndTabItem();
-            }
             if(ImGui.BeginTabItem("Devices")) {
               this.DrawDevicesTab();
               ImGui.EndTabItem();
@@ -218,25 +214,10 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-    public void DrawSimulatorTab() {
-      ImGui.Spacing();
-      ImGui.TextColored(ImGuiColors.DalamudViolet, "Send to all:");
-      ImGui.BeginChild("###Simulator_sendAll", new Vector2(-1, 40f), true);
-      {
-        ImGui.SetNextItemWidth(200);
-        if(ImGui.SliderInt("Intensity", ref this.simulator_currentAllIntensity, 0, 100)) {
-          this.DeviceController.SendVibe(this.simulator_currentAllIntensity);
-        }
-        ImGui.SameLine();
-        if(ImGui.Button("Stop", new Vector2(100, 24))) {
-          this.DeviceController.SendVibe(0f);
-          simulator_currentAllIntensity = 0;
-        }
-      }
-      ImGui.EndChild();
-    }
-
     public void DrawDevicesTab() {
+      ImGui.Spacing();
+
+
       ImGui.TextColored(ImGuiColors.DalamudViolet, "Actions");
       ImGui.BeginChild("###DevicesTab_General", new Vector2(-1, 40f), true);
       {
@@ -255,42 +236,58 @@ namespace FFXIV_Vibe_Plugin {
       }
       ImGui.EndChild();
 
-      if(!this.DeviceController.IsConnected()) { return; }
+      if(ImGui.CollapsingHeader($"All devices")) {
+        ImGui.Text("Send to all:");
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(200);
+        if(ImGui.SliderInt("###SendVibeAll_Intensity", ref this.simulator_currentAllIntensity, 0, 100)) {
+          this.DeviceController.SendVibeToAll(this.simulator_currentAllIntensity);
+        }
+      }
+
       foreach(Device.Device device in this.DeviceController.GetDevices()) {
-        if(ImGui.CollapsingHeader($"{device.Id} {device.Name} - {device.GetBatteryPercentage()}")) {
+        if(ImGui.CollapsingHeader($"{device.Id} {device.Name} - Battery: {device.GetBatteryPercentage()}")) {
           ImGui.TextWrapped(device.ToString());
           if(device.CanVibrate) {
-            ImGui.Text("Vibrate:");
+            ImGui.TextColored(ImGuiColors.DalamudViolet, "VIBRATE");
+            ImGui.Indent(10);
             for(int i = 0; i < device.VibrateMotors; i++) {
-              ImGui.Text($"Motor {i+1}: ");
+              ImGui.Text($"Motor {i + 1}: ");
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Vibrate Motor {i}", ref device.CurrentVibrateIntensity[i], 0, 100)) {
                 device.SendVibrate(device.CurrentVibrateIntensity[i], i);
               }
             }
+            ImGui.Unindent(10);
           }
+
           if(device.CanRotate) {
-            ImGui.Text("Rotate:");
+            ImGui.TextColored(ImGuiColors.DalamudViolet, "ROTATE");
+            ImGui.Indent(10);
             for(int i = 0; i < device.RotateMotors; i++) {
-              ImGui.Text($"Motor {i+1}: ");
+              ImGui.Text($"Motor {i + 1}: ");
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Rotate Motor {i}", ref device.CurrentRotateIntensity[i], 0, 100)) {
                 device.SendRotate(device.CurrentRotateIntensity[i], true, i);
               }
             }
+            ImGui.Unindent(10);
           }
+
           if(device.CanLinear) {
-            ImGui.Text("Linear:");
+            ImGui.TextColored(ImGuiColors.DalamudViolet, "LINEAR VIBES");
+            ImGui.Indent(10);
             for(int i = 0; i < device.LinearMotors; i++) {
-              ImGui.Text($"Motor {i+1}: ");
+              ImGui.Text($"Motor {i + 1}: ");
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Linear Motor {i}", ref device.CurrentLinearIntensity[i], 0, 100)) {
                 device.SendLinear(device.CurrentLinearIntensity[i], 500, i);
               }
             }
+            ImGui.Unindent(10);
           }
         }
 

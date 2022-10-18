@@ -110,19 +110,20 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void Stop() {
-      if(CanStop) {
-        this.ButtplugClientDevice.SendStopDeviceCmd();
-      }
       if(CanVibrate) {
         this.ButtplugClientDevice.SendVibrateCmd(0);
       }
       if(CanRotate) {
         this.ButtplugClientDevice.SendRotateCmd(0f, true);
       }
+      if(CanStop) {
+        this.ButtplugClientDevice.SendStopDeviceCmd();
+      }
       ResetMotors();
     }
 
     public void SendVibrate(int intensity, int motorId=-1) {
+      if(!CanVibrate) return;
       Dictionary<uint, double> motorIntensity = new();
       for(int i=0; i < this.VibrateMotors; i++) {
         if(motorId == -1 || motorId == i) {
@@ -133,7 +134,8 @@ namespace FFXIV_Vibe_Plugin.Device {
       this.ButtplugClientDevice.SendVibrateCmd(motorIntensity);
     }
 
-    public void SendRotate(int intensity, bool clockWise, int motorId=-1) {
+    public void SendRotate(int intensity, bool clockWise=true, int motorId=-1) {
+      if(!CanRotate) return;
       Dictionary<uint, (double, bool)> motorIntensity = new();
       for(int i = 0; i < this.RotateMotors; i++) {
         if(motorId == -1 || motorId == i) {
@@ -145,7 +147,8 @@ namespace FFXIV_Vibe_Plugin.Device {
       this.ButtplugClientDevice.SendRotateCmd(motorIntensity);
     }
 
-    public void SendLinear(int intensity, int duration, int motorId = -1) {
+    public void SendLinear(int intensity, int duration=500, int motorId = -1) {
+      if(!CanLinear) return;
       Dictionary<uint, (uint, double)> motorIntensity = new();
       for(int i = 0; i < this.LinearMotors; i++) {
         if(motorId == -1 || motorId == i) {
