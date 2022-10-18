@@ -9,6 +9,13 @@ using FFXIV_Vibe_Plugin.Commons;
 using Buttplug;
 
 namespace FFXIV_Vibe_Plugin.Device {
+  public enum UsableCommand {
+    Vibrate,
+    Rotate,
+    Linear,
+    Stop
+  }
+
   public class Device {
     private readonly ButtplugClientDevice ButtplugClientDevice;
     public int Id { get; set; }
@@ -26,6 +33,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     public bool CanStop = false;    
     public bool IsConnected = false;
     public double BatteryLevel = -1;
+    public List<UsableCommand> UsableCommands = new();
 
     public int[] CurrentVibrateIntensity = Array.Empty<int>();
     public int[] CurrentRotateIntensity = Array.Empty<int>();
@@ -41,7 +49,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public override string ToString() {
-      List<string> commands = this.GetCommands();
+      List<string> commands = this.GetCommandsInfo();
       return $"Device: {Id}:{Name} (connected={IsConnected}, battery={GetBatteryPercentage()}, commands={String.Join(",", commands)})";
     }
 
@@ -51,18 +59,22 @@ namespace FFXIV_Vibe_Plugin.Device {
           this.CanVibrate = true;
           this.VibrateMotors = (int)cmd.Value.FeatureCount;
           this.VibrateSteps = cmd.Value.StepCount;
+          this.UsableCommands.Add(UsableCommand.Vibrate);
         } else if(cmd.Key == ServerMessage.Types.MessageAttributeType.RotateCmd) {
           this.CanRotate = true;
           this.RotateMotors = (int)cmd.Value.FeatureCount;
           this.RotateSteps = cmd.Value.StepCount;
+          this.UsableCommands.Add(UsableCommand.Rotate);
         } else if(cmd.Key == ServerMessage.Types.MessageAttributeType.LinearCmd) {
           this.CanLinear = true;
           this.LinearMotors = (int)cmd.Value.FeatureCount;
           this.LinearSteps = cmd.Value.StepCount;
+          this.UsableCommands.Add(UsableCommand.Linear);
         } else if(cmd.Key == ServerMessage.Types.MessageAttributeType.BatteryLevelCmd) {
           this.CanBattery = true;
         } else if(cmd.Key == ServerMessage.Types.MessageAttributeType.StopDeviceCmd) {
           this.CanStop = true;
+          this.UsableCommands.Add(UsableCommand.Stop);
         }
       }
     }
@@ -83,7 +95,11 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
     }
 
-    public List<String> GetCommands() {
+    public List<UsableCommand> GetUsableCommands() {
+      return this.UsableCommands;
+    }
+
+    public List<String> GetCommandsInfo() {
       List<string> commands = new();
       if(CanVibrate) {
         commands.Add($"vibrate motors={VibrateMotors} steps={String.Join(",", VibrateSteps)}");
@@ -161,7 +177,6 @@ namespace FFXIV_Vibe_Plugin.Device {
         }
       }
       this.ButtplugClientDevice.SendLinearCmd(motorIntensity);
-     
     }
   }
 }

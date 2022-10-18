@@ -121,7 +121,7 @@ namespace FFXIV_Vibe_Plugin {
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
       
       // UI
-      this.PluginUi = new PluginUI(this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController);
+      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController);
       this.PluginInterface.UiBuilder.Draw += DrawUI;
       this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
     }
@@ -265,20 +265,20 @@ These commands let anyone whose name contains 'Alice' control all your connected
 
     private void SpellWasTriggered(object? sender, HookActionEffects_ReceivedEventArgs args) {
       Structures.Spell spell = args.Spell;
-      Triggers.Trigger trigger = this.TriggersController.CheckTrigger_Spell(spell);
+      Triggers.Trigger? trigger = this.TriggersController.CheckTrigger_Spell(spell);
       if(trigger != null) {
-        this.Logger.Log($"SPELL_TRIGGER Intensitiy:{trigger.Intensity}");
-        this.DeviceController.SendVibeToAll(trigger.Intensity);
+        this.Logger.Log($"SPELL_TRIGGER {trigger.SpellText}");
+        this.DeviceController.SendVibeToAll(0);
       }
 
 
     }
 
     public void CheckTriggers_Chat(string message) {
-       Triggers.Trigger trigger = this.TriggersController.CheckTrigger_Chat(message);
+       Triggers.Trigger? trigger = this.TriggersController.CheckTrigger_Chat(message);
       if(trigger != null) {
-        this.Logger.Log($"CHAT_TRIGGER Intensitiy:{trigger.Intensity}");
-        this.DeviceController.SendVibeToAll(trigger.Intensity);
+        this.Logger.Log($"CHAT_TRIGGER:{trigger.ChatText}");
+        this.DeviceController.SendVibeToAll(0);
       }
 
     }
@@ -353,7 +353,8 @@ These commands let anyone whose name contains 'Alice' control all your connected
     }
 
     private void LoadTriggersConfig() {
-      this.TriggersController.Set(this.Configuration.TRIGGERS);
+      //TODO: enable me to save triggers configuration
+      //this.TriggersController.Set(this.Configuration.TRIGGERS);
       SortedSet<ChatTrigger> chatTriggers = this.Configuration.CHAT_TRIGGERS;
       this.Logger.Debug($"Loading {chatTriggers.Count} triggers");
       this.ChatTriggers = new SortedSet<ChatTrigger>();
