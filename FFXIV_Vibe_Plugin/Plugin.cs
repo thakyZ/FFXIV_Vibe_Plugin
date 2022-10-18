@@ -272,11 +272,7 @@ namespace FFXIV_Vibe_Plugin {
       }
       List<Trigger>? triggers = this.TriggersController.CheckTrigger_Spell(spell);
       foreach(Trigger trigger in triggers) {
-        if(trigger.StartAfter > 0 || trigger.StopAfter > 0) {
-          this.DeviceController.AddTriggerTask(trigger);
-        } else {
-          this.DeviceController.SendTrigger(trigger);
-        }
+        this.DeviceController.SendTrigger(trigger);
       }
     }
 

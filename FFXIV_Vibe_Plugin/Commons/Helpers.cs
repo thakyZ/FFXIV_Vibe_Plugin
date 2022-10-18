@@ -17,7 +17,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
 
 
     public static int ClampIntensity(int intensity, int threshold) {
-      if(intensity < 0) { intensity = 0; } else if(intensity > 100) { intensity = 100; }
+      intensity = ClampInt(intensity, 0, threshold);
       return (int)(intensity / (100.0f / threshold));
     }
 

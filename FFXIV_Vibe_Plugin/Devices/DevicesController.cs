@@ -18,6 +18,8 @@ namespace FFXIV_Vibe_Plugin.Device{
     private readonly Logger Logger;
     private readonly Configuration Configuration;
     private readonly Patterns Patterns;
+    
+    // TODO:
     private readonly Sequencer Sequencer;
     
     // Buttplug related
@@ -232,9 +234,9 @@ namespace FFXIV_Vibe_Plugin.Device{
           
           if(triggerDevice.ShouldVibrate) {
             for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
-              if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsIntensity != null) {
+              if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
-                int motorIntensity = triggerDevice.VibrateMotorsIntensity[motorId];
+                int motorIntensity = triggerDevice.VibrateMotorsThreshold[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.VibrateMotorsPattern[motorId] == 0) {
                     this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensity}!");
@@ -252,9 +254,9 @@ namespace FFXIV_Vibe_Plugin.Device{
           }
           if(triggerDevice.ShouldRotate) {
             for(int motorId = 0; motorId < triggerDevice.RotateSelectedMotors?.Length; motorId++) {
-              if(triggerDevice.RotateSelectedMotors != null && triggerDevice.RotateMotorsIntensity != null) {
+              if(triggerDevice.RotateSelectedMotors != null && triggerDevice.RotateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
-                int motorIntensitiy = triggerDevice.RotateMotorsIntensity[motorId];
+                int motorIntensitiy = triggerDevice.RotateMotorsThreshold[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
                     this.Logger.Debug($"Sending {device.Name} rotation to motor: {motorId} with intensity: {motorIntensitiy}!");
@@ -268,9 +270,9 @@ namespace FFXIV_Vibe_Plugin.Device{
           }
           if(triggerDevice.ShouldLinear) {
             for(int motorId = 0; motorId < triggerDevice.LinearSelectedMotors?.Length; motorId++) {
-              if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsIntensity != null) {
+              if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
-                int motorIntensitiy = triggerDevice.LinearMotorsIntensity[motorId];
+                int motorIntensitiy = triggerDevice.LinearMotorsThreshold[motorId];
                 int motorDuration = triggerDevice.LinearMotorsDuration[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.RotateMotorsPattern[motorId] == 0) {
@@ -332,7 +334,7 @@ namespace FFXIV_Vibe_Plugin.Device{
       device.Stop();
     }
 
-    public void AddTriggerTask(Triggers.Trigger trigger) {
+    public void SendVibratePattern(Triggers.Trigger trigger) {
       this.Logger.Log($"Adding trigger task: {trigger}");
     }
 
