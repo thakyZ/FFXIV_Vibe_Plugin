@@ -14,6 +14,7 @@ namespace FFXIV_Vibe_Plugin {
     private readonly DalamudPluginInterface PluginInterface;
     private readonly Configuration Configuration;
     private readonly Device.Controller DeviceController;
+    private readonly Triggers.Controller TriggerController;
     private readonly Plugin CurrentPlugin;
 
     // Images
@@ -41,12 +42,14 @@ namespace FFXIV_Vibe_Plugin {
       DalamudPluginInterface pluginInterface,
       Configuration configuration,
       Plugin currentPlugin,
-      Device.Controller deviceController
+      Device.Controller deviceController,
+      Triggers.Controller triggersController
     ) {
       this.Configuration = configuration;
       this.PluginInterface = pluginInterface;
       this.CurrentPlugin = currentPlugin;
       this.DeviceController = deviceController;
+      this.TriggerController = triggersController;
       this.LoadImages();
     }
 
@@ -318,7 +321,7 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawTriggersTab() {
-      List<Triggers.Trigger> triggers = this.CurrentPlugin.GetTriggers();
+      List<Triggers.Trigger> triggers = this.TriggerController.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
       if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
         ImGui.Text($"--- Number of triggers {triggers.Count} ---");
@@ -435,7 +438,7 @@ namespace FFXIV_Vibe_Plugin {
           ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
           if(ImGui.Button("Yes")) {
             if(this.SelectedTrigger != null) {
-              this.CurrentPlugin.RemoveTrigger(this.SelectedTrigger);
+              this.TriggerController.RemoveTrigger(this.SelectedTrigger);
               this.SelectedTrigger = null;
               this.Configuration.Save();
             }
@@ -455,7 +458,7 @@ namespace FFXIV_Vibe_Plugin {
 
       if(ImGui.Button("Add")) {
         Triggers.Trigger trigger = new("New Trigger");
-        this.CurrentPlugin.AddTrigger(trigger);
+        this.TriggerController.AddTrigger(trigger);
         this.SelectedTrigger = trigger;
         this.triggersViewMode = "edit";
       };
@@ -473,7 +476,7 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     private void SaveTriggers() {
-      this.Configuration.TRIGGERS = this.CurrentPlugin.GetTriggers();
+      this.Configuration.TRIGGERS = this.TriggerController.GetTriggers();
       this.Configuration.Save();
     }
   }
