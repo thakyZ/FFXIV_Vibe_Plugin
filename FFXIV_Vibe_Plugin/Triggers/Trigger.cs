@@ -32,7 +32,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int ActionEffectType = (int)FFXIV_Vibe_Plugin.Commons.Structures.ActionEffectType.Nothing;
     public int Direction = (int)DIRECTION.Any;
     public string ChatText = "hello world";
-    public string SpellText = "Spell to monitor";
+    public string SpellText = "";
     public int AmountMinValue = Trigger._initAmountMinValue;
     public int AmountMaxValue = Trigger._initAmountMaxValue;
     public string FromPlayerName = "";
