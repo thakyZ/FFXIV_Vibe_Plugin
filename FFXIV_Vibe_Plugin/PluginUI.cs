@@ -339,33 +339,80 @@ namespace FFXIV_Vibe_Plugin {
           if(this.SelectedTrigger != null) {
             ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
 
-           
+            ImGui.Columns(2, "#TRIGGER_FORM", false);
+            ImGui.SetColumnWidth(0, 100);
+
             // Displaying the trigger ID
             ImGui.Text($"TriggerID:");
-            ImGui.SameLine();
+            ImGui.NextColumn();
             ImGui.Text($"{this.SelectedTrigger.Id}");
 
             // Displaying the trigger name field
+            ImGui.NextColumn();
             ImGui.Text("Trigger Name:");
-            ImGui.SameLine();
-            if(ImGui.InputText("##TriggerFieldName", ref this.SelectedTrigger.Name, 99)) {
+            ImGui.NextColumn();
+            if(ImGui.InputText("###TRIGGER_NAME", ref this.SelectedTrigger.Name, 99)) {
               if(this.SelectedTrigger.Name == "") {
                 this.SelectedTrigger.Name = "no_name";
               }
               this.Configuration.Save();
             };
-            
-            // Display create button
-            if(ImGui.Button("Create")) {
-              this.CurrentPlugin.AddTrigger(this.SelectedTrigger);
-              this.SaveTriggers();
+            ImGui.NextColumn();
+
+            // Display KIND
+            ImGui.Text("Kind:");
+            ImGui.NextColumn();
+            string[] TRIGGER_KIND = System.Enum.GetNames( typeof(Triggers.KIND));
+            int currentKind = (int)this.SelectedTrigger.kind;
+            if(ImGui.Combo("###TRIGGER_FORM_KIND", ref currentKind, TRIGGER_KIND, TRIGGER_KIND.Length)) {
+              this.SelectedTrigger.kind = currentKind;
               this.Configuration.Save();
             }
+            ImGui.NextColumn();
+
+
+            // KIND:CHAT OPTIONS
+            if(this.SelectedTrigger.kind == (int)Triggers.KIND.Chat) {
+              ImGui.Text("Chat text:");
+              ImGui.NextColumn();
+              if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.chatText, 250)) {
+                this.Configuration.Save();
+              };
+              ImGui.NextColumn();
+            }
+            
+
+            // KIND:SPELL OPTIONS
+            if(this.SelectedTrigger.kind == (int)Triggers.KIND.Spell) {
+
+              // Display TRIGGER
+              ImGui.Text("Trigger:");
+              ImGui.NextColumn();
+              string[] TRIGGER = System.Enum.GetNames(typeof(Triggers.TRIGGER));
+              int currentTrigger = (int)this.SelectedTrigger.trigger;
+              if(ImGui.Combo("###TRIGGER_FORM_TRIGGER", ref currentTrigger, TRIGGER, TRIGGER.Length)) {
+                this.SelectedTrigger.trigger = currentTrigger;
+                this.Configuration.Save();
+              }
+              ImGui.NextColumn();
+
+              // Display TRIGGER
+              ImGui.Text("Direction:");
+              ImGui.NextColumn();
+              string[] DIRECTIONS = System.Enum.GetNames(typeof(Triggers.DIRECTION));
+              int currentDirection = (int)this.SelectedTrigger.direction;
+              if(ImGui.Combo("###TRIGGER_FORM_DIRECTION", ref currentDirection, DIRECTIONS, DIRECTIONS.Length)) {
+                this.SelectedTrigger.direction = currentDirection;
+                this.Configuration.Save();
+              }
+              ImGui.NextColumn();
+            }
+
 
             // Display save button
-            ImGui.SameLine();
             if(ImGui.Button("Save")) {
               this.SaveTriggers();
+              this.Configuration.Save();
             }
           }
         } else if(this.triggersViewMode == "delete") {
