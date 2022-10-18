@@ -101,6 +101,7 @@ namespace FFXIV_Vibe_Plugin.Device {
 
 
     public double UpdateBatteryLevel() {
+      if(!CanBattery) {return -1; }
       Task<double> batteryLevelTask = this.ButtplugClientDevice.SendBatteryLevelCmd();
       batteryLevelTask.Wait();
       this.BatteryLevel = batteryLevelTask.Result;
