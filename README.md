@@ -30,8 +30,6 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
 - [Intiface Desktop](https://intiface.com/desktop/)
-- [7-zip](https://www.7-zip.org/).
-- Visual Studio 2019 if you want to compile.
 
 ## Our TODO
 Our current ideas and feedbacks are in: [TODO List](./TODO.md)
@@ -40,24 +38,23 @@ Our current ideas and feedbacks are in: [TODO List](./TODO.md)
 You can build yourself, instructions are here: [Build yourself](./BUILD.md)
 
 ## Installation
+1. Launch your game and open /xlplugins.
+2. Go to settings on the bottom left.
+3. Go to the `Experimental` tab.
+4. Under `Custom Plugin Repositories` add the following url `https://raw.githubusercontent.com/kaciexx/FFXIV_Vibe_Plugin/master/repo.json` and press the <kbd>+</kbd> icon.
+5. Press the `Save and close` button on the bottom left.
 
-1. Download a [release here](https://github.com/kacie8989/FFXIV-Vibe-Plugin/releases)
-(or clone this repository and build the project using Visual Studio 2019)
-2. Go to FFXIV QuickLauncher folder (<kbd>WIN</kbd>+<kbd>R</kbd>, then `%appdata%\XIVLauncher\devPlugins`)
-3. Extract the compressed file (eg: `FFXIV_Vibe_Plugin_v0.1.6.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
+Now you should be able to see `FFXIV Vibe Plugin`. Click install and enjoy. 
 
-    - `C:\Users\<Username>\AppData\Roaming\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin`.
-    - The folder should contain some DLL files.
+## How to use
+1. Start `Intiface` and click on `Start Server`. Power on your device, make sure it is connected to Intiface.
+2. In the game. Type: `/fvp`. You should see the configuration panel.
+3. Press the `Connect` button.
 
-4. Start *FFXIV* using the **FFXIV QuickLauncher**
-5. In game, type: `/xlplugins`. A red window should open. It's *Dalamud*, the plugin manage for FFXIV.
-6. In Dalamud go to: `Developer tools` > `Plugins in developement` > `FFXIV Vibe Plugin`
-7. Make sure the plugin is enabled
-8. Type: `/fvp`. You should see the configuration panel.
-9. Start `Intiface` and click on `Start Server`. Power on your device, make sure it is connected to Intiface.
-10. Back in to the game, start the connect command: `/fvp connect`
+Well done ! 
 
-Well done ! You have now FFXIV connected to Intiface and your toys. 
+You have now FFXIV connected to Intiface. Now you can connect your device to Intiface and you
+should be able to use them with FFXIV Vibe Plugin.
 
 ![ingame](./Docs/screenshot.png)
 
