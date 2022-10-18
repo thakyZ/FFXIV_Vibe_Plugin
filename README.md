@@ -22,10 +22,10 @@ I have only tried to document the installation process which took me multiple at
 1. Download a [release here](https://github.com/kacie8989/FFXIV_BP/releases)
 (or clone this repository and build the project using Visual Studio 2019)
 2. Go to FFXIV QuickLauncher folder (<kbd>WIN</kbd>+<kbd>R</kbd>, then `%appdata%\XIVLauncher\devPlugins`)
-3. Extract the compressed file (eg: `ffxiv-bp-v0.0.3.7z`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
+3. Extract the compressed file (eg: `FFXIV_BP_v0.0.8.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
 
-    - `C:\Users\<Username>\AppData\Roaming\XIVLauncher\devPlugins\FFXIV_BP`
-    - The folder should contain ~30 dlls
+    - `C:\Users\<Username>\AppData\Roaming\XIVLauncher\devPlugins\FFXIV_BP`.
+    - The folder should contain some DLL files.
 
 4. Start *FFXIV* using the **FFXIV QuickLauncher**
 5. In game, type: `/xlplugins`. A red window should open. It's *Dalamud*, the plugin manage for FFXIV.
@@ -77,12 +77,9 @@ Enjoy :)
                                
 ## Tested toys
                                
-- Lovense Hush
-- Lovense Domi
-- Lovense Ferri
-- Lovense Diamo
-- Lovense Edge 2
+- Lovense: Hush, Domi, Ferri, Diamo, Edge 2, Gush
+
 
 # Discord
-
-[Ms. Tress #discussion](https://discord.gg/fx5pABsE)
+- [This plugin discord](https://discord.gg/PHVXvkP2Y9) (channel FFXIV)
+- [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
