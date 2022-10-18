@@ -346,7 +346,7 @@ namespace FFXIV_Vibe_Plugin {
             // Displaying the trigger ID
             ImGui.Text($"TriggerID:");
             ImGui.NextColumn();
-            ImGui.Text($"{this.SelectedTrigger.Id}");
+            ImGui.Text($"{this.SelectedTrigger.GetShortID()}");
             ImGui.NextColumn();
 
             // TRIGGER ENABLED
@@ -385,6 +385,13 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.Text("Chat text:");
               ImGui.NextColumn();
               if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.ChatText, 250)) {
+                this.Configuration.Save();
+              };
+              ImGui.NextColumn();
+
+              ImGui.Text("Intensity:");
+              ImGui.NextColumn();
+              if(ImGui.SliderInt("###TRIGGER_CHAT_INTENSITY", ref this.SelectedTrigger.Intensity, 0, 100)) {
                 this.Configuration.Save();
               };
               ImGui.NextColumn();

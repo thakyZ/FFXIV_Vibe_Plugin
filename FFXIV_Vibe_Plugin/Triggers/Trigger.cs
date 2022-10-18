@@ -24,6 +24,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   enum DIRECTION {
     Incoming,
     Outgoing,
+    Self
   }
 
   public class Trigger : IComparable<Trigger> {
@@ -38,6 +39,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int Event = (int)TRIGGER.Damage;
     public int Direction = (int)DIRECTION.Incoming;
     public string ChatText = "";
+    public int Intensity = 0;
 
     // Device
     public Device.Device? Device = null;
@@ -71,6 +73,10 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       } else {
         return 0;
       }
+    }
+
+    public string GetShortID() {
+      return this.Id[..13];
     }
   }
 }
