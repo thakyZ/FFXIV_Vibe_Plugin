@@ -14,10 +14,11 @@ using Buttplug;
 #endregion
 
 namespace FFXIV_Vibe_Plugin.Device{
-  internal class Controller {
+  internal class DevicesController {
     private readonly Logger Logger;
     private readonly Configuration Configuration;
     private readonly Patterns Patterns;
+    private readonly Sequencer Sequencer;
     
     // Buttplug related
     private ButtplugClient? ButtplugClient;
@@ -28,10 +29,11 @@ namespace FFXIV_Vibe_Plugin.Device{
     // Internal variables
     private readonly static Mutex mut = new();
 
-    public Controller(Logger logger, Configuration configuration, Patterns patterns) {
+    public DevicesController(Logger logger, Configuration configuration, Sequencer sequencer, Patterns patterns) {
       this.Logger = logger;
       this.Configuration = configuration;
       this.VisitedDevices = configuration.VISITED_DEVICES;
+      this.Sequencer = sequencer;
       this.Patterns = patterns;
     }
 
@@ -232,15 +234,16 @@ namespace FFXIV_Vibe_Plugin.Device{
             for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsIntensity != null) {
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
-                int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
+                int motorIntensity = triggerDevice.VibrateMotorsIntensity[motorId];
                 if(motorEnabled) {
                   if(triggerDevice.VibrateMotorsPattern[motorId] == 0) {
-                    this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensitiy}!");
-                    this.SendVibrate(device, motorIntensitiy, motorId);
+                    this.Logger.Debug($"Sending {device.Name} vibration to motor: {motorId} with intensity: {motorIntensity}!");
+                    this.SendVibrate(device, motorIntensity, motorId);
                   } else {
                     // WIP
                     int patternId = triggerDevice.VibrateMotorsPattern[motorId];
                     Pattern pattern = Patterns.Get(patternId);
+                    // TODO: this.SendVibratePattern(device, "vibrate", pattern, motorId);
                     this.Logger.Debug($"Sending {device.Name} vibration pattern {patternId}:{pattern.Name}:{pattern.Value} to motor {motorId}");
                   }
                 }
@@ -282,7 +285,7 @@ namespace FFXIV_Vibe_Plugin.Device{
           }
           if(triggerDevice.ShouldStop) {
             this.Logger.Debug($"Sending stop to {device.Name}!");
-            Controller.SendStop(device);
+            DevicesController.SendStop(device);
           }
         }
       }

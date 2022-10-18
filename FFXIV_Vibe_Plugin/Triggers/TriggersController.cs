@@ -9,12 +9,12 @@ using FFXIV_Vibe_Plugin.Commons;
 using System.Text.RegularExpressions;
 
 namespace FFXIV_Vibe_Plugin.Triggers {
-  internal class Controller {
+  internal class TriggersController {
     private readonly Logger Logger;
     private readonly PlayerStats PlayerStats;
     private List<Triggers.Trigger> Triggers = new();
 
-    public Controller(Logger logger, PlayerStats playerStats) {
+    public TriggersController(Logger logger, PlayerStats playerStats) {
       this.Logger = logger;
       this.PlayerStats = playerStats;
     }

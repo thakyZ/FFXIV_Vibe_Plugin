@@ -18,8 +18,8 @@ namespace FFXIV_Vibe_Plugin {
 
     private readonly DalamudPluginInterface PluginInterface;
     private readonly Configuration Configuration;
-    private readonly Device.Controller DeviceController;
-    private readonly Triggers.Controller TriggerController;
+    private readonly Device.DevicesController DeviceController;
+    private readonly Triggers.TriggersController TriggerController;
     private readonly Plugin CurrentPlugin;
     private readonly Logger Logger;
 
@@ -57,8 +57,8 @@ namespace FFXIV_Vibe_Plugin {
       DalamudPluginInterface pluginInterface,
       Configuration configuration,
       Plugin currentPlugin,
-      Device.Controller deviceController,
-      Triggers.Controller triggersController,
+      Device.DevicesController deviceController,
+      Triggers.TriggersController triggersController,
       Patterns Patterns
     ) {
       this.Logger = logger;
@@ -650,6 +650,7 @@ namespace FFXIV_Vibe_Plugin {
 
                           // Special intensity pattern asks for intensity param.
                           int currentPatternIndex = triggerDevice.VibrateMotorsPattern[motorId];
+                          // TODO: replace vibraton, rotation, linear intensity by a threshold for pattern
                           if(currentPatternIndex == 0) {
                             ImGui.Text($"Motor {motorId + 1} intensity:");
                             ImGui.SameLine();
@@ -779,22 +780,22 @@ namespace FFXIV_Vibe_Plugin {
             ImGui.TextColored(ImGuiColors.DalamudRed, "Current selected trigger is null");
           }
         } else if(this.triggersViewMode == "delete") {
-          ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
-          if(ImGui.Button("Yes")) {
-            if(this.SelectedTrigger != null) {
-              this.TriggerController.RemoveTrigger(this.SelectedTrigger);
+          if(this.SelectedTrigger != null) {
+            ImGui.TextColored(ImGuiColors.DalamudRed, $"Are you sure you want to delete trigger ID: {this.SelectedTrigger.Id}");
+            if(ImGui.Button("Yes")) {
+              if(this.SelectedTrigger != null) {
+                this.TriggerController.RemoveTrigger(this.SelectedTrigger);
+                this.SelectedTrigger = null;
+                this.Configuration.Save();
+              }
+              this.triggersViewMode = "default";
+            };
+            ImGui.SameLine();
+            if(ImGui.Button("No")) {
               this.SelectedTrigger = null;
-              this.Configuration.Save();
-            }
-            this.triggersViewMode = "default";
-          };
-          ImGui.SameLine();
-          if(ImGui.Button("No")) {
-
-            this.SelectedTrigger = null;
-            this.triggersViewMode = "default";
-          };
-
+              this.triggersViewMode = "default";
+            };
+          }
         }
         ImGui.EndChild();
       }
