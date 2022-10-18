@@ -59,18 +59,17 @@ namespace FFXIV_Vibe_Plugin.Commons {
       public byte flags = 0;
       public ushort value = 0;
 
-        public EffectEntry(ActionEffectType type, byte param0, byte param1, byte param2, byte mult, byte flags, ushort value)
-        {
-            this.type = type;
-            this.param0 = param0;
-            this.param1 = param1;
-            this.param2 = param2;
-            this.mult = mult;
-            this.flags = flags;
-            this.value = value;
-        }
+      public EffectEntry(ActionEffectType type, byte param0, byte param1, byte param2, byte mult, byte flags, ushort value) {
+        this.type = type;
+        this.param0 = param0;
+        this.param1 = param1;
+        this.param2 = param2;
+        this.mult = mult;
+        this.flags = flags;
+        this.value = value;
+      }
 
-        public override string ToString() {
+      public override string ToString() {
         return $"type: {this.type}, p0: {param0}, p1: {param1}, p2: {param2}, mult: {mult}, flags: {flags} | {Convert.ToString(flags, 2)}, value: {value}";
       }
     }
@@ -93,8 +92,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       }
     }
 
-        public struct Spell
-        {
+    public struct Spell {
       public int Id;
       public string Name = "Undefined_Spell_Name";
       public Player Player;
@@ -104,19 +102,18 @@ namespace FFXIV_Vibe_Plugin.Commons {
       public DamageType DamageType = 0;
       public ActionEffectType ActionEffectType = 0;
 
-            public Spell(int id, string name, Player player, int[]? amounts, float amountAverage, List<Player>? targets, DamageType damageType, ActionEffectType actionEffectType)
-            {
-                Id = id;
-                Name = name;
-                Player = player;
-                Amounts = amounts;
-                AmountAverage = amountAverage;
-                Targets = targets;
-                DamageType = damageType;
-                ActionEffectType = actionEffectType;
-            }
+      public Spell(int id, string name, Player player, int[]? amounts, float amountAverage, List<Player>? targets, DamageType damageType, ActionEffectType actionEffectType) {
+        Id = id;
+        Name = name;
+        Player = player;
+        Amounts = amounts;
+        AmountAverage = amountAverage;
+        Targets = targets;
+        DamageType = damageType;
+        ActionEffectType = actionEffectType;
+      }
 
-            public override string ToString() {
+      public override string ToString() {
         string targetsString = "";
         if(Targets != null) {
           if(Targets.Count > 0) {
