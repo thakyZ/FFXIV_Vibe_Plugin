@@ -3,8 +3,9 @@ using System;
 using System.IO;
 using System.Numerics;
 using Dalamud.Plugin;
+using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using Dalamud;
+using Dalamud.Interface.Components;
 using System.Collections.Generic;
 using static FFXIV_Vibe_Plugin.Plugin;
 using System.Threading;
@@ -34,7 +35,7 @@ namespace FFXIV_Vibe_Plugin {
     // The value to send as a test for vibes.
     private int simulator_currentAllIntensity = 0;
 
-
+    private int selectedTrigger = 0;
 
     /** Constructor */
     public PluginUI(
@@ -126,6 +127,10 @@ namespace FFXIV_Vibe_Plugin {
               this.DrawDevicesTab();
               ImGui.EndTabItem();
             }
+            if(ImGui.BeginTabItem("Triggers")) {
+              this.DrawTriggersTab();
+              ImGui.EndTabItem();
+            }
           }
 
           if(ImGui.BeginTabItem("Help")) {
@@ -199,19 +204,21 @@ namespace FFXIV_Vibe_Plugin {
       // Checkbox VIBE_HP_TOGGLE
       int config_VIBE_HP_MODE = this.Configuration.VIBE_HP_MODE;
       ImGui.SetNextItemWidth(200);
-      string[] VIBE_HP_MODES = new string[] { "normal", "shake", "mountain" };
-      if(ImGui.Combo("Vibe mode.", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
+      string[] VIBE_HP_MODES = new string[] { "intensity", "shake", "mountain" };
+      if(ImGui.Combo("###HP_Changed_VibeMode", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
         this.Configuration.VIBE_HP_MODE = config_VIBE_HP_MODE;
         this.Configuration.Save();
       }
+      ImGuiComponents.HelpMarker("Pattern to play when HP Change.");
 
       // Checkbox MAX_VIBE_THRESHOLD
       int config_MAX_VIBE_THRESHOLD = this.Configuration.MAX_VIBE_THRESHOLD;
       ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("Maximum vibration threshold", ref config_MAX_VIBE_THRESHOLD, 5, 100)) {
+      if(ImGui.SliderInt("###MaximumThreshold", ref config_MAX_VIBE_THRESHOLD, 5, 100)) {
         this.Configuration.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
         this.Configuration.Save();
       }
+      ImGuiComponents.HelpMarker("Maximum threshold for vibes.");
     }
 
     public void DrawDevicesTab() {
@@ -292,6 +299,33 @@ namespace FFXIV_Vibe_Plugin {
         }
 
       }
+    }
+
+    public void DrawTriggersTab() {
+      if(ImGui.BeginChild("left", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
+        if(ImGui.Selectable("Dmg", this.selectedTrigger == 0)) {
+          this.selectedTrigger = 0;
+        }
+        if(ImGui.Selectable("Heal", this.selectedTrigger == 1)) {
+          this.selectedTrigger = 1;
+        }
+        if(ImGui.Selectable("Chat", this.selectedTrigger == 2)) {
+          this.selectedTrigger = 2;
+        }
+        ImGui.EndChild();
+      }
+
+      ImGui.SameLine();
+      if(ImGui.BeginChild("rightSide", new Vector2(0, -ImGui.GetFrameHeightWithSpacing()), true)) {
+        ImGui.TextColored(ImGuiColors.DalamudRed, "Work in progress");
+        ImGui.Text($"Working on triggers {this.selectedTrigger}");
+        ImGui.EndChild();
+      }
+
+      ImGui.Button("Add");
+      ImGui.SameLine();
+      ImGui.Button("Delete");
+
     }
 
     public void DrawHelpTab() {

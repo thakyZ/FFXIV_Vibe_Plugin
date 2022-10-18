@@ -3,6 +3,8 @@ using Dalamud.Plugin;
 using System;
 using System.Collections.Generic;
 
+using FFXIV_Vibe_Plugin.Triggers;
+
 namespace FFXIV_Vibe_Plugin {
   [Serializable]
   public class Configuration : IPluginConfiguration {

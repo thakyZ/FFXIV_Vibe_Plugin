@@ -56,7 +56,7 @@ namespace FFXIV_Vibe_Plugin.Device{
         try {
           var uri = new Uri($"ws://{hostandport}/buttplug");
           var connector = new ButtplugWebsocketConnectorOptions(uri);
-          this.Logger.Chat($"Connecting to {hostandport}.");
+          this.Logger.Log($"Connecting to {hostandport}.");
           Task task = this.ButtplugClient.ConnectAsync(connector);
           task.Wait();
         } catch(Exception e) {
@@ -66,14 +66,11 @@ namespace FFXIV_Vibe_Plugin.Device{
         Thread.Sleep(200);
 
         if(this.ButtplugClient.Connected) {
-          this.Logger.Chat($"Buttplug connected!");
+          this.Logger.Log($"FVP connected to Intiface!");
         } else {
           this.Logger.Error("Failed connecting (Intiface server is up?)");
           return;
         }
-
-        this.ScanToys();
-      
     }
 
     private void ButtplugClient_ServerDisconnected(object? sender, EventArgs e) {
@@ -91,12 +88,14 @@ namespace FFXIV_Vibe_Plugin.Device{
 
     public void ScanToys() {
       if(this.ButtplugClient == null) { return;  }
-      this.Logger.Chat("Scanning for devices...");
+      this.Logger.Debug("Scanning for devices...");
       if(this.IsConnected()) {
         try {
-          this.ButtplugClient.StartScanningAsync();
+          var task = this.ButtplugClient.StartScanningAsync();
+          task.Wait();
         } catch(Exception e) {
-          this.Logger.Error("Scanning issue...", e);
+          this.Logger.Error("Scanning issue. No 'Device Comm Managers' enabled on Intiface?");
+          this.Logger.Error(e.Message);
         }
       }
     }
@@ -107,7 +106,7 @@ namespace FFXIV_Vibe_Plugin.Device{
       Device device = new(buttplugClientDevice);
       device.IsConnected = true;
       this.Devices.Add(device);
-      this.Logger.Chat($"Added {device})");
+      this.Logger.Debug($"Added {device})");
       mut.ReleaseMutex();
 
       /**
@@ -127,7 +126,7 @@ namespace FFXIV_Vibe_Plugin.Device{
       int index = this.Devices.FindIndex(device => device.Id == e.Device.Index);
       Device device = Devices[index];
       device.IsConnected = false;
-      this.Logger.Log($"Removed {Devices[index]}");
+      this.Logger.Debug($"Removed {Devices[index]}");
       this.Devices.RemoveAt(index);
       mut.ReleaseMutex();
     }
@@ -135,6 +134,13 @@ namespace FFXIV_Vibe_Plugin.Device{
     public void Disconnect() {
       if(this.ButtplugClient == null || !this.IsConnected()) {
         return;
+      }
+      try {
+        var task = this.ButtplugClient.StopScanningAsync();
+        task.Wait();
+      } catch(Exception e) {
+        this.Logger.Error("Couldn't stop scanning device... Unknown reason.");
+        this.Logger.Error(e.Message);
       }
       try {
         for(int i = 0; i < this.ButtplugClient.Devices.Length; i++) {
@@ -179,7 +185,7 @@ namespace FFXIV_Vibe_Plugin.Device{
      */
     public void SendVibeToAll(int intensity) {
       if(this.IsConnected() && this.ButtplugClient != null) {
-        this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
+        // DEBUG: this.Logger.Debug($"Intensity: {intensity} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
         foreach(Device device in this.Devices) {
           device.SendVibrate(intensity, -1, this.Configuration.MAX_VIBE_THRESHOLD);
           device.SendRotate(intensity, true, -1 , this.Configuration.MAX_VIBE_THRESHOLD);
