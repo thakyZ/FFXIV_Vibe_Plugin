@@ -232,15 +232,17 @@ namespace FFXIV_Vibe_Plugin.Device{
       this.Logger.Log($"Sending trigger {trigger}");
       foreach(Triggers.TriggerDevice triggerDevice in trigger.Devices) {
         Device? device = this.FindDevice(triggerDevice.Name);
-        if(device != null) {
+        if(device != null && triggerDevice != null) {
           
           if(triggerDevice.ShouldVibrate) {
-            for(int motorId = 0; motorId < triggerDevice.SelectedVibrateMotors.Length; motorId++) {
-              
-              bool motorEnabled = triggerDevice.SelectedVibrateMotors[motorId];
-              int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
-              if(motorEnabled) {
-                this.Logger.Log($"Sending vibration to {motorId} {motorIntensitiy}!");
+            for(int motorId = 0; motorId < triggerDevice.SelectedVibrateMotors?.Length; motorId++) {
+              if(triggerDevice.SelectedVibrateMotors != null && triggerDevice.VibrateMotorsIntensity != null) {
+                bool motorEnabled = triggerDevice.SelectedVibrateMotors[motorId];
+                int motorIntensitiy = triggerDevice.VibrateMotorsIntensity[motorId];
+                if(motorEnabled) {
+                  this.Logger.Log($"Sending vibration to {motorId} {motorIntensitiy}!");
+                  this.SendVibrate(device, motorIntensitiy, motorId);
+                }
               }
             }
           }
