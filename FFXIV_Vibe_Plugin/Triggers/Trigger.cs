@@ -41,7 +41,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string ChatText = "";
     public string SpellText = "";
     public int Intensity = 0;
-    public bool caseInsensitive = false;
+  
 
     // Device
     public Device.Device? Device = null;

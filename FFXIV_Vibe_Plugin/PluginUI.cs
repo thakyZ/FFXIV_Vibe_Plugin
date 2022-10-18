@@ -435,10 +435,6 @@ namespace FFXIV_Vibe_Plugin {
                 this.SelectedTrigger.SpellText = SPELL_TEXT;
                 this.Configuration.Save();
               }
-              ImGui.SameLine();
-              if(ImGui.Checkbox("Insensitive", ref this.SelectedTrigger.caseInsensitive)) {
-                this.Configuration.Save();
-              }
               ImGui.NextColumn();
 
                             ImGui.Text("Intensity:");
