@@ -19,6 +19,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     private readonly Configuration Configuration;
     private ConfigurationProfile Profile;
     private readonly Patterns Patterns;
+    private Triggers.Trigger? CurrentPlayingTrigger;
 
     /**
      * State of the current device and motor when it started to play as a unix timestamp.
@@ -233,7 +234,18 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     public void SendTrigger(Triggers.Trigger trigger) {
-      this.Logger.Debug($"Sending trigger {trigger}");
+      this.Logger.Debug($"Sending trigger {trigger} (priority={trigger.Priority})");
+
+      // Check if the trigger has the priority
+      if(this.CurrentPlayingTrigger == null) {
+        this.CurrentPlayingTrigger = trigger;
+      }
+      if(trigger.Priority < this.CurrentPlayingTrigger.Priority) {
+        this.Logger.Debug($"Ignoring trigger because lower priority => {trigger}");
+        return;
+      }
+      this.CurrentPlayingTrigger = trigger;
+
       foreach(Triggers.TriggerDevice triggerDevice in trigger.Devices) {
         Device? device = this.FindDevice(triggerDevice.Name);
         if(device != null && triggerDevice != null) {
@@ -380,6 +392,9 @@ namespace FFXIV_Vibe_Plugin.Device {
 
           Thread.Sleep(duration);
         }
+
+        // Make sure we clean the current playing trigger.
+        this.CurrentPlayingTrigger = null;
       });
       t.Start();
     }

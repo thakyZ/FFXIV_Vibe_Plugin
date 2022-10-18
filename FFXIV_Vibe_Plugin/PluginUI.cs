@@ -548,8 +548,6 @@ namespace FFXIV_Vibe_Plugin {
         } else if(this.triggersViewMode == "edit") {
           if(this.SelectedTrigger != null) {
 
-            ImGui.TextColored(ImGuiColors.DalamudRed, "Experimental/Testing phase");
-
             // Init table
             ImGui.BeginTable("###TRIGGER_FORM_TABLE_GENERAL", 2);
             ImGui.TableSetupColumn("###TRIGGER_FORM_TABLE_COL1", ImGuiTableColumnFlags.WidthFixed, COLUMN0_WIDTH);
@@ -645,6 +643,18 @@ namespace FFXIV_Vibe_Plugin {
             }
             ImGui.SameLine();
             ImGuiComponents.HelpMarker("In seconds. Use zero to avoid stopping.");
+            ImGui.TableNextRow();
+
+
+            // TRIGGER PRIORITY
+            ImGui.TableNextColumn();
+            ImGui.Text("Priority");
+            ImGui.TableNextColumn();
+            if(ImGui.InputInt("###TRIGGER_FORM_PRIORITY", ref this.SelectedTrigger.Priority, 100)) {
+              this.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker("If a trigger have a lower priority, it will be ignored.");
             ImGui.TableNextRow();
 
             ImGui.EndTable();
@@ -787,6 +797,7 @@ namespace FFXIV_Vibe_Plugin {
                       this.Configuration.Save();
                     }
                     ImGui.TableNextRow();
+
                   }
                 }
               }
