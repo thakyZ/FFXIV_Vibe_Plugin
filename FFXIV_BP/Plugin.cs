@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Linq;
 
 /** Dalamud */
+using Dalamud.Game.Gui;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -44,24 +45,20 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
     public List<ButtplugDevice> ButtplugDevices = new();
-
-    // Initialize the ChatGui.
-    private Dalamud.Game.Gui.ChatGui? DalamudChat { get; init; }
-
+    
+    // Initialize buttplug
     private Buttplug.ButtplugClient? buttplugClient;
     private SortedSet<ChatTrigger> Triggers = new();
 
-
     [PluginService]
     [RequiredVersion("1.0")]
+    private Dalamud.Game.Gui.ChatGui? DalamudChat { get; init; }
     private DalamudPluginInterface PluginInterface { get; init; }
-
-
     private CommandManager CommandManager { get; init; }
     private Configuration Configuration { get; init; }
     private PluginUI PluginUi { get; init; }
     private readonly ClientState clientState;
-    private string AuthorizedUser { get; set; }
+    private string AuthorizedUser = "";
 
     // SequencerTask
     private List<SequencerTask> sequencerTasks = new();
@@ -106,6 +103,7 @@ namespace FFXIV_Vibe_Plugin {
         this.sequencerTasks.Add(new SequencerTask("connect", 500));
       }
 
+      // Initialize the logger
       this.Log = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
     }
 
@@ -157,11 +155,10 @@ namespace FFXIV_Vibe_Plugin {
 
 
     }
+
     private void FirstUpdated() {
       this.LoadTriggersConfig();
     }
-
-
 
     private void DisplayUI() {
       this.PluginUi.Visible = true;
@@ -173,7 +170,6 @@ namespace FFXIV_Vibe_Plugin {
 
     private void RunSequencer(List<SequencerTask> sequencerTasks) {
       if(sequencerTasks != null) {
-
         this.sequencerTasks = sequencerTasks;
       }
 
@@ -183,7 +179,7 @@ namespace FFXIV_Vibe_Plugin {
 
         if(st._startedTime == 0) {
           st.play();
-          string[] commandSplit = st.command.Split(':', 2);
+          string[] commandSplit = st.Command.Split(':', 2);
           string task = commandSplit[0];
           string param1 = commandSplit.Length > 1 ? commandSplit[1] : "";
           this.Log.Debug($"Playing sequence: {task} {param1}");
@@ -203,7 +199,7 @@ namespace FFXIV_Vibe_Plugin {
           }
         }
 
-        if(st._startedTime + st.duration < GetUnix()) {
+        if(st._startedTime + st.Duration < GetUnix()) {
           this.sequencerTasks[0]._startedTime = 0;
           this.sequencerTasks.RemoveAt(0);
         }
@@ -570,9 +566,7 @@ ID   Intensity   Text Match
       for(int i = 0; i < Triggers.Count; ++i) {
         message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).Text}\n";
       }
-      if(DalamudChat != null) {
-        DalamudChat.Print(message);
-      }
+      this.Log.Chat(message);
     }
 
 

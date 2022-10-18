@@ -29,16 +29,20 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
 
     /** Constructor */
-    public Logger(Dalamud.Game.Gui.ChatGui DalamudChatGuit, string name, LogLevel log_level) {
-      this.DalamudChatGui = DalamudChatGuit;
+    public Logger(Dalamud.Game.Gui.ChatGui? DalamudChatGui, string name, LogLevel log_level) {
+      this.DalamudChatGui = DalamudChatGui;
       this.name = name;
       this.log_level = log_level;
     }
 
     /** Printing in the chat gui a message. */
     public void Chat(string msg) {
-      string m = this.FormatMessage(LogLevel.LOG, msg);
-      DalamudChatGui?.Print(m);
+      if(DalamudChatGui != null) {
+        string m = this.FormatMessage(LogLevel.LOG, msg);
+        DalamudChatGui.Print(m);
+      } else {
+        Dalamud.Logging.PluginLog.LogError("No gui chat");
+      }
     }
 
     /** Printing in the chat gui an error message. */
@@ -123,10 +127,6 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
     private string FormatMessage(LogLevel type, string msg, Exception e) {
       return $"{this.name} {type} {this.prefix} {e.Message}\\n{msg}";
-    }
-
-    public void Dispose() {
-
     }
   }
 }
