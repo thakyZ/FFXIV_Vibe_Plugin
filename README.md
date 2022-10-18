@@ -1,6 +1,7 @@
 # FFXIV Vibe Plugin
 
 <img src="https://img.shields.io/github/downloads/kaciexx/FFXIV_Vibe_Plugin/total?label=Downloads" />
+![Discord](https://img.shields.io/discord/914941648859963503)
 
 <p align="center">
   <img width="200" height="200" src="./Data/logo.png" />
