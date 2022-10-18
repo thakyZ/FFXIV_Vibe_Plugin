@@ -9,3 +9,4 @@
 - Data struct inspiration: https://gitlab.com/kaminariss/nextui-plugin/-/tree/master/NextUIPlugin/NetworkStructures/Server
 - Lumina: https://lumina.xiv.dev/docs/guides/basic-usage.html
 - Hook ActionEffect: https://github.com/lmcintyre/DamageInfoPlugin/blob/main/DamageInfoPlugin/DamageInfoPlugin.cs
+- https://github.com/aers/FFXIVClientStructs/tree/main/FFXIVClientStructs/FFXIV/

@@ -1,315 +1,90 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Authors></Authors>
-    <Company></Company>
-    <Version>0.0.0.2</Version>
-    <Description>A plugin to help you vibe your controller or toys</Description>
-    <Copyright>kacie8989</Copyright>
-    <PackageProjectUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</PackageProjectUrl>
-  </PropertyGroup>
-	
-  <PropertyGroup>
-	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
-	
-  <PropertyGroup>
-    <TargetFramework>net5.0-windows7.0</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</OutputPath>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Authors>Kacie8989</Authors>
+		<Company>Karsian</Company>
+		<Version>0.0.0.2</Version>
+		<Description>A plugin to help you vibe your controller or toys</Description>
+		<Copyright>kacie8989 2021</Copyright>
+		<PackageProjectUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</PackageProjectUrl>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\Data\ffxivbp.json" Link="Data\ffxivbp.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-	<Content Include="..\Data\logo.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-  </ItemGroup>
+	<PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</RepositoryUrl>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0-windows7.0</TargetFramework>
+		<Platforms>x64</Platforms>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</OutputPath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Buttplug" Version="2.0.5" />
-    <PackageReference Include="DalamudPackager" Version="2.1.5" />
-    <PackageReference Include="Lumina" Version="3.5.1" />
-    <PackageReference Include="Lumina.Excel" Version="6.0.1" />
-    <PackageReference Include="Lumina.Generated" Version="5.30.2" />
-    <Reference Include="0Harmony">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="CheapLoc">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\CheapLoc.dll</HintPath>
-    </Reference>
-    <Reference Include="Costura">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Costura.dll</HintPath>
-    </Reference>
-    <Reference Include="Dalamud.Injector">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Dalamud.Injector.dll</HintPath>
-    </Reference>
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Iced">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Iced.dll</HintPath>
-    </Reference>
-    <Reference Include="JetBrains.Annotations">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\JetBrains.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.HashCode">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Microsoft.Bcl.HashCode.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.DotNet.PlatformAbstractions">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyModel">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Microsoft.Extensions.DependencyModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.Common">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\MonoMod.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="PeNet">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PeNet.dll</HintPath>
-    </Reference>
-    <Reference Include="PeNet.Asn1">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PeNet.Asn1.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.AdvApi32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.AdvApi32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.BCrypt">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.BCrypt.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Cabinet">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Cabinet.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.CfgMgr32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.CfgMgr32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Crypt32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Crypt32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.DbgHelp">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.DbgHelp.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.DwmApi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.DwmApi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Gdi32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Gdi32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Hid">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Hid.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.ImageHlp">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.ImageHlp.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.IPHlpApi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.IPHlpApi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Kernel32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Kernel32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Magnification">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Magnification.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Msi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Msi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.NCrypt">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.NCrypt.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.NetApi32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.NetApi32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.NewDev">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.NewDev.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.NTDll">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.NTDll.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Ole32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Ole32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Psapi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Psapi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.SetupApi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.SetupApi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.SHCore">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.SHCore.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Shell32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Shell32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.User32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.User32.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Userenv">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Userenv.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.UxTheme">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.UxTheme.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Windows.Core">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Windows.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.Windows.ShellScalingApi">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.Windows.ShellScalingApi.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.WinUsb">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.WinUsb.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoke.WtsApi32">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\PInvoke.WtsApi32.dll</HintPath>
-    </Reference>
-    <Reference Include="Reloaded.Assembler">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Reloaded.Assembler.dll</HintPath>
-    </Reference>
-    <Reference Include="Reloaded.Hooks">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Reloaded.Hooks.dll</HintPath>
-    </Reference>
-    <Reference Include="Reloaded.Hooks.Definitions">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Reloaded.Hooks.Definitions.dll</HintPath>
-    </Reference>
-    <Reference Include="Reloaded.Memory">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Reloaded.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="Reloaded.Memory.Buffers">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Reloaded.Memory.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="SDL2-CS">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SDL2-CS.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Serilog.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.Async">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Serilog.Sinks.Async.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.File">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDisasm">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SharpDisasm.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SharpDX.Direct3D11.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SharpDX.DXGI.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Mathematics">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\SharpDX.Mathematics.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.Core">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.GLFW">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.GLFW.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.Maths">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.Maths.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.OpenGL">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.OpenGL.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.SDL">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.SDL.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.Windowing.Common">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.Windowing.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.Windowing.Glfw">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.Windowing.Glfw.dll</HintPath>
-    </Reference>
-    <Reference Include="Silk.NET.Windowing.Sdl">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Silk.NET.Windowing.Sdl.dll</HintPath>
-    </Reference>
-    <Reference Include="StbiSharp">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\StbiSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Drawing.Common">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\System.Drawing.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reflection.MetadataLoadContext">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\System.Reflection.MetadataLoadContext.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Pkcs">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\System.Security.Cryptography.Pkcs.dll</HintPath>
-    </Reference>
-    <Reference Include="Validation">
-      <HintPath>C:\Users\pesch\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Validation.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="..\Data\ffxivbp.json" Link="Data\ffxivbp.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\Data\logo.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<PropertyGroup>
+		<DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</RepositoryUrl>
+		<PackageLicenseFile>.\LICENSE</PackageLicenseFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Update="C:\Users\Kurog-Desktop\.nuget\packages\buttplugrustffi\2.0.4\build\..\runtimes\win-x64\native\buttplug_rs_ffi.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Buttplug" Version="2.0.5" />
+		<PackageReference Include="DalamudPackager" Version="2.1.5" />
+		<PackageReference Include="Lumina" Version="3.5.1" />
+		<PackageReference Include="Lumina.Excel" Version="6.0.1" />
+		<Reference Include="FFXIVClientStructs">
+			<HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Dalamud">
+			<HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGui.NET">
+			<HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGuiScene">
+			<HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Lumina">
+			<HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Lumina.Excel">
+			<HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data\Images\logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Data\Images\logo.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

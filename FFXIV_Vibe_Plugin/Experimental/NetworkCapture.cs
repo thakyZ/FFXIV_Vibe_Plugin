@@ -2,8 +2,8 @@
 using Dalamud.Game.Network;
 using FFXIV_Vibe_Plugin.Commons;
 
-namespace FFXIV_Vibe_Plugin {
-  internal class Experimental {
+namespace FFXIV_Vibe_Plugin.Experimental {
+  internal class NetworkCapture {
 
     private readonly Logger Logger;
 
@@ -12,7 +12,7 @@ namespace FFXIV_Vibe_Plugin {
     private bool ExperimentalNetworkCaptureStarted = false;
 
     /** Constructor */
-    public Experimental(Logger logger, GameNetwork gameNetwork) {
+    public NetworkCapture(Logger logger, GameNetwork gameNetwork) {
       this.Logger = logger;
       this.GameNetwork = gameNetwork;
     }
