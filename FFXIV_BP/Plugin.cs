@@ -15,7 +15,7 @@ using Buttplug;
 using System.Numerics;
 
 namespace FFXIV_BP {
-  
+
   public sealed class Plugin : IDalamudPlugin {
 
     /** Experimental */
@@ -24,20 +24,20 @@ namespace FFXIV_BP {
       public int duration { get; init; }
       public int _startedTime = 0;
 
-      public SequencerTask(string cmd, int dur) { 
+      public SequencerTask(string cmd, int dur) {
         command = cmd;
         duration = dur;
       }
 
       public void play() {
         this._startedTime = (int)DateTimeOffset.Now.ToUnixTimeMilliseconds();
-      } 
+      }
     }
 
     private List<SequencerTask> sequencerTasks = new List<SequencerTask>();
     private bool playSequence = true;
 
-   
+
 
     [PluginService]
     [RequiredVersion("1.0")]
@@ -46,10 +46,10 @@ namespace FFXIV_BP {
     private ChatGui Chat { get; init; }
 
     private Buttplug.ButtplugClient buttplugClient;
-    private readonly SortedSet<ChatTrigger> Triggers = new SortedSet<ChatTrigger>();
+    private SortedSet<ChatTrigger> Triggers = new SortedSet<ChatTrigger>();
 
     public string Name => "FFXIV BP";
-    private const string commandName = "/bp";
+    public readonly string commandName = "/bp";
 
     // Custom variables from Kacie
     private bool _buttplugIsConnected = false;
@@ -110,7 +110,7 @@ namespace FFXIV_BP {
       XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
       XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
       XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
-      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 
+      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
     };
 
     private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
@@ -119,7 +119,7 @@ namespace FFXIV_BP {
         return;
       }
       string message = _message.ToString().ToLower();
-      var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch.ToLower()));
+      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
       if(matchingintensities.Any() && buttplugClient != null) {
         int intensity = matchingintensities.Select(t => t.Intensity).Max();
         this.PrintDebug($"Sending vibe from chat {message}, {intensity}");
@@ -133,7 +133,7 @@ namespace FFXIV_BP {
       this.PluginUi.Draw();
 
       this.playerStats.update();
-      
+
       this.RunSequencer(this.sequencerTasks);
 
       this.draw_firstUpdated();
@@ -147,7 +147,7 @@ namespace FFXIV_BP {
       }
       this._firstUpdated = true;
 
-      
+
     }
     private void firstUpdated() {
       this.loadTriggersConfig();
@@ -165,14 +165,14 @@ namespace FFXIV_BP {
 
     private void RunSequencer(List<SequencerTask> sequencerTasks) {
       if(sequencerTasks != null) {
-        
+
         this.sequencerTasks = sequencerTasks;
       }
 
       if(this.playSequence && this.sequencerTasks.Count > 0) {
-        
+
         SequencerTask st = this.sequencerTasks[0];
-        
+
         if(st._startedTime == 0) {
           st.play();
           string[] commandSplit = st.command.Split(':', 2);
@@ -198,7 +198,7 @@ namespace FFXIV_BP {
         if(st._startedTime + st.duration < this.getUnix()) {
           this.sequencerTasks[0]._startedTime = 0;
           this.sequencerTasks.RemoveAt(0);
-          
+
         }
       }
     }
@@ -214,7 +214,7 @@ namespace FFXIV_BP {
         Print("Buttplug disconnecting...");
         try {
           this.buttplugClient.DisconnectAsync();
-          
+
         } catch(Exception e) {
           PrintError("Could not disconnect from buttplug. Was connected?");
           PrintError(e.ToString());
@@ -251,7 +251,7 @@ Chat features
       {command} chat_list_triggers
       {command} chat_add <intensity 0-100> <trigger text>
       {command} chat_remove <id>
-      {command} chat_user <authorized user> # set/clear sender string match
+      {command} chat_user <authorized user>
 
 Player features
       {command} hp_toggle 
@@ -260,9 +260,6 @@ New features
       {command} send <0-100>
       {command} threshold <0-100>
       {command} stop
-
-Current values:
-      HP_TOGGLE: {this.Configuration.VIBE_HP_TOGGLE} | THRESHOLD: {this.Configuration.MAX_VIBE_THRESHOLD} | USER: {this.AuthorizedUser}
 
 Example:
        {command} connect
@@ -274,14 +271,16 @@ Example:
        {command} hp_toggle
        {command} threshold 90
 
-       These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
+These commands let anyone whose name contains 'Alice'
+control all your connected toys with the appropriate 
+phrases, as long as those are uttered in a tell, a 
+party, a (cross) linkshell, or a free company chat.
 ";
       return helpMessage;
     }
 
     private void PrintHelp(string command) {
-      string helpMessage = this.getHelp(command);
-      Chat.Print(helpMessage);
+      Chat.Print("Please go to the configuration menu under 'help'");
     }
 
     private void OnCommand(string command, string args) {
@@ -360,8 +359,9 @@ Example:
     private void loadTriggersConfig() {
       SortedSet<ChatTrigger> triggers = this.Configuration.TRIGGERS;
       this.PrintDebug($"Loading {triggers.Count.ToString()} triggers");
+      this.Triggers = new SortedSet<ChatTrigger>();
       foreach(ChatTrigger trigger in triggers) {
-        this.Triggers.Add(new ChatTrigger(trigger.Intensity, trigger.ToMatch));
+        this.Triggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
       }
     }
 
@@ -385,7 +385,7 @@ Example:
         this.DisconnectButtplugs();
         Thread.Sleep(200);
       }
-      
+
       try {
         this.buttplugClient = new("buttplugtriggers-dalamud");
       } catch(Exception e) {
@@ -394,9 +394,9 @@ Example:
       }
       buttplugClient.DeviceAdded += ButtplugClient_DeviceAdded;
       buttplugClient.DeviceRemoved += ButtplugClient_DeviceRemoved;
-      string host = "localhost";
-      string port = ":12345";
-      string hostandport = host + port;
+      string host = this.Configuration.BUTTPLUG_SERVER_HOST;
+      int port = this.Configuration.BUTTPLUG_SERVER_PORT;
+      string hostandport = host + ":" + port.ToString();
       if(args.Contains(" ")) {
         hostandport = args.Split(" ", 2)[1];
         if(!hostandport.Contains(":")) {
@@ -419,7 +419,7 @@ Example:
       if(buttplugClient.Connected) {
         Print($"Buttplug connected!");
         this._buttplugIsConnected = true;
-      } else {  
+      } else {
         PrintError("Failed connecting (Intiface server is up?)");
         return;
       }
@@ -429,7 +429,7 @@ Example:
 
     private void ScanToys() {
       Print("Scanning for devices...");
-     
+
       try {
         buttplugClient.StartScanningAsync();
       } catch(Exception e) {
@@ -441,7 +441,7 @@ Example:
       Thread.Sleep(500); // Make sure we are connected by waiting a bit
       string name = e.Device.Name;
       int index = (int)e.Device.Index;
-      Print($"Added device: {index}:{name}" );
+      Print($"Added device: {index}:{name}");
       /**
        * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
        * Therefore, it is important to trigger a zero and some vibes before continuing further.
@@ -466,10 +466,10 @@ Example:
         task.Wait();
         Print("Disconnecting! Bye... Waiting 2sec...");
         Thread.Sleep(2000); // Wait a bit before reloading the plugin.
-      } catch(Exception e){
+      } catch(Exception e) {
         // ignore exception, we are trying to do our best
       }
-      
+
       this._buttplugIsConnected = false;
     }
 
@@ -494,7 +494,7 @@ Example:
     private void Command_ToggleHP() {
       bool hp_toggle = !this.Configuration.VIBE_HP_TOGGLE;
       this.Configuration.VIBE_HP_TOGGLE = hp_toggle;
-       if(!hp_toggle && this._buttplugIsConnected) {
+      if(!hp_toggle && this._buttplugIsConnected) {
         this.buttplug_sendVibe(0); // Don't be cruel
       }
       Print($"HP Toggle set to {hp_toggle}");
@@ -528,7 +528,7 @@ Example:
         return; // XXX: exceptional control flow
       }
       ChatTrigger newTrigger = new(intensity, text);
-      
+
       if(Triggers.Add(newTrigger)) {
         Print($"Trigger added successfully: {newTrigger}...");
         this.updateTriggersConfig();
@@ -559,7 +559,7 @@ Example:
 ID   Intensity   Text Match
 ";
       for(int i = 0; i < Triggers.Count; ++i) {
-        message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).ToMatch}\n";
+        message += $"[{i}] | {Triggers.ElementAt(i).Intensity} | {Triggers.ElementAt(i).Text}\n";
       }
       Chat.Print(message);
     }
@@ -570,17 +570,16 @@ ID   Intensity   Text Match
      * @param {float} intensity
      */
     public void buttplug_sendVibe(float intensity) {
-      
+
       if(this.currentIntensity != intensity && this._buttplugIsConnected && this.buttplugClient != null) {
-        
+
         PrintDebug($"Intensity: {intensity.ToString()} / Threshold: {this.Configuration.MAX_VIBE_THRESHOLD}");
-        
+
         // Set min and max limits
-        if(intensity < 0) { intensity = 0.0f; }
-        else if(intensity > 100) { intensity = 100; }
+        if(intensity < 0) { intensity = 0.0f; } else if(intensity > 100) { intensity = 100; }
         var newIntensity = intensity / (100.0f / this.Configuration.MAX_VIBE_THRESHOLD) / 100.0f;
-        for(int i = 0; i < buttplugClient.Devices.Length; i++) {  
-          buttplugClient.Devices[i].SendVibrateCmd(newIntensity); 
+        for(int i = 0; i < buttplugClient.Devices.Length; i++) {
+          buttplugClient.Devices[i].SendVibrateCmd(newIntensity);
         }
         this.currentIntensity = newIntensity;
       }
@@ -610,7 +609,7 @@ ID   Intensity   Text Match
           percentage = 0;
         }
         this.PrintDebug($"CurrentPercentage: {percentage}");
-        
+
         int mode = this.Configuration.VIBE_HP_MODE;
         if(mode == 0) { // normal
           this.buttplug_sendVibe(percentage);

@@ -23,6 +23,9 @@ namespace FFXIV_BP {
       set { this.visible = value; }
     }
 
+    private readonly int WIDTH = 400;
+    private readonly int HEIGHT = 500;
+
     // The value to send as a test for vibes.
     private int test_sendVibeValue = 0;
 
@@ -77,9 +80,9 @@ namespace FFXIV_BP {
         return;
       }
       ImGui.SetNextWindowPos(new Vector2(100, 100), ImGuiCond.Appearing);
-      ImGui.SetNextWindowSize(new Vector2(400, 500), ImGuiCond.Appearing);
-      ImGui.SetNextWindowSizeConstraints(new Vector2(400, 500), new Vector2(float.MaxValue, float.MaxValue));
-      if(ImGui.Begin("FFXIV_BP Panel", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+      ImGui.SetNextWindowSize(new Vector2(this.WIDTH, this.HEIGHT), ImGuiCond.Appearing);
+      ImGui.SetNextWindowSizeConstraints(new Vector2(this.WIDTH, this.HEIGHT), new Vector2(float.MaxValue, float.MaxValue));
+      if(ImGui.Begin("FFXIV_BP Panel", ref this.visible, ImGuiWindowFlags.None)) {
 
         ImGui.Spacing();
 
@@ -102,7 +105,7 @@ namespace FFXIV_BP {
             ImGui.EndTabItem();
           }
           if(ImGui.BeginTabItem("Help")) {
-            this.DrawExperimentalUi();
+            this.DrawHelpUi();
             ImGui.EndTabItem();
           }
         }
@@ -113,7 +116,27 @@ namespace FFXIV_BP {
     }
 
     public void DrawSettingsTab() {
+      
+      ImGui.Spacing();
+      
       // Connect/disconnect button
+      ImGui.Columns(3);
+      string config_BUTTPLUG_SERVER_HOST = this.configuration.BUTTPLUG_SERVER_HOST;
+      ImGui.SetNextItemWidth(120);
+      if(ImGui.InputText("##serverHost", ref config_BUTTPLUG_SERVER_HOST, 99)) {
+        this.configuration.BUTTPLUG_SERVER_HOST = config_BUTTPLUG_SERVER_HOST.Trim().ToLower();
+        this.configuration.Save();
+      }
+
+      ImGui.NextColumn();
+      int config_BUTTPLUG_SERVER_PORT = this.configuration.BUTTPLUG_SERVER_PORT;
+      ImGui.SetNextItemWidth(120);
+      if(ImGui.InputInt("##serverPort", ref config_BUTTPLUG_SERVER_PORT, 10)) {
+        this.configuration.BUTTPLUG_SERVER_PORT = config_BUTTPLUG_SERVER_PORT;
+        this.configuration.Save();
+      }
+
+      ImGui.NextColumn();
       if(!this.currentPlugin.buttplugIsConnected()) {
         if(ImGui.Button("Connect", new Vector2(100, 24))) {
           this.currentPlugin.Command_ConnectButtplugs("");
@@ -123,6 +146,9 @@ namespace FFXIV_BP {
           this.currentPlugin.DisconnectButtplugs();
         }
       }
+
+      ImGui.Columns(1);
+      ImGui.Spacing();
 
       // Checkbox DEBUG_VERBOSE
       bool config_DEBUG_VERBOSE = this.configuration.DEBUG_VERBOSE;
@@ -181,6 +207,12 @@ namespace FFXIV_BP {
         this.currentPlugin.buttplug_sendVibe(0);
       }
       ImGui.Columns(1);
+    }
+
+    public void DrawHelpUi() {
+      string help = this.currentPlugin.getHelp(this.currentPlugin.commandName);
+      ImGui.Text(help);
+      
     }
   }
 }
