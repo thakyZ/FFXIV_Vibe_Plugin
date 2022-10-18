@@ -21,7 +21,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\SamplePlugin\</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_BP\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
