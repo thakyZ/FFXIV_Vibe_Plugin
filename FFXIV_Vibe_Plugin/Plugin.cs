@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Linq;
 
 /** Dalamud */
-using Dalamud.Game.Gui;
+using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -14,14 +14,14 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.Network;
-
-using Lumina;
+using Dalamud.Game.ClientState.Objects;
 
 /** Others */
 using Buttplug;
 
 /** Internal */
 using FFXIV_Vibe_Plugin.Commons;
+using FFXIV_Vibe_Plugin.Experimental;
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -38,7 +38,10 @@ namespace FFXIV_Vibe_Plugin {
     private float currentIntensity = -1;
     private bool _firstUpdated = false;
     private readonly PlayerStats playerStats;
-    private readonly FFXIV_Vibe_Plugin.Experimental Experimental;
+
+    // Experiments
+    private readonly FFXIV_Vibe_Plugin.Experimental.NetworkCapture experiment_networkCapture;
+    private readonly FFXIV_Vibe_Plugin.Experimental.HookActionEffect experiment_hookActionEffect;
 
     // Buttplug
     public class ButtplugDevice {
@@ -88,7 +91,10 @@ namespace FFXIV_Vibe_Plugin {
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] CommandManager commandManager,
         [RequiredVersion("1.0")] ClientState clientState,
-        [RequiredVersion("1.0")] GameNetwork gameNetwork)
+        [RequiredVersion("1.0")] GameNetwork gameNetwork,
+        [RequiredVersion("1.0")] SigScanner scanner,
+        [RequiredVersion("1.0")] ObjectTable gameObjects
+        )
     {
 
       this.PluginInterface = pluginInterface;
@@ -129,7 +135,8 @@ namespace FFXIV_Vibe_Plugin {
       this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
 
       // Experimental
-      this.Experimental = new Experimental(this.Logger, this.GameNetwork);
+      this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
+      this.experiment_hookActionEffect = new(this.Logger, scanner, clientState, gameObjects);
     }
 
 
@@ -141,7 +148,9 @@ namespace FFXIV_Vibe_Plugin {
         DalamudChat.ChatMessage -= CheckForTriggers;
       }
 
-      this.Experimental.Dispose();
+      // Experiments cleaning
+      this.experiment_networkCapture.Dispose();
+      this.experiment_hookActionEffect.Dispose();
 
       this.PluginUi.Dispose();
 
@@ -333,9 +342,9 @@ party, a (cross) linkshell, or a free company chat.
         } else if(args.StartsWith("play_pattern")) {
           this.Play_pattern(args);
         } else if(args.StartsWith("exp_network_start")) {
-          this.Experimental.StartNetworkCapture();
+          this.experiment_networkCapture.StartNetworkCapture();
         } else if(args.StartsWith("exp_network_stop")) {
-          this.Experimental.StopNetworkCapture();
+          this.experiment_networkCapture.StopNetworkCapture();
         } else {
           this.Logger.Chat($"Unknown subcommand: {args}");
         }
