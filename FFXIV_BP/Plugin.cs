@@ -136,13 +136,13 @@ namespace FFXIV_BP {
 
 
         // Automatically connects
-        this.ConnectButtplugs("");
+        this.ConnectButtplugs(""); 
         */
 
       }
       this.PluginUi.Draw();
 
-      if(!this.buttplugIsConnected) { return;  }
+      if(!this.buttplugIsConnected || this.buttplugClient == null) { return;  }
       if(this.clientState == null || this.clientState.LocalPlayer == null) { return; }
 
       // Send vibes on HP loss
@@ -162,12 +162,12 @@ namespace FFXIV_BP {
     }
 
     public void Dispose() {
-      if(!buttplugIsConnected) { return; }
-     
       this.CommandManager.RemoveHandler(commandName);
       Chat.ChatMessage -= CheckForTriggers; // XXX: ???
       this.PluginUi.Dispose();
       Print("Plugin dispose...");
+
+      // Check for buttplugClient
       if(this.buttplugClient != null) {
         Print("Buttplug disconnecting...");
         try {
@@ -191,21 +191,30 @@ namespace FFXIV_BP {
     }
 
     private void PrintHelp(string command) {
-      string helpMessage =
-          $@"Usage:
-       {command} connect [ip[:port]]    # defaults to 'localhost:12345', the intiface default
-       {command} disconnect
-       {command} stop
+      string helpMessage = $@"Usage:
+      {command} connect [ip[:port]]
+      {command} disconnect
+      {command} scan
+      {command} toys_list
+      {command} save [file path]
+      {command} load [file path]
 
-       {command} chat_list_triggers
-       {command} chat_add <intensity 0-100> <trigger text>
-       {command} chat_remove <id>
+Chat features
+      {command} chat_list_triggers
+      {command} chat_add <intensity 0-100> <trigger text>
+      {command} chat_remove <id>
+      {command} chat_user <authorized user> # set/clear sender string match
 
-       {command} chat_user [authorized user] # set/clear sender string match
-       {command} save [file path]
-       {command} load [file path]
-       {command} hp_toggle              # Current: {this.hp_toggle}
-       {command} threshold <0-100>      # Current: {this.threshold}
+Player features
+      {command} hp_toggle 
+
+New features
+      {command} send <0-100>
+      {command} threshold <0-100>
+      {command} stop
+
+Current values:
+      HP_TOGGLE: {this.hp_toggle} | THRESHOLD: {this.threshold} | USER: {this.AuthorizedUser}
 
 Example:
        {command} connect
@@ -215,7 +224,7 @@ Example:
        {command} chat_add 100 hey ;)
        {command} user Alice
        {command} hp_toggle
-       {command} threshold 100 
+       {command} threshold 90
 
        These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
@@ -230,6 +239,8 @@ Example:
           this.PluginUi.Visible = true;
         } else if(args.StartsWith("connect")) {
           ConnectButtplugs(args);
+        } else if(args.StartsWith("disconnect")) {
+          this.DisconnectButtplugs();
         } else if(args.StartsWith("scan")) {
           ScanToys();
         } else if(args.StartsWith("toys_list")) {
@@ -242,8 +253,7 @@ Example:
           this.RemoveTrigger(args);
         } else if(args.StartsWith("chat_user")) {
           this.SetAuthorizedUser(args);
-        } else if(args.StartsWith("disconnect")) {
-          this.DisconnectButtplugs();
+
         } else if(args.StartsWith("save")) {
           SaveConfig(args);
         } else if(args.StartsWith("load")) {
