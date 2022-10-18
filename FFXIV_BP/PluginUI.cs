@@ -127,8 +127,6 @@ namespace FFXIV_BP {
           this.configuration.Save();
         }
 
-
-
         // Checkbox MAX_VIBE_THRESHOLD
         int config_MAX_VIBE_THRESHOLD = this.configuration.MAX_VIBE_THRESHOLD ;
         ImGui.SetNextItemWidth(100);
