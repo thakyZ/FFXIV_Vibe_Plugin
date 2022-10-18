@@ -442,11 +442,13 @@ namespace FFXIV_Vibe_Plugin {
 
               // TRIGGER INTENSITY
               ImGui.TableNextColumn();
-              ImGui.Text("From player name:");
+              ImGui.Text("Player first name:");
               ImGui.TableNextColumn();
               if(ImGui.InputText("###TRIGGER_CHAT_FROM_PLAYER_NAME", ref this.SelectedTrigger.FromPlayerName, 100)) {
                 this.Configuration.Save();
               };
+              ImGui.SameLine();
+              ImGuiComponents.HelpMarker("Only use first name, we can't detect last name as of today.");
               ImGui.TableNextRow();
               ImGui.EndTable();
             }
