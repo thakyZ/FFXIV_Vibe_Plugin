@@ -166,7 +166,6 @@ namespace FFXIV_Vibe_Plugin {
 
     private void FirstUpdated() {
       this.Logger.Debug("First updated");
-      this.LoadTriggersConfig();
       if(this.Configuration.AUTO_OPEN) {
         this.DisplayUI();
       }
@@ -186,27 +185,8 @@ namespace FFXIV_Vibe_Plugin {
       {command} config      
       {command} connect
       {command} disconnect
-      {command} save [file path]
-      {command} load [file path]
-
-Chat features:
-      {command} chat_list_triggers
-      {command} chat_add <intensity 0-100> <trigger text>
-      {command} chat_remove <id>
-
-Vibes:
-      {command} send <0-100> # BROKEN
+      {command} send <0-100> # Send vibe intensity to all toys
       {command} stop
-
-Example:
-       {command} connect
-       {command} chat_add 0 shh
-       {command} chat_add 20 slowly 
-       {command} chat_add 75 getting there
-       {command} chat_add 100 hey ;)
-       {command} user Alice
-
-These commands let anyone whose name contains 'Alice' control all your connected toys with the appropriate phrases, as long as those are uttered in a tell, a party, a (cross) linkshell, or a free company chat.
 ";
       return helpMessage;
     }
@@ -223,23 +203,15 @@ These commands let anyone whose name contains 'Alice' control all your connected
           this.Command_DeviceController_Connect();
         } else if(args.StartsWith("disconnect")) {
           this.Command_DeviceController_Disconnect();
-        } else if(args.StartsWith("chat_list_triggers")) {
-          this.Command_ListTriggers();
-        } else if(args.StartsWith("chat_add")) {
-          this.Command_AddTrigger(args);
-        } else if(args.StartsWith("chat_remove")) {
-          this.Command_RemoveTrigger(args);
-        } else if(args.StartsWith("save")) {
-          Command_SaveConfig(args);
-        } else if(args.StartsWith("load")) {
-          Command_LoadConfig(args);
         } else if(args.StartsWith("send")) {
           this.Command_SendIntensity(args);
         } else if(args.StartsWith("stop")) {
           this.DeviceController.SendVibeToAll(0);
         } else if(args.StartsWith("play_pattern")) {
           this.Play_pattern(args);
-        } else if(args.StartsWith("exp_network_start")) {
+        } 
+        // Experimental
+        else if(args.StartsWith("exp_network_start")) {
           this.experiment_networkCapture.StartNetworkCapture();
         } else if(args.StartsWith("exp_network_stop")) {
           this.experiment_networkCapture.StopNetworkCapture();
@@ -317,108 +289,6 @@ These commands let anyone whose name contains 'Alice' control all your connected
       }
     }
 
-
-
-
-    private void Command_LoadConfig(string args) {
-      string config;
-      try {
-        string path = args.Split(" ")[1];
-        config = File.ReadAllText(path);
-      } catch(Exception e) {
-        this.Logger.Error($"Malformed or invalid arguments for [load]: {args}", e);
-        return;
-      }
-      foreach(string line in config.Split("\n")) {
-        string[] trigargs = line.Split(" ");
-        string toMatch = trigargs[1];
-        if(int.TryParse(trigargs[0], out int intensity)) {
-          ChatTrigger trigger = new(intensity, toMatch);
-          if(!ChatTriggers.Add(trigger)) {
-            this.Logger.Chat($"Note: duplicate trigger: {trigger}");
-          };
-        }
-      }
-      UpdateTriggersConfig();
-    }
-
-    private void UpdateTriggersConfig() {
-      this.Configuration.CHAT_TRIGGERS = this.ChatTriggers;
-      this.Configuration.Save();
-    }
-
-    private void LoadTriggersConfig() {
-      //TODO: enable me to save triggers configuration
-      this.TriggersController.Set(this.Configuration.TRIGGERS);
-      SortedSet<ChatTrigger> chatTriggers = this.Configuration.CHAT_TRIGGERS;
-      this.Logger.Debug($"Loading {chatTriggers.Count} triggers");
-      this.ChatTriggers = new SortedSet<ChatTrigger>();
-      foreach(ChatTrigger trigger in chatTriggers) {
-        this.ChatTriggers.Add(new ChatTrigger(trigger.Intensity, trigger.Text));
-      }
-    }
-
-    private void Command_SaveConfig(string args) {
-      string path;
-      var config = string.Join("\n", ChatTriggers.Select(t => t.ToString()));
-      try {
-        path = args.Split(" ")[1];
-        File.WriteAllText(path, config);
-      } catch(Exception e) {
-        this.Logger.Error($"Malformed or invalid arguments for [save]: {args}", e);
-        return;
-      }
-      this.Logger.Chat($"Wrote current config to {path}");
-    }
-
-    private void Command_AddTrigger(string args) {
-      string[] blafuckcsharp;
-      int intensity;
-      string text;
-      try {
-        blafuckcsharp = args.Split(" ", 3);
-        intensity = int.Parse(blafuckcsharp[1]);
-        text = blafuckcsharp[2].ToLower(); ;
-      } catch(Exception e) when(e is FormatException or IndexOutOfRangeException) {
-        this.Logger.Error($"Malformed arguments for [chat_add].", e);
-        return; // XXX: exceptional control flow
-      }
-      ChatTrigger newTrigger = new(intensity, text);
-
-      if(ChatTriggers.Add(newTrigger)) {
-        this.Logger.Chat($"Trigger added successfully: {newTrigger}...");
-        this.UpdateTriggersConfig();
-      } else {
-        this.Logger.Error($"Failed. Possible duplicate for intensity {intensity}");
-      }
-    }
-    private void Command_RemoveTrigger(string args) {
-      int id;
-      try {
-        id = int.Parse(args.Split(" ")[1]);
-        if(id < 0) {
-          throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
-        }
-      } catch(FormatException e) {
-        this.Logger.Error("Malformed argument for [chat_remove]", e);
-        return; // XXX: exceptional control flow
-      }
-      ChatTrigger removed = ChatTriggers.ElementAt(id);
-      ChatTriggers.Remove(removed);
-      this.Logger.Chat($"Removed Trigger: {removed}");
-      this.UpdateTriggersConfig();
-    }
-
-    private void Command_ListTriggers() {
-      string message =
-          @"Configured triggers:
-ID   Intensity   Text Match
-";
-      for(int i = 0; i < ChatTriggers.Count; ++i) {
-        message += $"[{i}] | {ChatTriggers.ElementAt(i).Intensity} | {ChatTriggers.ElementAt(i).Text}\n";
-      }
-      this.Logger.Chat(message);
-    }
 
     private void Player_currentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();

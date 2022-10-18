@@ -97,7 +97,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
             targetsString = "*no target*";
           }
         }
-        return $"{Id} {Player} casts {Name}#{ActionEffectType} on: {targetsString}. Avg: {AmountAverage}";
+        return $"{Player} casts {Name}#{ActionEffectType} on: {targetsString}. Avg: {AmountAverage}";
       }
     }
   }
