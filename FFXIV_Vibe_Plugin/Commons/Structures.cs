@@ -32,7 +32,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       Transport = 60,
     };
 
-    // Unused, should be usefull for HooActionEffects but don't know where this field is.
+    // Unused, should be usefull for HookActionEffects but don't know where this field is.
     public enum DamageType {
       Unknown = 0,
       Slashing = 1,
@@ -45,6 +45,9 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
 
 
+    /**
+     * Still testing: https://github.com/SapphireServer/Sapphire/blob/master/src/common/Network/PacketDef/Zone/ClientZoneDef.h#L73
+     */
     public struct EffectEntry {
       public ActionEffectType type = ActionEffectType.Nothing;
       public byte param0 = 0;
@@ -54,7 +57,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       public byte flags = 0;
       public ushort value = 0;
       public override string ToString() {
-        return $"Type: {this.type}, p0: {param0}, p1: {param1}, p2: {param2}, mult: {mult}, flags: {flags} | {Convert.ToString(flags, 2)}, value: {value}";
+        return $"type: {this.type}, p0: {param0}, p1: {param1}, p2: {param2}, mult: {mult}, flags: {flags} | {Convert.ToString(flags, 2)}, value: {value}";
       }
     }
 
@@ -94,7 +97,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
             targetsString = "*no target*";
           }
         }
-        return $"{Player} casts {Name}#{ActionEffectType} on: {targetsString}. Avg: {AmountAverage}";
+        return $"{Id} {Player} casts {Name}#{ActionEffectType} on: {targetsString}. Avg: {AmountAverage}";
       }
     }
   }

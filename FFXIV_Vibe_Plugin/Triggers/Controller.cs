@@ -77,7 +77,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
             continue;
           }
 
-          if(trigger.ActionEffectType == (int)Structures.ActionEffectType.Heal || trigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
+          if(trigger.ActionEffectType == (int)Structures.ActionEffectType.Damage || trigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) {
             if(trigger.AmountMinValue >= spell.AmountAverage) { continue; }
             if(trigger.AmountMaxValue <= spell.AmountAverage) { continue; }
           }
