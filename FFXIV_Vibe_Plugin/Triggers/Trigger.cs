@@ -40,8 +40,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int Direction = (int)DIRECTION.Outgoing;
     public string ChatText = "";
     public string SpellText = "";
-    public int AmountMinValue = int.MinValue;
-    public int AmountMaxValue = int.MaxValue;
+    public int AmountMinValue = -1;
+    public int AmountMaxValue = 1000000;
     public string FromPlayerName = "";
     public string ToPlayerName = "";
 
