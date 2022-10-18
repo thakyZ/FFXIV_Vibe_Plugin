@@ -17,13 +17,13 @@ namespace FFXIV_Vibe_Plugin.Migrations {
       
     }
 
-    public bool Patch_2_0_0_to_2_1_0_config_profile() {
+    public bool Patch_0_2_0_to_1_0_0_config_profile() {
       var VersionToApply = 0;
       var configuration = this.configuration;
       var logger = this.logger;
       if(configuration.Version == VersionToApply && configuration != null) {
         ConfigurationProfile preset = new() {
-          Name = "Default (auto-migration from v2.0.0 to v2.1.0)",
+          Name = "Default (auto-migration from v0.2.0 to v1.0.0)",
           VERBOSE_SPELL = configuration.VERBOSE_SPELL,
           VERBOSE_CHAT = configuration.VERBOSE_CHAT,
           VIBE_HP_TOGGLE = configuration.VIBE_HP_TOGGLE,
