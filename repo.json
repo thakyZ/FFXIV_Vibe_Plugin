@@ -12,7 +12,7 @@
         "vibration",
         "wave"
     ],
-    "DalamudApiLevel": 5,
+    "DalamudApiLevel": 6,
     "IconUrl": "https://github.com/kaciexx/FFXIV_Vibe_Plugin/raw/master/Data/logo.png",
     "IsHide": "False",
     "IsTestingExclusive": "False",
