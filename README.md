@@ -70,11 +70,12 @@ We recommend you to use a bluetooth dongle. Here is the one we are using: [TP-Li
 
 ## FAQ
 ### Troubleshooting
-1. Make sure the addon is correctly installed (check the installation process again).
-2. Make sure you have the latest version.
-3. Upgrade your Intiface by clicking and installing any updates (`Settings` tab).
-4. Make sure the Intiface is up and running. Go to `Server status` > `Start Server`. You must have one green icon and one red icon on the top right side of the window.
-5. Ingame, make sure the addon is connected to Intiface. Click on `connect` (in the `Connect` tab). Now, go back to Intiface. You should have 2 green icons on the top right side of the window.
+1. Make sure your toy is not connected to another device (eg: your phone, your browser...). Disable the bluetooth on your phone.
+2. Make sure the addon is correctly installed (check the installation process again).
+3. Make sure you have the latest version.
+4. Upgrade your Intiface by clicking and installing any updates (`Settings` tab).
+5. Make sure the Intiface is up and running. Go to `Server status` > `Start Server`. You must have one green icon and one red icon on the top right side of the window.
+6. Ingame, make sure the addon is connected to Intiface. Click on `connect` (in the `Connect` tab). Now, go back to Intiface. You should have 2 green icons on the top right side of the window.
 
 ### My device is not working correctly
 Please make sure to test both Bluetooth and the dongle of the device. Choose the one that works best for you.
