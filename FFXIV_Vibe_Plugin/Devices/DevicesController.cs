@@ -233,7 +233,7 @@ namespace FFXIV_Vibe_Plugin.Device {
       }
     }
 
-    public void SendTrigger(Triggers.Trigger trigger) {
+    public void SendTrigger(Triggers.Trigger trigger, int threshold=100) {
       if(!this.IsConnected()) {
         this.Logger.Debug($"Not connected, cannot send ${trigger}");
         return;
@@ -258,7 +258,7 @@ namespace FFXIV_Vibe_Plugin.Device {
             for(int motorId = 0; motorId < triggerDevice.VibrateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.VibrateSelectedMotors != null && triggerDevice.VibrateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.VibrateSelectedMotors[motorId];
-                int motorThreshold = triggerDevice.VibrateMotorsThreshold[motorId];
+                int motorThreshold = triggerDevice.VibrateMotorsThreshold[motorId] * threshold / 100;
                 int motorPatternId = triggerDevice.VibrateMotorsPattern[motorId];
                 float startAfter = trigger.StartAfter;
                 float stopAfter = trigger.StopAfter;
@@ -273,7 +273,7 @@ namespace FFXIV_Vibe_Plugin.Device {
             for(int motorId = 0; motorId < triggerDevice.RotateSelectedMotors?.Length; motorId++) {
               if(triggerDevice.RotateSelectedMotors != null && triggerDevice.RotateMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.RotateSelectedMotors[motorId];
-                int motorThreshold = triggerDevice.RotateMotorsThreshold[motorId];
+                int motorThreshold = triggerDevice.RotateMotorsThreshold[motorId] * threshold / 100;
                 int motorPatternId = triggerDevice.RotateMotorsPattern[motorId];
                 float startAfter = trigger.StartAfter;
                 float stopAfter = trigger.StopAfter;
@@ -288,7 +288,7 @@ namespace FFXIV_Vibe_Plugin.Device {
             for(int motorId = 0; motorId < triggerDevice.LinearSelectedMotors?.Length; motorId++) {
               if(triggerDevice.LinearSelectedMotors != null && triggerDevice.LinearMotorsThreshold != null) {
                 bool motorEnabled = triggerDevice.LinearSelectedMotors[motorId];
-                int motorThreshold = triggerDevice.LinearMotorsThreshold[motorId];
+                int motorThreshold = triggerDevice.LinearMotorsThreshold[motorId] * threshold / 100;
                 int motorPatternId = triggerDevice.LinearMotorsPattern[motorId];
                 float startAfter = trigger.StartAfter;
                 float stopAfter = trigger.StopAfter;
