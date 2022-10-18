@@ -4,9 +4,9 @@
     <Authors></Authors>
     <Company></Company>
     <Version>0.0.0.1</Version>
-    <Description>A buttplug plugin for FFXIV</Description>
+    <Description>A plugin to help you vibe your controller or toys</Description>
     <Copyright>kacie8989</Copyright>
-    <PackageProjectUrl>https://github.com/kacie8989/FFXIV_BP</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/kacie8989/FFXIV_Vibe_Plugin</PackageProjectUrl>
   </PropertyGroup>
 	
   <PropertyGroup>
@@ -21,7 +21,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_BP\</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

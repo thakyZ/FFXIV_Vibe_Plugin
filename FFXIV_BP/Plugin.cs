@@ -14,7 +14,7 @@ using Dalamud.Game.ClientState;
 using Buttplug;
 using System.Numerics;
 
-namespace FFXIV_BP {
+namespace FFXIV_Vibe_Plugin {
 
   public sealed class Plugin : IDalamudPlugin {
 
@@ -48,8 +48,8 @@ namespace FFXIV_BP {
     private Buttplug.ButtplugClient buttplugClient;
     private SortedSet<ChatTrigger> Triggers = new SortedSet<ChatTrigger>();
 
-    public string Name => "FFXIV BP";
-    public readonly string commandName = "/bp";
+    public string Name => "FFXIV Vibe Plugin";
+    public readonly string commandName = "/fvp";
 
     // Custom variables from Kacie
     private bool _buttplugIsConnected = false;

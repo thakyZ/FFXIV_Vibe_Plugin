@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FFXIV_BP {
+namespace FFXIV_Vibe_Plugin {
   [Serializable]
   public class ChatTrigger : IComparable {
     

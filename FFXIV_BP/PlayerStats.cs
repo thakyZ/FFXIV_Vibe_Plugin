@@ -1,7 +1,7 @@
 ﻿using System;
 using Dalamud.Game.ClientState;
 
-namespace FFXIV_BP {
+namespace FFXIV_Vibe_Plugin {
   
   internal class PlayerStats {
     Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter localPlayer;
