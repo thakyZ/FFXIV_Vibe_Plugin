@@ -24,12 +24,13 @@ namespace FFXIV_Vibe_Plugin.Experimental {
 
     /** Monitor the network and caputre some information */
     public void StartNetworkCapture() {
+      /*
       this.Logger.Debug("STARTING EXPERIMENTAL");
       this.ExperimentalNetworkCaptureStarted = true;
       if(this.GameNetwork != null) {
         this.GameNetwork.Enable();
         this.GameNetwork.NetworkMessage += this.OnNetworkReceived;
-      }
+      }*/
     }
 
     /** Stops the network capture experiment. */

@@ -427,7 +427,7 @@ namespace FFXIV_Vibe_Plugin {
     public unsafe void DrawTriggersTab() {
       List<Triggers.Trigger> triggers = this.TriggerController.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
-      if(ImGui.BeginChild("###TriggersSelector", new Vector2(ImGui.GetWindowContentRegionWidth()/3, -ImGui.GetFrameHeightWithSpacing()), true)) {
+      if(ImGui.BeginChild("###TriggersSelector", new Vector2(ImGui.GetWindowContentRegionMax().X/3, -ImGui.GetFrameHeightWithSpacing()), true)) {
         ImGui.SetNextItemWidth(185);
         ImGui.InputText("###TriggersSelector_SearchBar", ref this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR, 200);
         ImGui.Spacing();
