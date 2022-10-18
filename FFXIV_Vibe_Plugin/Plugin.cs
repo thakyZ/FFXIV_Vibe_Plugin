@@ -56,19 +56,6 @@ namespace FFXIV_Vibe_Plugin {
     // Experiments
     private readonly NetworkCapture experiment_networkCapture;
 
-    // Chat types
-    private readonly XivChatType[] allowedChatTypes = {
-      XivChatType.Say, XivChatType.Party,
-      XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
-      XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
-      XivChatType.FreeCompany, XivChatType.CrossParty,
-      XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
-      XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
-      XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
-      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8,
-      XivChatType.StandardEmote, XivChatType.CustomEmote
-    };
-
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] CommandManager commandManager,
@@ -271,22 +258,14 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-    private void ChatWasTriggered(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
-      if(allowedChatTypes == null) {
-        this.Logger.Warn("ChatWasTriggered: Chat hook not ready, ignoring chat trigger");
-        return;
-      }
+    private void ChatWasTriggered(XivChatType chatType, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
       if(this.TriggersController == null) {
         this.Logger.Warn("ChatWasTriggered: TriggersController not init yet, ignoring chat...");
         return;
       }
       string fromPlayerName = _sender.ToString();
 
-      if(!allowedChatTypes.Any(ct => ct == type)) {
-        return;
-      }
-
-      List<Trigger> triggers = this.TriggersController.CheckTrigger_Chat(fromPlayerName, _message.TextValue);
+      List<Trigger> triggers = this.TriggersController.CheckTrigger_Chat(chatType, fromPlayerName, _message.TextValue);
       foreach(Trigger trigger in triggers) {
         this.DeviceController.SendTrigger(trigger);
       }

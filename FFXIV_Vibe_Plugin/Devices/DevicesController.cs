@@ -132,6 +132,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     private void ButtplugClient_OnScanComplete(object? sender, EventArgs e) {
+      this.Logger.Debug("Stop scanning...");
       // FIXME: this is not working, buttplug client emit the trigger instantly. Let's ignore for the moment.
       // this.isScanning = false;
     }
