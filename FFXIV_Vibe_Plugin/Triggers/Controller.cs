@@ -32,20 +32,22 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Triggers.Remove(trigger);
     }
 
-    public Trigger? CheckTrigger_Chat(string ChatMsg) {
-      Trigger? triggerFound = null;
+    public List<Trigger> CheckTrigger_Chat(string fromPlayerName, string ChatMsg) {
+      List<Trigger> triggers = new();
+      fromPlayerName = fromPlayerName.Trim().ToLower();
       foreach(Trigger trigger in this.Triggers) {
-        // Check if the KIND of the trigger is a chat
-        if(trigger.Kind == (int)KIND.Chat) {
-          string triggerChatText = trigger.ChatText;
-          // WARNING: ChatMessage is always lowercase !
+        string triggerFromPlayerName = trigger.FromPlayerName.Trim().ToLower();
+        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Contains(trigger.FromPlayerName);
+        // Check if the KIND of the trigger is a chat and if the author is authorized
+        if(trigger.Kind == (int)KIND.Chat && isAuthorized) {
+          string triggerChatText = trigger.ChatText; // WARNING: ChatMessage is always lowercase !
           triggerChatText = triggerChatText.ToLower();
           if(ChatMsg.Contains(triggerChatText)){
-            triggerFound = trigger;
+            triggers.Add(trigger);
           }
         }
       }
-      return triggerFound;
+      return triggers;
     }
 
     public Trigger? CheckTrigger_Spell(Structures.Spell spell) {
@@ -67,6 +69,13 @@ namespace FFXIV_Vibe_Plugin.Triggers {
         }
       }
       return triggerFound;
+    }
+
+    public void ExecuteTrigger(Trigger trigger) {
+      if(trigger != null) {
+        this.Logger.Log($"CHAT_TRIGGER:{trigger.Name}");
+        //this.DeviceController.SendVibeToAll(0);
+      }
     }
   }
   

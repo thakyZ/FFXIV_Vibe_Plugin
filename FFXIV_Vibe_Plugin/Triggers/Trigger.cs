@@ -63,6 +63,10 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       this.Name = name;
     }
 
+    public override string ToString() {
+      return $"TRIGGER: ${this.GetShortID()} {this.Name}";
+    }
+
     public int CompareTo(Trigger? other) {
       if(other == null) { return 1; }
       if(this.SortOder < other.SortOder) {
@@ -103,6 +107,10 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     public TriggerDevice() {
 
+    }
+
+    public override string ToString() {
+      return $"TRIGGER_DEVICE {this.Name}";
     }
 
     public void Set(Device.Device device) {
