@@ -10,7 +10,6 @@ namespace FFXIV_Vibe_Plugin {
     public bool VIBE_HP_TOGGLE { get; set; } = false;
     public int VIBE_HP_MODE { get; set; } = 0;
     public int MAX_VIBE_THRESHOLD { get; set; } = 100;
-    public bool DEBUG_VERBOSE { get; set; } = true;
     public bool AUTO_CONNECT { get; set; } = true;
 
     public string BUTTPLUG_SERVER_HOST { get; set; } = "localhost";
