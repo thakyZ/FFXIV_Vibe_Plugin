@@ -40,9 +40,9 @@ namespace FFXIV_Vibe_Plugin {
       set { this.visible = value; }
     }
     private bool _expandedOnce = false;
-    private readonly int WIDTH = 650;
-    private readonly int HEIGHT = 700;
-    private readonly int COLUMN0_WIDTH = 120;
+    private readonly int WIDTH = 700;
+    private readonly int HEIGHT = 800;
+    private readonly int COLUMN0_WIDTH = 130;
 
     private string _tmp_void = "";
 
@@ -510,6 +510,18 @@ namespace FFXIV_Vibe_Plugin {
             if(ImGui.InputText("###TRIGGER_NAME", ref this.SelectedTrigger.Name, 99)) {
               if(this.SelectedTrigger.Name == "") {
                 this.SelectedTrigger.Name = "no_name";
+              }
+              this.Configuration.Save();
+            };
+            ImGui.TableNextRow();
+
+            // TRIGGER NAME
+            ImGui.TableNextColumn();
+            ImGui.Text("Trigger Description:");
+            ImGui.TableNextColumn();
+            if (ImGui.InputTextMultiline("###TRIGGER_DESCRIPTION", ref this.SelectedTrigger.Description, 500, new Vector2(190, 50))) {
+              if (this.SelectedTrigger.Description == "") {
+                this.SelectedTrigger.Description = "no_description";
               }
               this.Configuration.Save();
             };
