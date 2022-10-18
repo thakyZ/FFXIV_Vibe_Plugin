@@ -566,7 +566,7 @@ namespace FFXIV_Vibe_Plugin {
                     if(triggerDevice.ShouldVibrate) {
                       ImGui.Indent(20);
                       for(int motorId = 0; motorId < triggerDevice.Device.VibrateMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId}");
+                        ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
                         if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.SelectedVibrateMotors[motorId])) {
                           if(!triggerDevice.SelectedVibrateMotors[motorId]) {
@@ -592,7 +592,7 @@ namespace FFXIV_Vibe_Plugin {
                     if(triggerDevice.ShouldRotate) {
                       ImGui.Indent(20);
                       for(int motorId = 0; motorId < triggerDevice.Device.RotateMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId}");
+                        ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
                         if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}", ref triggerDevice.SelectedRotateMotors[motorId])) {
                           if(!triggerDevice.SelectedRotateMotors[motorId]) {
@@ -619,7 +619,7 @@ namespace FFXIV_Vibe_Plugin {
                     if(triggerDevice.ShouldLinear) {
                       ImGui.Indent(20);
                       for(int motorId = 0; motorId < triggerDevice.Device.LinearMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId}");
+                        ImGui.Text($"Motor {motorId+1}");
                         ImGui.SameLine();
                         if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}", ref triggerDevice.SelectedLinearMotors[motorId])) {
                           if(!triggerDevice.SelectedLinearMotors[motorId]) {
