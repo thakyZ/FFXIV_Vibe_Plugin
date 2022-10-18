@@ -23,7 +23,7 @@ namespace FFXIV_Vibe_Plugin.Migrations {
       var logger = this.logger;
       if(configuration.Version == VersionToApply && configuration != null) {
         ConfigurationProfile preset = new() {
-          Name = "Automatic migration (2.0.0 -> 2.1.0)",
+          Name = "Default (auto-migration from v2.0.0 to v2.1.0)",
           VERBOSE_SPELL = configuration.VERBOSE_SPELL,
           VERBOSE_CHAT = configuration.VERBOSE_CHAT,
           VIBE_HP_TOGGLE = configuration.VIBE_HP_TOGGLE,
