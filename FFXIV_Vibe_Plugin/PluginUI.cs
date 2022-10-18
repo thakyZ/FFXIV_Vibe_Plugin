@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using FFXIV_Vibe_Plugin.Commons;
+using FFXIV_Vibe_Plugin.UIComponents;
+
 
 namespace FFXIV_Vibe_Plugin {
 
@@ -24,15 +26,15 @@ namespace FFXIV_Vibe_Plugin {
     // Images
     private readonly Dictionary<string, ImGuiScene.TextureWrap> loadedImages = new();
 
+    private string DonationLink = "http://paypal.me/kaciedev";
+
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
     public bool Visible {
       get { return this.visible; }
       set { this.visible = value; }
     }
-
     private bool _expandedOnce = false;
-
     private readonly int WIDTH = 650;
     private readonly int HEIGHT = 700;
 
@@ -131,10 +133,13 @@ namespace FFXIV_Vibe_Plugin {
         } else {
           ImGui.TextColored(ImGuiColors.ParsedGrey, "Your are not connected!");
         }
-        ImGui.Text("Donations: http://paypal.me/kaciedev ! Thanks :) !");
+        
+        ImGui.Text($"Donations: {this.DonationLink}");
+        ImGui.SameLine();
+        UIComponents.ButtonLink.Draw("Thanks for the donation ;)", this.DonationLink, Dalamud.Interface.FontAwesomeIcon.Pray, this.Logger);
+        
+        // Back to on column
         ImGui.Columns(1);
-
-
 
         // Experimental
         if(ImGui.BeginTabBar("##ConfigTabBar", ImGuiTabBarFlags.None)) {
@@ -714,9 +719,6 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.TextWrapped(help);
     }
 
-    
 
   }
-
-
 }

@@ -18,7 +18,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 1. Download a [release here](https://github.com/kacie8989/FFXIV-Vibe-Plugin/releases)
 (or clone this repository and build the project using Visual Studio 2019)
 2. Go to FFXIV QuickLauncher folder (<kbd>WIN</kbd>+<kbd>R</kbd>, then `%appdata%\XIVLauncher\devPlugins`)
-3. Extract the compressed file (eg: `FFXIV_Vibe_Plugin_v0.0.10.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
+3. Extract the compressed file (eg: `FFXIV_Vibe_Plugin_v0.1.6.zip`) into FFXIV QuickLauncher `devPlugins` folder. You should have the following structure:
 
     - `C:\Users\<Username>\AppData\Roaming\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin`.
     - The folder should contain some DLL files.
@@ -28,7 +28,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 6. In Dalamud go to: `Developer tools` > `Plugins in developement` > `FFXIV Vibe Plugin`
 7. Make sure the plugin is enabled
 8. Type: `/fvp`. You should see the configuration panel.
-9. Start `Intiface` and click on `Start Server`. Power on your toy, scan toys and make sure it is connected to Intiface.
+9. Start `Intiface` and click on `Start Server`. Power on your device, make sure it is connected to Intiface.
 10. Back in to the game, start the connect command: `/fvp connect`
 
 Well done ! You have now FFXIV connected to Intiface and your toys. 
@@ -36,14 +36,25 @@ Well done ! You have now FFXIV connected to Intiface and your toys.
 ![ingame](./Docs/screenshot.png)
 
 
-## Tested controllers
+## Tested devices
 - Microsoft XBox Controller
-
-## Tested toys
-Please use Bluetooth and not lovense dongle.
-- Lovense: Nora, Hush, Domi, Ferri, Diamo, Edge 2, Gush
+- Lovense (*please use bluetooth and not the lovense dongle*): 
+    Nora, Hush, Domi, Ferri, Diamo, Edge 2, Gush
 
 ## FAQ
+### Troubleshooting
+1. Make sure the addon is correctly extracted (check our tutorial again).
+1. Make sure you have the [latest version](https://github.com/kacie8989/FFXIV_Vibe_Plugin/releases).
+2. Upgrade your Intiface by clicking and installing any updates (`Settings` tab).
+3. Make sure the Intiface is up and running. Go to `Server status` > `Start Server`. You must have one green icon and one red icon on the top right side of the window.
+4. Ingame, make sure the addon is connected to Intiface. Click on `connect` (in the `Connect` tab). Now, go back to Intiface. You should have 2 green icons on the top right side of the window.
+
+### My device is not working correctly
+Please make sure to test both Bluetooth and the dongle of the device. Choose the one that works best for you.
+
+### My X-Box Controller is not working well
+This is not related to this plugin. You probably should not use Bluetooth.
+
 ### My Lovense Nora is not doing rotations
 Please stop using Lovense Dongle. Connect using the Lovense Connect or bluetooth. If you don't have bluetooth
 please buy a bluetooth 5.0 dongle on amazon for 20$. 
@@ -52,3 +63,6 @@ please buy a bluetooth 5.0 dongle on amazon for 20$.
 # Discord
 - [This plugin discord](https://discord.gg/JnCGxa3gGa) 
 - [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
+
+# Donors
+Thanks to: Maple
