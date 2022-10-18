@@ -651,8 +651,9 @@ namespace FFXIV_Vibe_Plugin {
                       this.Configuration.Save();
                     }
                   }
-                  if(ImGui.Button("Remove")) {
+                  if(ImGui.Button($"Remove###{prefixLabel}_REMOVE")) {
                     triggerDevices.RemoveAt(indexDevice);
+                    this.Logger.Log($"DEBUG: removing {indexDevice}");
                     this.Configuration.Save();
                   }
                 }
