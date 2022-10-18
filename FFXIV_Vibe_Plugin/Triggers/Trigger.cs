@@ -9,7 +9,8 @@ using FFXIV_Vibe_Plugin.Device;
 namespace FFXIV_Vibe_Plugin.Triggers {
   enum KIND {
     Chat,
-    Spell
+    Spell, 
+    HPChange
   }
 
   enum DIRECTION {

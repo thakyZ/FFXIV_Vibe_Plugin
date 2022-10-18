@@ -107,6 +107,22 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       return triggers;
     }
 
+    public List<Trigger> CheckTrigger_HPChanged() {
+      List<Trigger> triggers = new();
+     
+      for(int triggerIndex = 0; triggerIndex < this.Triggers.Count; triggerIndex++) {
+        Trigger trigger = this.Triggers[triggerIndex];
+
+        // Ignore if not enabled
+        if(!trigger.Enabled) { continue; }
+
+        if(trigger.Kind == (int)KIND.HPChange) {
+          triggers.Add(trigger);
+        }
+      }
+      return triggers;
+    }
+
 
 
 

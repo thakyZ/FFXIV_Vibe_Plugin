@@ -309,34 +309,31 @@ namespace FFXIV_Vibe_Plugin {
 
     }
 
-
-    /**************************/
-    /** LEGACY CODE IS BELLOW */
-    /**************************/
-
-
     private void PlayerCurrentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
+      
+      if(this.TriggersController == null) {
+        this.Logger.Warn("PlayerCurrentHPChanged: TriggersController not init yet, ignoring HP change...");
+        return;
+      }
 
-      if(this.ConfigurationProfile != null && this.ConfigurationProfile.VIBE_HP_TOGGLE) {
-        float percentageHP = currentHP / maxHP * 100f;
-        float percentage = 100 - percentageHP;
-        if(percentage == 0) {
-          percentage = 0;
-        }
-        this.Logger.Debug($"Current: HP={currentHP} MaxHP={maxHP} Percentage={percentage}");
+      float percentageHP = currentHP / maxHP * 100f;
+      float percentage = 100 - percentageHP;
+      if(percentage == 0) {
+        percentage = 0;
+      }
 
-        int mode = this.ConfigurationProfile.VIBE_HP_MODE;
-        if(mode == 0) { // normal
-          this.DeviceController.SendVibeToAll((int)percentage);
+      List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged();
+      // Overwrites the threshold for every motors
+      foreach(Trigger trigger in triggers) {
+        foreach(TriggerDevice device in trigger.Devices) {
+          device.VibrateMotorsThreshold = Enumerable.Repeat((int)percentage, device.VibrateMotorsThreshold.Length).ToArray();
+          device.RotateMotorsThreshold = Enumerable.Repeat((int)percentage, device.RotateMotorsThreshold.Length).ToArray();
+          device.LinearMotorsThreshold = Enumerable.Repeat((int)percentage, device.LinearMotorsThreshold.Length).ToArray();
         }
+        this.DeviceController.SendTrigger(trigger);
       }
     }
-
-
-    
-
-    
   }
 }
