@@ -13,10 +13,14 @@ using Dalamud.Plugin;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState;
+using Dalamud.Game.Network;
+
+using Lumina;
 
 /** Others */
 using Buttplug;
 
+/** Internal */
 using FFXIV_Vibe_Plugin.Commons;
 
 namespace FFXIV_Vibe_Plugin {
@@ -34,6 +38,7 @@ namespace FFXIV_Vibe_Plugin {
     private float currentIntensity = -1;
     private bool _firstUpdated = false;
     private readonly PlayerStats playerStats;
+    private readonly FFXIV_Vibe_Plugin.Experimental Experimental;
 
     // Buttplug
     public class ButtplugDevice {
@@ -57,21 +62,38 @@ namespace FFXIV_Vibe_Plugin {
     private CommandManager CommandManager { get; init; }
     private Configuration Configuration { get; init; }
     private PluginUI PluginUi { get; init; }
+    private GameNetwork GameNetwork { get; init; }
+
+    // Others
     private readonly ClientState clientState;
     private string AuthorizedUser = "";
 
     // SequencerTask
     private List<SequencerTask> sequencerTasks = new();
     private readonly bool playSequence = true;
-    
-    
+
+    // Chat types
+    private readonly XivChatType[] allowedChatTypes = {
+      XivChatType.Say, XivChatType.Party,
+      XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
+      XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
+      XivChatType.FreeCompany, XivChatType.CrossParty,
+      XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
+      XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
+      XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
+      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
+    };
+
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] CommandManager commandManager,
-        [RequiredVersion("1.0")] ClientState clientState) {
+        [RequiredVersion("1.0")] ClientState clientState,
+        [RequiredVersion("1.0")] GameNetwork gameNetwork)
+    {
 
       this.PluginInterface = pluginInterface;
       this.CommandManager = commandManager;
+      this.GameNetwork = gameNetwork;
       this.clientState = clientState;
 
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
@@ -105,33 +127,36 @@ namespace FFXIV_Vibe_Plugin {
 
       // Initialize the logger
       this.Logger = new Logger(this.DalamudChat, ShortName, Logger.LogLevel.VERBOSE);
+
+      // Experimental
+      this.Experimental = new Experimental(this.Logger, this.GameNetwork);
     }
 
 
-    private readonly XivChatType[] allowedChatTypes = {
-      XivChatType.Say, XivChatType.Party,
-      XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4,
-      XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8,
-      XivChatType.FreeCompany, XivChatType.CrossParty,
-      XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2,
-      XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
-      XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6,
-      XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
-    };
+    public void Dispose() {
+      this.Logger.Debug("Plugin dispose...");
 
-    private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
-      string sender = _sender.ToString();
-      if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
-        return;
+      this.CommandManager.RemoveHandler(commandName);
+      if(DalamudChat != null) {
+        DalamudChat.ChatMessage -= CheckForTriggers;
       }
-      string message = _message.ToString().ToLower();
-      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
-      if(matchingintensities.Any() && buttplugClient != null) {
-        int intensity = matchingintensities.Select(t => t.Intensity).Max();
-        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
-        this.Buttplug_sendVibe(intensity);
+
+      this.Experimental.Dispose();
+
+      this.PluginUi.Dispose();
+
+      // Check for buttplugClient
+      if(this.buttplugClient != null && this.buttplugClient.Connected) {
+        this.Logger.Debug("Buttplug disconnecting...");
+        try {
+          this.buttplugClient.DisconnectAsync();
+        } catch(Exception e) {
+          this.Logger.Error("Could not disconnect from buttplug. Was connected?", e);
+          return;
+        }
       }
     }
+
 
 
     private void DrawUI() {
@@ -206,27 +231,23 @@ namespace FFXIV_Vibe_Plugin {
       }
     }
 
-    public void Dispose() {
-      this.Logger.Debug("Plugin dispose...");
+   
 
-      this.CommandManager.RemoveHandler(commandName);
-      if(DalamudChat != null) {
-        DalamudChat.ChatMessage -= CheckForTriggers;
+
+    private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled) {
+      string sender = _sender.ToString();
+      if(!allowedChatTypes.Any(ct => ct == type) || (AuthorizedUser.Length > 0 && !sender.ToString().Contains(AuthorizedUser))) {
+        return;
       }
-      
-      this.PluginUi.Dispose();
-      
-      // Check for buttplugClient
-      if(this.buttplugClient != null && this.buttplugClient.Connected) {
-        this.Logger.Debug("Buttplug disconnecting...");
-        try {
-          this.buttplugClient.DisconnectAsync();
-        } catch(Exception e) {
-          this.Logger.Error("Could not disconnect from buttplug. Was connected?", e);
-          return;
-        }
+      string message = _message.ToString().ToLower();
+      var matchingintensities = this.Triggers.Where(t => message.Contains(t.Text.ToLower()));
+      if(matchingintensities.Any() && buttplugClient != null) {
+        int intensity = matchingintensities.Select(t => t.Intensity).Max();
+        this.Logger.Debug($"Sending vibe from chat {message}, {intensity}");
+        this.Buttplug_sendVibe(intensity);
       }
     }
+
 
     public static string GetHelp(string command) {
       string helpMessage = $@"Usage:
@@ -311,6 +332,10 @@ party, a (cross) linkshell, or a free company chat.
           this.Buttplug_sendVibe(0);
         } else if(args.StartsWith("play_pattern")) {
           this.Play_pattern(args);
+        } else if(args.StartsWith("exp_network_start")) {
+          this.Experimental.StartNetworkCapture();
+        } else if(args.StartsWith("exp_network_stop")) {
+          this.Experimental.StopNetworkCapture();
         } else {
           this.Logger.Chat($"Unknown subcommand: {args}");
         }
@@ -674,5 +699,8 @@ ID   Intensity   Text Match
     public bool ButtplugIsConnected() {
       return this._buttplugIsConnected;
     }
+
+   
+
   }
 }
