@@ -114,6 +114,7 @@ namespace FFXIV_Vibe_Plugin {
 
       // Triggers
       this.TriggersController = new Triggers.Controller(this.Logger, this.PlayerStats);
+      this.TriggersController.Set(this.Configuration.TRIGGERS);
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
