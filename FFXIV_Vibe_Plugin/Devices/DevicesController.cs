@@ -35,11 +35,11 @@ namespace FFXIV_Vibe_Plugin.Device {
     // Internal variables
     private readonly static Mutex mut = new();
 
-    public DevicesController(Logger logger, Configuration configuration, Patterns patterns) {
+    public DevicesController(Logger logger, Configuration configuration, ConfigurationProfile profile, Patterns patterns) {
       this.Logger = logger;
       this.Configuration = configuration;
-      this.Profile = configuration.GetProfile();
-      this.VisitedDevices = this.Profile.VISITED_DEVICES;
+      this.Profile = profile;
+      this.VisitedDevices = profile.VISITED_DEVICES;
       this.Patterns = patterns;
     }
 

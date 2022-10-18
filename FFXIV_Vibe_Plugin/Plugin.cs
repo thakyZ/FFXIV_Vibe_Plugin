@@ -48,7 +48,7 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _firstUpdated = false;
-    private readonly ConfigurationProfile ConfigurationProfile;
+    private ConfigurationProfile ConfigurationProfile;
     private readonly Logger Logger;
     private readonly ActionEffect hook_ActionEffect;
     private readonly PlayerStats PlayerStats;
@@ -105,7 +105,7 @@ namespace FFXIV_Vibe_Plugin {
       this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
 
       // Initialize the devices Controller
-      this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.Patterns);
+      this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.ConfigurationProfile, this.Patterns);
       if(this.ConfigurationProfile.AUTO_CONNECT) {
         Thread t = new(delegate () {
           Thread.Sleep(2000);
@@ -119,7 +119,7 @@ namespace FFXIV_Vibe_Plugin {
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
 
       // Triggers
-      this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats);
+      this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats, this.ConfigurationProfile);
       this.TriggersController.Set(this.ConfigurationProfile.TRIGGERS);
       
       // Experimental
@@ -127,7 +127,7 @@ namespace FFXIV_Vibe_Plugin {
 
 
       // UI
-      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this, this.DeviceController, this.TriggersController, this.Patterns);
+      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this.ConfigurationProfile, this, this.DeviceController, this.TriggersController, this.Patterns);
       this.PluginInterface.UiBuilder.Draw += DrawUI;
       this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
 
@@ -287,6 +287,17 @@ namespace FFXIV_Vibe_Plugin {
       foreach(Trigger trigger in triggers) {
         this.DeviceController.SendTrigger(trigger);
       }
+    }
+
+    public bool SetProfile(string profileName) {
+      bool result = this.Configuration.SetCurrentProfile(profileName);
+      if(!result) {
+        this.Logger.Warn($"You are trying to use profile {profileName} which can't be found");
+        return false;
+      }
+      this.ConfigurationProfile = this.Configuration.GetProfile(profileName);
+      return true;
+
     }
 
 
