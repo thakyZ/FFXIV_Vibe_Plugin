@@ -17,10 +17,10 @@ namespace FFXIV_Vibe_Plugin {
 
     private readonly DalamudPluginInterface PluginInterface;
     private readonly Configuration Configuration;
-    private readonly ConfigurationProfile ConfigurationProfile;
+    private ConfigurationProfile ConfigurationProfile;
     private readonly Device.DevicesController DeviceController;
     private readonly Triggers.TriggersController TriggerController;
-    private readonly Plugin CurrentPlugin;
+    private readonly Plugin Plugin;
     private readonly Logger Logger;
 
     // Images
@@ -50,11 +50,15 @@ namespace FFXIV_Vibe_Plugin {
     private string CURRENT_TRIGGER_SELECTOR_SEARCHBAR = "";
 
     // Custom Patterns
-    string VALID_REGEXP_PATTERN = "^(\\d+:\\d+)+(\\|\\d+:\\d+)*$";
+    readonly string VALID_REGEXP_PATTERN = "^(\\d+:\\d+)+(\\|\\d+:\\d+)*$";
     string CURRENT_PATTERN_SEARCHBAR = "";
     string _tmp_currentPatternNameToAdd = "";
     string _tmp_currentPatternValueToAdd = "";
     string _tmp_currentPatternValueState = "unset"; // unset|valid|unvalid
+
+    // Profile
+    string _tmp_currentProfileNameToAdd = "";
+    string _tmp_currentProfile_ErrorMsg = "";
 
     // Some limits
     private readonly int TRIGGER_MIN_AFTER = 0;
@@ -80,7 +84,7 @@ namespace FFXIV_Vibe_Plugin {
       this.Configuration = configuration;
       this.ConfigurationProfile = profile;
       this.PluginInterface = pluginInterface;
-      this.CurrentPlugin = currentPlugin;
+      this.Plugin = currentPlugin;
       this.DeviceController = deviceController;
       this.TriggerController = triggersController;
       this.Patterns = Patterns;
@@ -112,7 +116,10 @@ namespace FFXIV_Vibe_Plugin {
       foreach(KeyValuePair<string, ImGuiScene.TextureWrap> img in this.loadedImages) {
         if(img.Value != null) img.Value.Dispose();
       }
+    }
 
+    public void SetProfile(ConfigurationProfile profile) {
+      this.ConfigurationProfile = profile;
     }
 
     public void Draw() {
@@ -228,7 +235,7 @@ namespace FFXIV_Vibe_Plugin {
       {
         if(!this.DeviceController.IsConnected()) {
           if(ImGui.Button("Connect", new Vector2(100, 24))) {
-            this.CurrentPlugin.Command_DeviceController_Connect();
+            this.Plugin.Command_DeviceController_Connect();
           }
         } else {
           if(ImGui.Button("Disconnect", new Vector2(100, 24))) {
@@ -260,6 +267,55 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawOptionsTab() {
+      ImGui.Spacing();
+      ImGui.Text("Current profile:");
+      string[] PROFILES = this.Configuration.Profiles.Select(profile => profile.Name).ToArray();
+      int currentProfileIndex = this.Configuration.Profiles.FindIndex(profile => profile.Name == this.Configuration.CurrentProfileName);
+      if(ImGui.Combo("###CONFIGURATION_CURRENT_PROFILE", ref currentProfileIndex, PROFILES, PROFILES.Length)) {
+        this.Configuration.CurrentProfileName = this.Configuration.Profiles[currentProfileIndex].Name;
+        this.Plugin.SetProfile(this.Configuration.CurrentProfileName);
+        this.Logger.Debug($"New profile selected: {this.Configuration.CurrentProfileName}");
+        this.Configuration.Save();
+      }
+      if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash)) {
+        if(this.Configuration.Profiles.Count <= 1) {
+          string errorMsg = "You can't delete this profile. At least one profile should exists. Create another one before deleting.";
+          this.Logger.Error(errorMsg);
+          this._tmp_currentProfile_ErrorMsg = errorMsg;
+        } else {
+          this.Configuration.RemoveProfile(this.ConfigurationProfile.Name);
+          ConfigurationProfile? newProfileToUse = this.Configuration.GetFirstProfile();
+          if(newProfileToUse != null) {
+            this.Plugin.SetProfile(newProfileToUse.Name);
+          }
+          this.Configuration.Save();
+        }
+      }
+      ImGui.Text("Add new profile: ");
+      if(ImGui.InputText("###CONFIGURATION_NEW_PROFILE_NAME", ref _tmp_currentProfileNameToAdd, 150)) {
+        this._tmp_currentProfile_ErrorMsg = "";
+      }
+      if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
+        this.Logger.Debug($"{this._tmp_currentProfileNameToAdd}");
+        if(this._tmp_currentProfileNameToAdd.Trim() != "") {
+          bool wasAdded = this.Configuration.AddProfile(this._tmp_currentProfileNameToAdd);
+          if(!wasAdded) {
+            string errorMsg = $"The current profile name '{this._tmp_currentProfileNameToAdd}' already exists!";
+            this.Logger.Error(errorMsg);
+            this._tmp_currentProfile_ErrorMsg = errorMsg;
+          } else {
+            this.Plugin.SetProfile(this._tmp_currentProfileNameToAdd);
+            this.Logger.Debug($"New profile added {_tmp_currentProfileNameToAdd}");
+            this._tmp_currentProfileNameToAdd = "";
+            this.Configuration.Save();
+          }
+        }
+      }
+
+      if(this._tmp_currentProfile_ErrorMsg != "") {
+        ImGui.TextColored(ImGuiColors.DalamudRed, this._tmp_currentProfile_ErrorMsg);
+      }
+
       ImGui.Spacing();
       // Checkbox MAX_VIBE_THRESHOLD
       ImGui.Text("Global threshold: ");
@@ -692,164 +748,164 @@ namespace FFXIV_Vibe_Plugin {
 
             // TRIGGER COMBO_DEVICES
             Dictionary<String, Device.Device> visitedDevice = DeviceController.GetVisitedDevices();
-            string[] devicesStrings = visitedDevice.Keys.ToArray();
-            ImGui.Combo("###TRIGGER_FORM_COMBO_DEVICES", ref this.TRIGGER_CURRENT_SELECTED_DEVICE, devicesStrings, devicesStrings.Length);
-            ImGui.SameLine();
-            List<Triggers.TriggerDevice> triggerDevices = this.SelectedTrigger.Devices;
-            if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
-              if(this.TRIGGER_CURRENT_SELECTED_DEVICE >= 0) {
-                Device.Device device = visitedDevice[devicesStrings[this.TRIGGER_CURRENT_SELECTED_DEVICE]];
-                Triggers.TriggerDevice newTriggerDevice = new(device);
-                triggerDevices.Add(newTriggerDevice);
-                this.Configuration.Save();
-              }
-            };
-
-            if(triggerDevices.Count == 0) {
-              ImGui.TextColored(ImGuiColors.DalamudGrey, "Please add device(s)...");
-            }
-
-            string[] patternNames = this.Patterns.GetAllPatterns().Select(p => p.Name).ToArray();
-
-            for(int indexDevice = 0; indexDevice < triggerDevices.Count; indexDevice++) {
-              string prefixLabel = $"###TRIGGER_FORM_COMBO_DEVICE_${indexDevice}";
-              Triggers.TriggerDevice triggerDevice = triggerDevices[indexDevice];
-              string deviceName = triggerDevice.Device != null ? triggerDevice.Device.Name : "UnknownDevice";
-              if(ImGui.CollapsingHeader($"{deviceName}")) {
-                ImGui.Indent(10);
-
-                if(triggerDevice != null && triggerDevice.Device != null) {
-                  if(triggerDevice.Device.CanVibrate) {
-                    if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE", ref triggerDevice.ShouldVibrate)) {
-                      triggerDevice.ShouldStop = false;
-                      this.Configuration.Save();
-                    }
-                    ImGui.SameLine();
-                    ImGui.Text("Should Vibrate");
-                    if(triggerDevice.ShouldVibrate) {
-                      ImGui.Indent(20);
-                      for(int motorId = 0; motorId < triggerDevice.Device.VibrateMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId + 1}");
-                        ImGui.SameLine();
-                        // Display Vibrate Motor checkbox
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.VibrateSelectedMotors[motorId])) {
-                          this.Configuration.Save();
-                        }
-
-                        if(triggerDevice.VibrateSelectedMotors[motorId]) {
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(90);
-                          if(ImGui.Combo($"###{prefixLabel}_VIBRATE_PATTERNS_{motorId}", ref triggerDevice.VibrateMotorsPattern[motorId], patternNames, patternNames.Length)) {
-                            this.Configuration.Save();
-                          }
-
-                          // Special intensity pattern asks for intensity param.
-                          int currentPatternIndex = triggerDevice.VibrateMotorsPattern[motorId];
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(180);
-                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.VibrateMotorsThreshold[motorId], 0, 100)) {
-                            if(triggerDevice.VibrateMotorsThreshold[motorId] > 0) {
-                              triggerDevice.VibrateSelectedMotors[motorId] = true;
-                            }
-                            this.Configuration.Save();
-                          }
-                        }
-                      }
-                      ImGui.Indent(-20);
-                    }
-                  }
-                  if(triggerDevice.Device.CanRotate) {
-                    if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE", ref triggerDevice.ShouldRotate)) {
-                      triggerDevice.ShouldStop = false;
-                      this.Configuration.Save();
-                    }
-                    ImGui.SameLine();
-                    ImGui.Text("Should Rotate");
-                    if(triggerDevice.ShouldRotate) {
-                      ImGui.Indent(20);
-                      for(int motorId = 0; motorId < triggerDevice.Device.RotateMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId + 1}");
-                        ImGui.SameLine();
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}", ref triggerDevice.RotateSelectedMotors[motorId])) {
-                          this.Configuration.Save();
-                        }
-                        if(triggerDevice.RotateSelectedMotors[motorId]) {
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(90);
-                          if(ImGui.Combo($"###{prefixLabel}_ROTATE_PATTERNS_{motorId}", ref triggerDevice.RotateMotorsPattern[motorId], patternNames, patternNames.Length)) {
-                            this.Configuration.Save();
-                          }
-                          // Special intensity pattern asks for intensity param.
-                          int currentPatternIndex = triggerDevice.RotateMotorsPattern[motorId];
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(180);
-                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.RotateMotorsThreshold[motorId], 0, 100)) {
-                            if(triggerDevice.RotateMotorsThreshold[motorId] > 0) {
-                              triggerDevice.RotateSelectedMotors[motorId] = true;
-                            }
-                            this.Configuration.Save();
-                          }
-
-                        }
-                      }
-                      ImGui.Indent(-20);
-                    }
-                  }
-                  if(triggerDevice.Device.CanLinear) {
-                    if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR", ref triggerDevice.ShouldLinear)) {
-                      triggerDevice.ShouldStop = false;
-                      this.Configuration.Save();
-                    }
-                    ImGui.SameLine();
-                    ImGui.Text("Should Linear");
-                    if(triggerDevice.ShouldLinear) {
-                      ImGui.Indent(20);
-                      for(int motorId = 0; motorId < triggerDevice.Device.LinearMotors; motorId++) {
-                        ImGui.Text($"Motor {motorId + 1}");
-                        ImGui.SameLine();
-                        if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}", ref triggerDevice.LinearSelectedMotors[motorId])) {
-                          this.Configuration.Save();
-                        }
-                        if(triggerDevice.LinearSelectedMotors[motorId]) {
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(90);
-                          if(ImGui.Combo($"###{prefixLabel}_LINEAR_PATTERNS_{motorId}", ref triggerDevice.LinearMotorsPattern[motorId], patternNames, patternNames.Length)) {
-                            this.Configuration.Save();
-                          }
-                          // Special intensity pattern asks for intensity param.
-                          int currentPatternIndex = triggerDevice.LinearMotorsPattern[motorId];
-                          ImGui.SameLine();
-                          ImGui.SetNextItemWidth(180);
-                          if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.LinearMotorsThreshold[motorId], 0, 100)) {
-                            if(triggerDevice.LinearMotorsThreshold[motorId] > 0) {
-                              triggerDevice.LinearSelectedMotors[motorId] = true;
-                            }
-                            this.Configuration.Save();
-                          }
-                        }
-                      }
-                      ImGui.Indent(-20);
-                    }
-                  }
-                  if(triggerDevice.Device.CanStop) {
-                    if(ImGui.Checkbox($"{prefixLabel}_SHOULD_STOP", ref triggerDevice.ShouldStop)) {
-                      triggerDevice.ShouldVibrate = false;
-                      triggerDevice.ShouldRotate = false;
-                      triggerDevice.ShouldLinear = false;
-                      this.Configuration.Save();
-                    }
-                    ImGui.SameLine();
-                    ImGui.Text("Should stop all motors");
-                    ImGui.SameLine();
-                    ImGuiComponents.HelpMarker("Instantly stop all motors for this device.");
-                  }
-                  if(ImGui.Button($"Remove###{prefixLabel}_REMOVE")) {
-                    triggerDevices.RemoveAt(indexDevice);
-                    this.Logger.Log($"DEBUG: removing {indexDevice}");
-                    this.Configuration.Save();
-                  }
+            if(visitedDevice.Count == 0) {
+              ImGui.TextColored(ImGuiColors.DalamudRed, "Please connect yourself to intiface and add device(s)...");
+            } else {
+              string[] devicesStrings = visitedDevice.Keys.ToArray();
+              ImGui.Combo("###TRIGGER_FORM_COMBO_DEVICES", ref this.TRIGGER_CURRENT_SELECTED_DEVICE, devicesStrings, devicesStrings.Length);
+              ImGui.SameLine();
+              List<Triggers.TriggerDevice> triggerDevices = this.SelectedTrigger.Devices;
+              if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus)) {
+                if(this.TRIGGER_CURRENT_SELECTED_DEVICE >= 0) {
+                  Device.Device device = visitedDevice[devicesStrings[this.TRIGGER_CURRENT_SELECTED_DEVICE]];
+                  Triggers.TriggerDevice newTriggerDevice = new(device);
+                  triggerDevices.Add(newTriggerDevice);
+                  this.Configuration.Save();
                 }
-                ImGui.Indent(-10);
+              };
+
+              string[] patternNames = this.Patterns.GetAllPatterns().Select(p => p.Name).ToArray();
+
+              for(int indexDevice = 0; indexDevice < triggerDevices.Count; indexDevice++) {
+                string prefixLabel = $"###TRIGGER_FORM_COMBO_DEVICE_${indexDevice}";
+                Triggers.TriggerDevice triggerDevice = triggerDevices[indexDevice];
+                string deviceName = triggerDevice.Device != null ? triggerDevice.Device.Name : "UnknownDevice";
+                if(ImGui.CollapsingHeader($"{deviceName}")) {
+                  ImGui.Indent(10);
+
+                  if(triggerDevice != null && triggerDevice.Device != null) {
+                    if(triggerDevice.Device.CanVibrate) {
+                      if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE", ref triggerDevice.ShouldVibrate)) {
+                        triggerDevice.ShouldStop = false;
+                        this.Configuration.Save();
+                      }
+                      ImGui.SameLine();
+                      ImGui.Text("Should Vibrate");
+                      if(triggerDevice.ShouldVibrate) {
+                        ImGui.Indent(20);
+                        for(int motorId = 0; motorId < triggerDevice.Device.VibrateMotors; motorId++) {
+                          ImGui.Text($"Motor {motorId + 1}");
+                          ImGui.SameLine();
+                          // Display Vibrate Motor checkbox
+                          if(ImGui.Checkbox($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}", ref triggerDevice.VibrateSelectedMotors[motorId])) {
+                            this.Configuration.Save();
+                          }
+
+                          if(triggerDevice.VibrateSelectedMotors[motorId]) {
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(90);
+                            if(ImGui.Combo($"###{prefixLabel}_VIBRATE_PATTERNS_{motorId}", ref triggerDevice.VibrateMotorsPattern[motorId], patternNames, patternNames.Length)) {
+                              this.Configuration.Save();
+                            }
+
+                            // Special intensity pattern asks for intensity param.
+                            int currentPatternIndex = triggerDevice.VibrateMotorsPattern[motorId];
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(180);
+                            if(ImGui.SliderInt($"{prefixLabel}_SHOULD_VIBRATE_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.VibrateMotorsThreshold[motorId], 0, 100)) {
+                              if(triggerDevice.VibrateMotorsThreshold[motorId] > 0) {
+                                triggerDevice.VibrateSelectedMotors[motorId] = true;
+                              }
+                              this.Configuration.Save();
+                            }
+                          }
+                        }
+                        ImGui.Indent(-20);
+                      }
+                    }
+                    if(triggerDevice.Device.CanRotate) {
+                      if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE", ref triggerDevice.ShouldRotate)) {
+                        triggerDevice.ShouldStop = false;
+                        this.Configuration.Save();
+                      }
+                      ImGui.SameLine();
+                      ImGui.Text("Should Rotate");
+                      if(triggerDevice.ShouldRotate) {
+                        ImGui.Indent(20);
+                        for(int motorId = 0; motorId < triggerDevice.Device.RotateMotors; motorId++) {
+                          ImGui.Text($"Motor {motorId + 1}");
+                          ImGui.SameLine();
+                          if(ImGui.Checkbox($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}", ref triggerDevice.RotateSelectedMotors[motorId])) {
+                            this.Configuration.Save();
+                          }
+                          if(triggerDevice.RotateSelectedMotors[motorId]) {
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(90);
+                            if(ImGui.Combo($"###{prefixLabel}_ROTATE_PATTERNS_{motorId}", ref triggerDevice.RotateMotorsPattern[motorId], patternNames, patternNames.Length)) {
+                              this.Configuration.Save();
+                            }
+                            // Special intensity pattern asks for intensity param.
+                            int currentPatternIndex = triggerDevice.RotateMotorsPattern[motorId];
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(180);
+                            if(ImGui.SliderInt($"{prefixLabel}_SHOULD_ROTATE_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.RotateMotorsThreshold[motorId], 0, 100)) {
+                              if(triggerDevice.RotateMotorsThreshold[motorId] > 0) {
+                                triggerDevice.RotateSelectedMotors[motorId] = true;
+                              }
+                              this.Configuration.Save();
+                            }
+
+                          }
+                        }
+                        ImGui.Indent(-20);
+                      }
+                    }
+                    if(triggerDevice.Device.CanLinear) {
+                      if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR", ref triggerDevice.ShouldLinear)) {
+                        triggerDevice.ShouldStop = false;
+                        this.Configuration.Save();
+                      }
+                      ImGui.SameLine();
+                      ImGui.Text("Should Linear");
+                      if(triggerDevice.ShouldLinear) {
+                        ImGui.Indent(20);
+                        for(int motorId = 0; motorId < triggerDevice.Device.LinearMotors; motorId++) {
+                          ImGui.Text($"Motor {motorId + 1}");
+                          ImGui.SameLine();
+                          if(ImGui.Checkbox($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}", ref triggerDevice.LinearSelectedMotors[motorId])) {
+                            this.Configuration.Save();
+                          }
+                          if(triggerDevice.LinearSelectedMotors[motorId]) {
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(90);
+                            if(ImGui.Combo($"###{prefixLabel}_LINEAR_PATTERNS_{motorId}", ref triggerDevice.LinearMotorsPattern[motorId], patternNames, patternNames.Length)) {
+                              this.Configuration.Save();
+                            }
+                            // Special intensity pattern asks for intensity param.
+                            int currentPatternIndex = triggerDevice.LinearMotorsPattern[motorId];
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(180);
+                            if(ImGui.SliderInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_THRESHOLD", ref triggerDevice.LinearMotorsThreshold[motorId], 0, 100)) {
+                              if(triggerDevice.LinearMotorsThreshold[motorId] > 0) {
+                                triggerDevice.LinearSelectedMotors[motorId] = true;
+                              }
+                              this.Configuration.Save();
+                            }
+                          }
+                        }
+                        ImGui.Indent(-20);
+                      }
+                    }
+                    if(triggerDevice.Device.CanStop) {
+                      if(ImGui.Checkbox($"{prefixLabel}_SHOULD_STOP", ref triggerDevice.ShouldStop)) {
+                        triggerDevice.ShouldVibrate = false;
+                        triggerDevice.ShouldRotate = false;
+                        triggerDevice.ShouldLinear = false;
+                        this.Configuration.Save();
+                      }
+                      ImGui.SameLine();
+                      ImGui.Text("Should stop all motors");
+                      ImGui.SameLine();
+                      ImGuiComponents.HelpMarker("Instantly stop all motors for this device.");
+                    }
+                    if(ImGui.Button($"Remove###{prefixLabel}_REMOVE")) {
+                      triggerDevices.RemoveAt(indexDevice);
+                      this.Logger.Log($"DEBUG: removing {indexDevice}");
+                      this.Configuration.Save();
+                    }
+                  }
+                  ImGui.Indent(-10);
+                }
               }
             }
 
@@ -1022,23 +1078,14 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     public void DrawHelpTab() {
-      string help = Plugin.GetHelp(this.CurrentPlugin.commandName);
+      string help = Plugin.GetHelp(this.Plugin.commandName);
       ImGui.TextWrapped(help);
       ImGui.Text($"App version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
       ImGui.Text($"Config version: {this.Configuration.Version}");
-      
-      ImGui.Text("Current profile:");
-      string[] PROFILES = this.Configuration.Profiles.Select(profile => profile.Name).ToArray();
-      int currentProfileIndex = this.Configuration.Profiles.FindIndex(profile => profile.Name == this.Configuration.CurrentProfileName);
-      if(ImGui.Combo("###CONFIGURATION_CURRENT_PROFILE", ref currentProfileIndex, PROFILES, PROFILES.Length)) {
-        this.Configuration.CurrentProfileName = this.Configuration.Profiles[currentProfileIndex].Name;
-        this.Configuration.Save();
-      }
-      ImGui.Text("WIP Add new profile: ");
-      string TMP_CONFIGURATION_NEW_PROFILE_NAME = "";
-      ImGui.InputText("###CONFIGURATION_NEW_PROFILE_NAME", ref TMP_CONFIGURATION_NEW_PROFILE_NAME, 150);
-    }
 
+    
+
+    }
 
   }
 }

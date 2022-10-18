@@ -43,51 +43,50 @@ namespace FFXIV_Vibe_Plugin {
     }
 
     /** 
-     * Get the profile specified by name. If not found,
-     * tries to use the default or automatically creates it.
+     * Get the profile specified by name.
      */
-    public ConfigurationProfile GetProfile(String name="") {
+    public ConfigurationProfile? GetProfile(String name="") {
       if(name == "") {
         name = this.CurrentProfileName;
       }
-      ConfigurationProfile? profile = this.Profiles.Find(i => i.Name == this.CurrentProfileName);
-      
-      // Nothing corresponded to this.CurrentProfileName, trying to find the Default profile.
-      if(profile == null) {
-        profile = this.Profiles.Find(i => i.Name == "Default");
+      ConfigurationProfile? profile = this.Profiles.Find(i => i.Name == name);
 
-        // Default profile was not found, adding it.
-        if(profile == null) {
-          profile = new ConfigurationProfile();
-          this.CurrentProfileName = profile.Name;
-          this.Profiles.Add(profile);
-          this.Save();
-        }
+      return profile;
+    }
+
+    public ConfigurationProfile? GetFirstProfile() {
+      ConfigurationProfile? profile = null;
+      if(profile == null && this.Profiles.Count > 0) {
+        profile = this.Profiles[0];
       }
       return profile;
     }
 
     public void RemoveProfile(String name) {
-      ConfigurationProfile profile = this.GetProfile(name);
-      this.Profiles.Remove(profile);
+      ConfigurationProfile? profile = this.GetProfile(name);
+      if(profile != null) {
+        this.Profiles.Remove(profile);
+      }
     }
 
-    public void AddProfile(String name) {
-      ConfigurationProfile profile = GetProfile(name);
+    public bool AddProfile(String name) {
+      ConfigurationProfile? profile = GetProfile(name);
       if(profile == null) {
         profile = new();
         profile.Name = name;
         this.Profiles.Add(profile);
+        return true;
       }
+      return false;
     }
 
     public bool SetCurrentProfile(String name) {
-      ConfigurationProfile profile = this.GetProfile(name);
-      if(profile == null) {
-        return false;
+      ConfigurationProfile? profile = this.GetProfile(name);
+      if(profile != null) {
+        this.CurrentProfileName = profile.Name;
+        return true;
       }
-      this.CurrentProfileName = profile.Name;
-      return true;
+      return false;
     }
   }
 
