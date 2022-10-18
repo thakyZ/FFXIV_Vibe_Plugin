@@ -341,7 +341,7 @@ namespace FFXIV_Vibe_Plugin.Device {
       Pattern pattern = Patterns.GetPatternById(patternId);
 
       string[] patternSegments = pattern.Value.Split("|");
-      this.Logger.Log($"Sending {command} pattern={pattern.Name} ({patternSegments.Length} segments)");
+      this.Logger.Log($"SendPattern '{command}' pattern={pattern.Name} ({patternSegments.Length} segments) to {device} motor={motorId} startAfter={StartAfter} stopAfter={StopAfter} threshold={threshold}");
       
       string deviceAndMotorId = $"{device.Name}:{motorId}";
       int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];

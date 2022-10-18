@@ -1,48 +1,61 @@
 ﻿using System;
 using Dalamud.Game.ClientState;
 
+using FFXIV_Vibe_Plugin.Commons;
+
 namespace FFXIV_Vibe_Plugin {
   
   internal class PlayerStats {
-    readonly Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter? localPlayer;
+    private readonly Logger Logger; 
 
     // EVENTS
     public event EventHandler? Event_CurrentHpChanged;
     public event EventHandler? Event_MaxHpChanged;
 
     // Stats of the player
-    private float _CurrentHp, _prevCurrentHp = 0;
-    private float _MaxHp, _prevMaxHp = 0;
+    private float _CurrentHp, _prevCurrentHp = -1;
+    private float _MaxHp, _prevMaxHp = -1;
+    public string PlayerName = "*unknown*";
 
-    public PlayerStats( ClientState clientState) {
+    public PlayerStats( Logger logger, ClientState clientState) {
+      this.Logger = logger;
+      this.UpdatePlayerState(clientState);
+    }
+
+    public void Update(ClientState clientState) {
+      if(clientState == null || clientState.LocalPlayer == null) { return;  }
+      this.UpdatePlayerState(clientState);
+      this.UpdatePlayerName(clientState);
+      this.UpdateCurrentHp(clientState);
+    }
+
+    public void UpdatePlayerState(ClientState clientState) {
       if(clientState != null && clientState.LocalPlayer != null) {
-        this.localPlayer = clientState.LocalPlayer;
-
-        // Init variables
-        this._CurrentHp = this._prevCurrentHp = this.localPlayer.CurrentHp;
-        this._MaxHp = this._prevMaxHp = this.localPlayer.MaxHp;
+        if(this._CurrentHp == -1 || this._MaxHp == -1) {
+          this.Logger.Debug($"UpdatePlayerState {this._CurrentHp} {this._MaxHp}");
+          this._CurrentHp = this._prevCurrentHp = clientState.LocalPlayer.CurrentHp;
+          this._MaxHp = this._prevMaxHp = clientState.LocalPlayer.MaxHp;
+          this.Logger.Debug($"UpdatePlayerState {this._CurrentHp} {this._MaxHp}");
+        }
       }
     }
 
-    public void Update() {
-      if(this.localPlayer == null) { return;  }
-      this.UpdateCurrentHp();
+    public string UpdatePlayerName(ClientState clientState) {
+      if(clientState != null && clientState.LocalPlayer != null) {
+        this.PlayerName = clientState.LocalPlayer.Name.TextValue;
+      }
+      return this.PlayerName;
     }
 
     public string GetPlayerName() {
-      string playerName = "*undefined*";
-      if(this.localPlayer != null) {
-        playerName = this.localPlayer.Name.TextValue;
-      }
-      return playerName;
+      return this.PlayerName;
     }
 
-    private void UpdateCurrentHp() {
-
+    private void UpdateCurrentHp(ClientState clientState) {
       // Updating current values
-      if(this.localPlayer != null) {
-        this._CurrentHp = this.localPlayer.CurrentHp;
-        this._MaxHp = this.localPlayer.MaxHp;
+      if(clientState != null && clientState.LocalPlayer != null) {
+        this._CurrentHp = clientState.LocalPlayer.CurrentHp;
+        this._MaxHp = clientState.LocalPlayer.MaxHp;
       }
 
       // Send events after all value updated

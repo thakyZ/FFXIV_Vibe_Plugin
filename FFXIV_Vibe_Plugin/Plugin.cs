@@ -48,10 +48,10 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _firstUpdated = false;
+    private PlayerStats PlayerStats;
     private ConfigurationProfile ConfigurationProfile;
     private readonly Logger Logger;
     private readonly ActionEffect hook_ActionEffect;
-    private readonly PlayerStats PlayerStats;
     private readonly Device.DevicesController DeviceController;
     private readonly TriggersController TriggersController;
     private readonly Patterns Patterns;
@@ -92,11 +92,6 @@ namespace FFXIV_Vibe_Plugin {
       Migration migration = new(Configuration, Logger);
       migration.Patch_0_2_0_to_1_0_0_config_profile();
 
-      // Initialize player stats monitoring.
-      this.PlayerStats = new PlayerStats(this.ClientState);
-      PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
-      PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
-
       // Configuration Profile
       this.ConfigurationProfile = this.Configuration.GetDefaultProfile();
 
@@ -117,6 +112,14 @@ namespace FFXIV_Vibe_Plugin {
       // Initialize Hook ActionEffect
       this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
+
+      // Init the login event.
+      this.ClientState.Login += this.ClientState_LoginEvent;
+
+      // Initialize player stats monitoring.
+      this.PlayerStats = new PlayerStats(this.Logger, this.ClientState);
+      PlayerStats.Event_CurrentHpChanged += this.PlayerCurrentHPChanged;
+      PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
       // Triggers
       this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats, this.ConfigurationProfile);
@@ -163,9 +166,9 @@ namespace FFXIV_Vibe_Plugin {
 
       this.PluginUi.Draw();
 
-      this.PlayerStats.Update();
-
-      // TODO: this.RunSequencer(this.sequencerTasks);
+      if(this.ClientState.IsLoggedIn) {
+        this.PlayerStats.Update(this.ClientState);
+      }
 
       // Trigger first updated method
       if(!this._firstUpdated) {
@@ -309,7 +312,11 @@ namespace FFXIV_Vibe_Plugin {
 
     }
 
-    private void PlayerCurrentHPChanged(object? send, EventArgs e) {
+    private void ClientState_LoginEvent(object? send, EventArgs e) {
+      this.PlayerStats.Update(this.ClientState);
+    }
+
+      private void PlayerCurrentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
       
@@ -319,15 +326,16 @@ namespace FFXIV_Vibe_Plugin {
       }
 
       float percentageHP = currentHP / maxHP * 100f;
-      float percentage = 100 - percentageHP;
-      if(percentage == 0) {
-        percentage = 0;
+      float intensity = 100 - percentageHP;
+      if(intensity == 0) {
+        intensity = 0;
       }
 
       List<Trigger> triggers = this.TriggersController.CheckTrigger_HPChanged((int)currentHP);
+      this.Logger.Debug($"Player HPChanged {currentHP}/{maxHP} {intensity}");
       // Overwrites the threshold for every motors
       foreach(Trigger trigger in triggers) {
-        this.DeviceController.SendTrigger(trigger, (int)percentage);
+        this.DeviceController.SendTrigger(trigger, (int)intensity);
       }
     }
   }
