@@ -542,24 +542,33 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableNextColumn();
               ImGui.Text("WIP Chat type:");
               ImGui.TableNextColumn();
-              int tmp_currentTypeAllowed = 0;
-              string[] tmp_TypesAllowed = Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType));
-              if(ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref tmp_currentTypeAllowed, tmp_TypesAllowed, tmp_TypesAllowed.Length)) {
-                if(!this.SelectedTrigger.AllowedChatTypes.Contains(Convert.ToInt32(tmp_currentTypeAllowed))) {
-                  this.SelectedTrigger.AllowedChatTypes.Add(tmp_currentTypeAllowed);
+              int currentTypeAllowed = 0;
+              string[] ChatTypesAllowedStrings = Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType));
+              if(ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref currentTypeAllowed, ChatTypesAllowedStrings, ChatTypesAllowedStrings.Length)) {
+                if(!this.SelectedTrigger.AllowedChatTypes.Contains(currentTypeAllowed)) {
+                  this.SelectedTrigger.AllowedChatTypes.Add(currentTypeAllowed);
                 }
                 this.Configuration.Save();
               }
               ImGui.TableNextRow();
 
+              // TODO: debug me
+              /*
               ImGui.TableNextColumn();
               ImGui.Text("Allowed Type:");
               ImGui.TableNextColumn();
-              foreach(int AllowedChatType in this.SelectedTrigger.AllowedChatTypes) {
-                ImGui.TextWrapped(AllowedChatType.ToString());
+              for(int indexAllowedChatType = 0; indexAllowedChatType < this.SelectedTrigger.AllowedChatTypes.Count; indexAllowedChatType++){
+                int chatIndex = this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType];
+                if(ImGuiComponents.IconButton(Dalamud.Interface.FontAwesomeIcon.Minus)) {
+                  this.Logger.Debug(chatIndex.ToString());
+                  this.SelectedTrigger.AllowedChatTypes.RemoveAt(indexAllowedChatType);
+                  this.Configuration.Save();
+                };
                 ImGui.SameLine();
+                ImGui.Text($"{this.SelectedTrigger.AllowedChatTypes[indexAllowedChatType]}");
               }
               ImGui.TableNextRow();
+              */
 
               // END OF TABLE
               ImGui.EndTable();

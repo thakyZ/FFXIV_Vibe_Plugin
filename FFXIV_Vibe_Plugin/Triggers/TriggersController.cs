@@ -86,7 +86,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
           if(trigger.Direction != (int)FFXIV_Vibe_Plugin.Triggers.DIRECTION.Any && (int)direction != trigger.Direction) { continue;}
 
-          this.Logger.Debug($"Sending trigger \"{trigger.Name}\"");
+          //this.Logger.Debug($"Sending trigger \"{trigger.Name}\"");
           triggers.Add(trigger);
         }
       }
