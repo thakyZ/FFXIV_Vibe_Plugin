@@ -13,6 +13,9 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 - [Intiface Desktop](https://intiface.com/desktop/)
 
 
+## Our TODO
+Our current ideas and feedbacks are in: [TODO List](./TODO.md)
+
 ## Installation
 
 1. Download a [release here](https://github.com/kacie8989/FFXIV-Vibe-Plugin/releases)
