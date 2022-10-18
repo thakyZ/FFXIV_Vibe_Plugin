@@ -187,6 +187,21 @@ namespace FFXIV_Vibe_Plugin {
           this.Configuration.AUTO_CONNECT = config_AUTO_CONNECT;
           this.Configuration.Save();
         }
+
+
+      }
+      ImGui.EndChild();
+
+
+      ImGui.TextColored(ImGuiColors.DalamudViolet, "Others");
+      ImGui.BeginChild("###Main_Others", new Vector2(-1, 40f), true);
+      {
+        // Checkbox AUTO_OPEN
+        bool config_AUTO_OPEN = this.Configuration.AUTO_OPEN;
+        if(ImGui.Checkbox("Automatically open configuration panel. ", ref config_AUTO_OPEN)) {
+          this.Configuration.AUTO_OPEN = config_AUTO_OPEN;
+          this.Configuration.Save();
+        }
       }
       ImGui.EndChild();
     }

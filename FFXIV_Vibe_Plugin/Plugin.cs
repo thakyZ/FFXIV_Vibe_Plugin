@@ -164,7 +164,9 @@ namespace FFXIV_Vibe_Plugin {
     private void FirstUpdated() {
       this.Logger.Debug("First updated");
       this.LoadTriggersConfig();
-      this.DisplayUI();
+      if(this.Configuration.AUTO_OPEN) {
+        this.DisplayUI();
+      }
     }
 
     private void DisplayUI() {

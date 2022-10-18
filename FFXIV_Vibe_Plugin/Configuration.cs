@@ -15,6 +15,7 @@ namespace FFXIV_Vibe_Plugin {
     public int VIBE_HP_MODE { get; set; } = 0;
     public int MAX_VIBE_THRESHOLD { get; set; } = 100;
     public bool AUTO_CONNECT { get; set; } = true;
+    public bool AUTO_OPEN { get; set; } = false;
 
     public string BUTTPLUG_SERVER_HOST { get; set; } = "localhost";
     public int BUTTPLUG_SERVER_PORT { get; set; } = 12345;
