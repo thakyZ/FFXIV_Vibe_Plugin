@@ -94,8 +94,6 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         spell.Targets = targets;
         spell.DamageType = Structures.DamageType.Unknown;
         spell.ActionEffectType = effect.type;
-
-        // DEBUG: this.Logger.Debug($"{spell}");
         this.DispatchReceivedEvent(spell);
       } catch(Exception e) {
         this.Logger.Log($"{e.Message} {e.StackTrace}");

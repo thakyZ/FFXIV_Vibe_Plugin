@@ -240,7 +240,7 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.SameLine();
       int config_MAX_VIBE_THRESHOLD = this.Configuration.MAX_VIBE_THRESHOLD;
       ImGui.SetNextItemWidth(200);
-      if(ImGui.SliderInt("###MaximumThreshold", ref config_MAX_VIBE_THRESHOLD, 2, 100)) {
+      if(ImGui.SliderInt("###OPTION_MaximumThreshold", ref config_MAX_VIBE_THRESHOLD, 2, 100)) {
         this.Configuration.MAX_VIBE_THRESHOLD = config_MAX_VIBE_THRESHOLD;
         this.Configuration.Save();
       }
@@ -259,12 +259,16 @@ namespace FFXIV_Vibe_Plugin {
       int config_VIBE_HP_MODE = this.Configuration.VIBE_HP_MODE;
       ImGui.SetNextItemWidth(200);
       string[] VIBE_HP_MODES = new string[] { "intensity", "shake", "mountain" };
-      if(ImGui.Combo("###HP_Changed_VibeMode", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
+      if(ImGui.Combo("###OPTION_VIBE_HP_MODES", ref config_VIBE_HP_MODE, VIBE_HP_MODES, VIBE_HP_MODES.Length)) {
         this.Configuration.VIBE_HP_MODE = config_VIBE_HP_MODE;
         this.Configuration.Save();
       }
       ImGuiComponents.HelpMarker("The more you are missing HP, the more it vibes.");
 
+      // Checkbox OPTION_VERBOSE_SPELL
+      if(ImGui.Checkbox("###OPTION_VERBOSE_SPELL.", ref this.Configuration.VERBOSE_SPELL)) {
+        this.Configuration.Save();
+      }
 
     }
 
