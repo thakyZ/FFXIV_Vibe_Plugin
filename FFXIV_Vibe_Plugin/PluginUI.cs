@@ -27,7 +27,7 @@ namespace FFXIV_Vibe_Plugin {
       set { this.visible = value; }
     }
 
-    private readonly int WIDTH = 550;
+    private readonly int WIDTH = 650;
     private readonly int HEIGHT = 700;
 
     // The value to send as a test for vibes.
@@ -390,6 +390,11 @@ namespace FFXIV_Vibe_Plugin {
               if(ImGui.InputText("###TRIGGER_CHAT_TEXT", ref this.SelectedTrigger.ChatText, 250)) {
                 this.Configuration.Save();
               };
+              ImGui.SameLine();
+              if(ImGui.Checkbox("Insensitive", ref this.SelectedTrigger.caseInsensitive)) {
+                this.Configuration.Save();
+
+              }
               ImGui.NextColumn();
 
               ImGui.Text("Intensity:");

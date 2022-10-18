@@ -40,6 +40,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public int Direction = (int)DIRECTION.Incoming;
     public string ChatText = "";
     public int Intensity = 0;
+    public bool caseInsensitive = false;
 
     // Device
     public Device.Device? Device = null;
