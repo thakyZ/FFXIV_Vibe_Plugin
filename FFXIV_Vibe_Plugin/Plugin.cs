@@ -114,7 +114,7 @@ namespace FFXIV_Vibe_Plugin {
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
 
       // Triggers
-      this.TriggersController = new Triggers.Controller(this.Logger);
+      this.TriggersController = new Triggers.Controller(this.Logger, this.PlayerStats);
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);

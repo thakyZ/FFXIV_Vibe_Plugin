@@ -29,6 +29,14 @@ namespace FFXIV_Vibe_Plugin {
       this.UpdateCurrentHp();
     }
 
+    public string GetPlayerName() {
+      string playerName = "*undefined*";
+      if(this.localPlayer != null) {
+        playerName = this.localPlayer.Name.TextValue;
+      }
+      return playerName;
+    }
+
     private void UpdateCurrentHp() {
 
       // Updating current values

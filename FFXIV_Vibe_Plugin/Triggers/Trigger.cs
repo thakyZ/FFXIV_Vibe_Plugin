@@ -13,6 +13,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   }
 
   enum EVENT {
+    Any,
     Damage,
     Heal,
     DamageAmount,
@@ -22,6 +23,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
   }
 
   enum DIRECTION {
+    Any,
     Incoming,
     Outgoing,
     Self
