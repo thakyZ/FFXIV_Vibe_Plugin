@@ -16,10 +16,6 @@ namespace SamplePlugin
 {
     public sealed class Plugin : IDalamudPlugin
     {
-        [PluginService]
-        [RequiredVersion("1.0")]
-        private ChatGui Chat { get; init; }
-        private Buttplug.ButtplugClient buttplugClient;
         private class Trigger
         {
             public Trigger(int intensity, string text)
@@ -33,7 +29,7 @@ namespace SamplePlugin
 
             public override string ToString()
             {
-                return $"Trigger(intensity: {Intensity}, text: {ToMatch})";
+                return $"Trigger(intensity: {Intensity}, text: '{ToMatch}')";
             }
             public bool Equals(Trigger that)
             {
@@ -41,16 +37,20 @@ namespace SamplePlugin
             }
         }
 
+        [PluginService]
+        [RequiredVersion("1.0")]
+        private ChatGui Chat { get; init; }
+        private Buttplug.ButtplugClient buttplugClient;
         private readonly List<Trigger> Triggers = new();
-     
-        public string Name => "Buttplug Triggers";
 
+        public string Name => "Buttplug Triggers";
         private const string commandName = "/buttplugtriggers";
 
         private DalamudPluginInterface PluginInterface { get; init; }
         private CommandManager CommandManager { get; init; }
         private Configuration Configuration { get; init; }
         private PluginUI PluginUi { get; init; }
+        private string AuthorizedUser { get; set; }
 
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
@@ -78,12 +78,29 @@ namespace SamplePlugin
             Chat.ChatMessage += CheckForTriggers; // XXX: o.o
         }
 
-        private void CheckForTriggers(XivChatType type, uint senderId, ref SeString sender, ref SeString _message, ref bool isHandled)
+        private readonly XivChatType[] allowedChatTypes = { XivChatType.Say, 
+            XivChatType.Shout, XivChatType.TellIncoming, XivChatType.Party, 
+            XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, 
+            XivChatType.Ls5, XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, 
+            XivChatType.FreeCompany, XivChatType.CustomEmote, XivChatType.CrossParty, 
+            XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, 
+            XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4,
+            XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, 
+            XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 };
+
+        private void CheckForTriggers(XivChatType type, uint senderId, ref SeString _sender, ref SeString _message, ref bool isHandled)
         {
+            string sender = _sender.ToString();
+            if (!allowedChatTypes.Any(ct => ct == type) || !sender.ToString().Contains(AuthorizedUser)) {
+                return;
+            }
             string message = _message.ToString();
-            var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch) );
-            int intensity = matchingintensities.Select(t => t.Intensity).Max();
-            buttplugClient.Devices[0].SendVibrateCmd(intensity / 100.0f);
+            var matchingintensities = this.Triggers.Where(t => message.Contains(t.ToMatch));
+            if (matchingintensities.Any())
+            {
+                int intensity = matchingintensities.Select(t => t.Intensity).Max();
+                buttplugClient.Devices[0].SendVibrateCmd(intensity / 100.0f);
+            }
         }
 
         public void Dispose()
@@ -91,6 +108,8 @@ namespace SamplePlugin
             this.PluginUi.Dispose();
             this.CommandManager.RemoveHandler(commandName);
             this.buttplugClient.DisconnectAsync();
+            Chat.ChatMessage -= CheckForTriggers; // XXX: ???
+
         }
 
         private void Print(string message)
@@ -108,9 +127,11 @@ namespace SamplePlugin
             string helpMessage =
                 $@"Usage: {command} list
        {command} list
-       {command} add <intensity 0-100> <trigger text> # where <trigger text> is / \w .+ (?=$) /
+       {command} add <intensity 0-100> <trigger text>
        {command} remove <id>
        {command} connect [ip[:port]] # defaults to 'localhost:12345', the intiface default
+       {command} disconnect
+       {command} user [authorized user] # set/clear sender string match
 ";
             Chat.Print(helpMessage);
         }
@@ -138,11 +159,26 @@ namespace SamplePlugin
                 case "dis":
                     DisconnectButtplugs();
                     break;
+                case "use":
+                    SetAuthorizedUser(args);
+                    break;
+                case "sav":
+                    Print("SORRY! This doesn't work yet.");
+                    break;
+                case "loa":
+                    Print("SORRY! This doesn't work yet.");
+                    break;
                 default:
                     Print($"Unknown subcommand: {args}");
                     break;
             }
 
+        }
+
+        private void SetAuthorizedUser(string args)
+        {
+            AuthorizedUser = args.Split(" ", 2)[1];
+            Print($"Authorized user set to: {AuthorizedUser}");
         }
 
         private void DisconnectButtplugs()
@@ -234,8 +270,8 @@ namespace SamplePlugin
                 return; // XXX: exceptional control flow
             }
             Trigger newTrigger = new(intensity, text);
-            Triggers.Add(newTrigger);
             Print($"Added Trigger: {newTrigger}");
+            Triggers.Add(newTrigger);
         }
 
         private void ListTriggers()
