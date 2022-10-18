@@ -470,6 +470,7 @@ namespace FFXIV_Vibe_Plugin {
               int currentEvent = (int)this.SelectedTrigger.Event;
               if(ImGui.Combo("###TRIGGER_FORM_EVENT", ref currentEvent, TRIGGER, TRIGGER.Length)) {
                 this.SelectedTrigger.Event = currentEvent;
+                this.SelectedTrigger.Reset();
                 this.Configuration.Save();
               }
               ImGui.TableNextRow();

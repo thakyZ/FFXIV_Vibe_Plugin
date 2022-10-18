@@ -58,7 +58,8 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
     public List<Trigger> CheckTrigger_Spell(Structures.Spell spell) {
       List<Trigger> triggers = new();
-      Structures.Player fromPlayerName = spell.Player;
+      Structures.Player fromPlayer = spell.Player;
+      string fromPlayerName = fromPlayer.Name.Trim().ToLower();
       string spellName = "";
       if(spell.Name != null) {
         spellName = spell.Name.Trim().ToLower();
@@ -66,7 +67,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
 
       foreach(Trigger trigger in this.Triggers) {
         string triggerFromPlayerName = trigger.FromPlayerName.Trim().ToLower();
-        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Name.Contains(triggerFromPlayerName);
+        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Contains(triggerFromPlayerName);
         // Check if the KIND of the trigger is a spell and if author is authorized
         if(trigger.Kind == (int)KIND.Spell && isAuthorized) {
           string pattern = String.Concat(@"", trigger.SpellText);
