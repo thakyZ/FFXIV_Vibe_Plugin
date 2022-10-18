@@ -48,7 +48,7 @@ namespace FFXIV_Vibe_Plugin {
 
     // Custom variables from Kacie
     private bool _firstUpdated = false;
-    private ConfigurationProfile? ConfigurationProfile;
+    private ConfigurationProfile ConfigurationProfile;
     private readonly Logger Logger;
     private readonly ActionEffect hook_ActionEffect;
     private readonly PlayerStats PlayerStats;
@@ -98,46 +98,39 @@ namespace FFXIV_Vibe_Plugin {
       PlayerStats.Event_MaxHpChanged += this.PlayerCurrentHPChanged;
 
       // Configuration Profile
-      this.ConfigurationProfile = this.Configuration.GetProfile();
+      this.ConfigurationProfile = this.Configuration.GetDefaultProfile();
 
       // Patterns
       this.Patterns = new Patterns();
-      if(this.ConfigurationProfile != null) {
-        this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
-      }
+      this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
+      
 
       // Initialize the devices Controller
-      if(this.ConfigurationProfile != null) {
-        this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.ConfigurationProfile, this.Patterns);
-        if(this.ConfigurationProfile.AUTO_CONNECT) {
-          Thread t = new(delegate () {
-            Thread.Sleep(2000);
-            this.Command_DeviceController_Connect();
-          });
-          t.Start();
-        }
+      this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.ConfigurationProfile, this.Patterns);
+      if(this.ConfigurationProfile.AUTO_CONNECT) {
+        Thread t = new(delegate () {
+          Thread.Sleep(2000);
+          this.Command_DeviceController_Connect();
+        });
+        t.Start();
       }
-
+      
       // Initialize Hook ActionEffect
       this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
 
       // Triggers
-      if(this.ConfigurationProfile != null) {
-        this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats, this.ConfigurationProfile);
-      }
+      this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats, this.ConfigurationProfile);
+      
       
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
 
-
       // UI
-      if(this.ConfigurationProfile != null && this.DeviceController != null && this.TriggersController != null) {
-        this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this.ConfigurationProfile, this, this.DeviceController, this.TriggersController, this.Patterns);
-        this.PluginInterface.UiBuilder.Draw += DrawUI;
-        this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
-      }
-
+      this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this.ConfigurationProfile, this, this.DeviceController, this.TriggersController, this.Patterns);
+      this.PluginInterface.UiBuilder.Draw += DrawUI;
+      this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
+      
       // Make sure we set the current profile everywhere.
       this.SetProfile(this.Configuration.CurrentProfileName);
     }
@@ -306,8 +299,9 @@ namespace FFXIV_Vibe_Plugin {
         this.Logger.Warn($"You are trying to use profile {profileName} which can't be found");
         return false;
       }
-      this.ConfigurationProfile = this.Configuration.GetProfile(profileName);
-      if(this.ConfigurationProfile != null) {
+      ConfigurationProfile? configProfileToCheck = this.Configuration.GetProfile(profileName);
+      if(configProfileToCheck != null) {
+        this.ConfigurationProfile = configProfileToCheck;
         this.PluginUi.SetProfile(this.ConfigurationProfile);
         this.DeviceController.SetProfile(this.ConfigurationProfile);
         this.TriggersController.SetProfile(this.ConfigurationProfile);

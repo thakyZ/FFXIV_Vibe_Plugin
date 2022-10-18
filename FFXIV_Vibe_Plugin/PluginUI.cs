@@ -187,14 +187,6 @@ namespace FFXIV_Vibe_Plugin {
       ImGui.End();
     }
 
-
-
-    public void DrawConnectTab() {
-      
-
-     
-    }
-
     public void DrawOptionsTab() {
       ImGui.TextColored(ImGuiColors.DalamudViolet, "Profile settings");
       float CONFIG_PROFILE_ZONE_HEIGHT = this._tmp_currentProfile_ErrorMsg == "" ? 100f : 120f;

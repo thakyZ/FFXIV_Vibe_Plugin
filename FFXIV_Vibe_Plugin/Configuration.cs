@@ -54,6 +54,22 @@ namespace FFXIV_Vibe_Plugin {
       return profile;
     }
 
+    public ConfigurationProfile GetDefaultProfile() {
+      String defaultProfileName = "Default profile";
+      ConfigurationProfile? profileToCheck = this.GetProfile(this.CurrentProfileName);
+      if(profileToCheck == null) {
+        profileToCheck = this.GetProfile(defaultProfileName);
+      }
+      ConfigurationProfile profileToReturn = profileToCheck ?? (new());
+      if(profileToCheck == null) {
+        profileToReturn.Name = defaultProfileName;
+        this.Profiles.Add(profileToReturn);
+        this.CurrentProfileName = defaultProfileName;
+        this.Save();
+      }
+      return profileToReturn;
+    }
+
     public ConfigurationProfile? GetFirstProfile() {
       ConfigurationProfile? profile = null;
       if(profile == null && this.Profiles.Count > 0) {
