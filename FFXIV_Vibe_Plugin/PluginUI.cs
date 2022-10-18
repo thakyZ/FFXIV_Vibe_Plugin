@@ -544,7 +544,21 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.TableNextColumn();
               int tmp_currentTypeAllowed = 0;
               string[] tmp_TypesAllowed = Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType));
-              ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref tmp_currentTypeAllowed, tmp_TypesAllowed, tmp_TypesAllowed.Length);
+              if(ImGui.Combo("###TRIGGER_CHAT_TEXT_TYPE_ALLOWED", ref tmp_currentTypeAllowed, tmp_TypesAllowed, tmp_TypesAllowed.Length)) {
+                if(!this.SelectedTrigger.AllowedChatTypes.Contains(Convert.ToInt32(tmp_currentTypeAllowed))) {
+                  this.SelectedTrigger.AllowedChatTypes.Add(tmp_currentTypeAllowed);
+                }
+                this.Configuration.Save();
+              }
+              ImGui.TableNextRow();
+
+              ImGui.TableNextColumn();
+              ImGui.Text("Allowed Type:");
+              ImGui.TableNextColumn();
+              foreach(int AllowedChatType in this.SelectedTrigger.AllowedChatTypes) {
+                ImGui.TextWrapped(AllowedChatType.ToString());
+                ImGui.SameLine();
+              }
               ImGui.TableNextRow();
 
               // END OF TABLE

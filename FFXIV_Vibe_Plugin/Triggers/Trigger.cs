@@ -39,7 +39,7 @@ namespace FFXIV_Vibe_Plugin.Triggers {
     public string ToPlayerName = "";
     public float StartAfter = 0;
     public float StopAfter = 0;
-    public readonly Dalamud.Game.Text.XivChatType[] allowedChatTypes = new Dalamud.Game.Text.XivChatType[Enum.GetNames(typeof(Dalamud.Game.Text.XivChatType)).Length];
+    public readonly List<int> AllowedChatTypes = new ();
 
     // Devices associated with this trigger
     public List<TriggerDevice> Devices = new();
