@@ -46,6 +46,7 @@ namespace FFXIV_Vibe_Plugin {
 
     // Temporary UI values
     private int TRIGGER_CURRENT_SELECTED_DEVICE = -1;
+    private string CURRENT_TRIGGER_SELECTOR_SEARCHBAR = "";
 
     // Some limits
     private readonly int TRIGGER_MIN_AFTER = 0;
@@ -377,7 +378,8 @@ namespace FFXIV_Vibe_Plugin {
       List<Triggers.Trigger> triggers = this.TriggerController.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
       if(ImGui.BeginChild("###TriggersSelector", new Vector2(200, -ImGui.GetFrameHeightWithSpacing()), true)) {
-        ImGui.Text($"--- Number of triggers {triggers.Count} ---");
+        ImGui.SetNextItemWidth(185);
+        ImGui.InputText("###TriggersSelector_SearchBar", ref this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR, 200);
         foreach(Triggers.Trigger trigger in triggers) {
           if(trigger != null) {
             string enabled = trigger.Enabled ? "" : "[disabled]";
@@ -385,7 +387,12 @@ namespace FFXIV_Vibe_Plugin {
             if(kindStr != null) {
               kindStr = kindStr.ToUpper();
             }
-            if(ImGui.Selectable($"{enabled}[{kindStr}] {trigger.Name}{new String(' ', 100)}{trigger.Id}", selectedId == trigger.Id)) { // We don't want to show the ID
+            string triggerName = $"{enabled}[{ kindStr}] {trigger.Name}###{ trigger.Id}";
+            if(!Helpers.RegExpMatch(this.Logger, triggerName, this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR)) {
+              continue;
+            }
+            
+            if(ImGui.Selectable($"{triggerName}", selectedId == trigger.Id)) { // We don't want to show the ID
               this.SelectedTrigger = trigger;
               this.triggersViewMode = "edit";
             }
