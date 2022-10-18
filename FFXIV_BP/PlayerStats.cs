@@ -25,10 +25,11 @@ namespace FFXIV_BP {
     }
 
     public void update() {
-      this._updateCurrentHP();
+      if(this.localPlayer == null) { return;  }
+      this._updateCurrentHp();
     }
 
-    private void _updateCurrentHP() {
+    private void _updateCurrentHp() {
 
       // Updating current values
       this._CurrentHp = this.localPlayer.CurrentHp;
