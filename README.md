@@ -27,7 +27,8 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 - Define global threshold or threshold per motor.
 - Displaying battery life of devices.
 - Custom patterns per motor (save, with easy import, export).
-- Vibe or trigger a pattern on HP Changed (the less HP you have the more it vibes)
+- Vibe or trigger a pattern on HP Changed 
+- HP Changed can have custom min/max values or percentages
 
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
