@@ -56,25 +56,32 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       return triggers;
     }
 
-    public Trigger? CheckTrigger_Spell(Structures.Spell spell) {
-      Trigger? triggerFound = null;
+    public List<Trigger> CheckTrigger_Spell(Structures.Spell spell) {
+      List<Trigger> triggers = new();
+      Structures.Player fromPlayerName = spell.Player;
       string spellName = "";
-      if(spell.name != null) {
-        spellName = spell.name.ToLower();
+      if(spell.Name != null) {
+        spellName = spell.Name.Trim().ToLower();
       }
 
       foreach(Trigger trigger in this.Triggers) {
-        // Check if the KIND of the trigger is a spell
-        if(trigger.Kind == (int)KIND.Spell ) {
-          triggerFound = trigger;
-          string triggerSpellText = trigger.SpellText.ToLower();
-          if(!spellName.Contains(triggerSpellText) && spellName != "") {
-            triggerFound = null;
+        string triggerFromPlayerName = trigger.FromPlayerName.Trim().ToLower();
+        bool isAuthorized = triggerFromPlayerName == "" || fromPlayerName.Name.Contains(trigger.FromPlayerName);
+        // Check if the KIND of the trigger is a spell and if author is authorized
+        if(trigger.Kind == (int)KIND.Spell && isAuthorized) {
+          string pattern = String.Concat(@"", trigger.SpellText);
+          try {
+            Match m = Regex.Match(spellName, pattern, RegexOptions.IgnoreCase);
+            if(m.Success) {
+              triggers.Add(trigger);
+            }
+          } catch(Exception) {
+            this.Logger.Error($"Probably a wrong REGEXP for {trigger.SpellText}");
           }
-          
+
         }
       }
-      return triggerFound;
+      return triggers;
     }
 
     public void ExecuteTrigger(Trigger trigger) {

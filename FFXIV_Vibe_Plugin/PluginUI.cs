@@ -316,7 +316,7 @@ namespace FFXIV_Vibe_Plugin {
               ImGui.SameLine();
               ImGui.SetNextItemWidth(200);
               if(ImGui.SliderInt($"###{device.Id} Intensity Rotate Motor {i}", ref device.CurrentRotateIntensity[i], 0, 100)) {
-                this.DeviceController.SendRotate(device, device.CurrentRotateIntensity[i], true, i);
+                this.DeviceController.SendRotate(device, device.CurrentRotateIntensity[i], i, true);
               }
             }
             ImGui.Unindent(10);
@@ -632,9 +632,10 @@ namespace FFXIV_Vibe_Plugin {
                           }
                           this.Configuration.Save();
                         }
-                        if(ImGui.InputInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_DURACTION", ref triggerDevice.LinearMotorsDuration[motorId])){
+                        if(ImGui.InputInt($"{prefixLabel}_SHOULD_LINEAR_MOTOR_{motorId}_DURATION", ref triggerDevice.LinearMotorsDuration[motorId])){
                           if(!triggerDevice.SelectedLinearMotors[motorId]) {
                             triggerDevice.LinearMotorsDuration[motorId] = 0;
+                            this.Configuration.Save();
                           }
                         }
                       }
@@ -644,7 +645,9 @@ namespace FFXIV_Vibe_Plugin {
                   if(triggerDevice.Device.CanStop) {
                     ImGui.Text("Should stop all motors");
                     ImGui.SameLine();
-                    ImGui.Checkbox($"{prefixLabel}_SHOULD_STOP", ref triggerDevice.ShouldStop);
+                    if(ImGui.Checkbox($"{prefixLabel}_SHOULD_STOP", ref triggerDevice.ShouldStop)) {
+                      this.Configuration.Save();
+                    }
                   }
                   if(ImGui.Button("Remove")) {
                     triggerDevices.RemoveAt(indexDevice);

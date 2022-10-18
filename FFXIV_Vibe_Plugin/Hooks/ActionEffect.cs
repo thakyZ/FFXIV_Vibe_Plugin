@@ -86,14 +86,14 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         
 
         // Spell definition
-        spell.id = (int)ptr_id;
-        spell.name = spellName;
-        spell.player = new Structures.Player(sourceId, playerName);
-        spell.amounts = amounts;
-        spell.amountAverage = amountAverage;
-        spell.targets = targets;
-        spell.damageType = Structures.DamageType.Unknown;
-        spell.type = effect.type;
+        spell.Id = (int)ptr_id;
+        spell.Name = spellName;
+        spell.Player = new Structures.Player(sourceId, playerName);
+        spell.Amounts = amounts;
+        spell.AmountAverage = amountAverage;
+        spell.Targets = targets;
+        spell.DamageType = Structures.DamageType.Unknown;
+        spell.Type = effect.type;
 
         // DEBUG: this.Logger.Debug($"{spell}");
         this.DispatchReceivedEvent(spell);
