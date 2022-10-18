@@ -123,10 +123,10 @@ namespace FFXIV_Vibe_Plugin.Commons {
     }
 
     private string FormatMessage(LogLevel type, string msg) {
-      return $"{this.name} {type} {this.prefix} {msg}";
+      return $"{type} {this.prefix} {msg}";
     }
     private string FormatMessage(LogLevel type, string msg, Exception e) {
-      return $"{this.name} {type} {this.prefix} {e.Message}\\n{msg}";
+      return $"{type} {this.prefix} {e.Message}\\n{msg}";
     }
   }
 }
