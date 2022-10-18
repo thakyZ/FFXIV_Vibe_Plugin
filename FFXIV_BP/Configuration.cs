@@ -10,6 +10,7 @@ namespace FFXIV_BP {
     public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
 
     public bool HP_TOGGLE { get; set; } = false;
+    public int THRESHOLD { get; set; } = 100;
 
     // the below exist just to make saving less cumbersome
 
