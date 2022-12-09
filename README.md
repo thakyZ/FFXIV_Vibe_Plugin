@@ -1,10 +1,12 @@
 # FFXIV Vibe Plugin
 
+<!-- markdownlint-disable -->
 <img src="https://img.shields.io/github/downloads/kaciexx/FFXIV_Vibe_Plugin/total?label=Downloads" /> <img src="https://img.shields.io/discord/914941648859963503"/> <img src="https://img.shields.io/github/last-commit/kaciexx/FFXIV_Vibe_Plugin" />
 
 <p align="center">
   <img width="200" height="200" src="./Data/logo.png" />
 </p>
+<!-- markdownlint-restore -->
 
 A plugin for FFXIV that will let you vibe your controller or toys.
 
@@ -38,9 +40,11 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 
 ## Installation
 
+<!-- markdownlint-disable -->
 1. Launch your game, open `/xlplugins`, go to the settings (bottom left) and in the `Experimental` tab.
 2. Under `Custom Plugin Repositories` add the following url `https://raw.githubusercontent.com/kaciexx/FFXIV_Vibe_Plugin/master/repo.json` and press the <kbd>+</kbd> icon.
 3. Press the `Save and close` button on the bottom left.
+<!-- markdownlint-restore -->
 
 Now you should be able to see `FFXIV Vibe Plugin`. Click install and enjoy.
 
@@ -139,12 +143,12 @@ If it works, then it probably a bluetooth issue. Nothing we can do about.
 You can copy/past the file located at: `%AppData%\XIVLauncher\pluginConfigs\FFXIV_Vibe_Plugin.json`.
 Be aware: this will overrides everything.
 
-# Discord
+## Discord
 
 - [This plugin discord](https://discord.gg/JnCGxa3gGa)
 - [Ms. Tress #discussion](https://discord.gg/fx5pABsE)
 
-# Donation & Donors
+## Donation & Donors
 
 Donation link: <https://paypal.me/kaciedev>
 Please concider doing a small donation if you like this plugin. We worked a lot, gave a lots of free nights to design it, listening to everything people wanted and doing the implementation.

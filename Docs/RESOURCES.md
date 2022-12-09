@@ -1,5 +1,6 @@
 ﻿# Some resources
 
+<!-- markdownlint-disable MD034 -->
 - https://karashiiro.moe/xiv-resources/
 - Sapphire server: https://github.com/SapphireServer/Sapphire/blob/master/src/common/Network/PacketDef/Zone/ClientZoneDef.h#L72
 - Machine MessageHeader: https://github.com/ravahn/machina/blob/master/Machina.FFXIV/Headers/Server_MessageHeader.cs

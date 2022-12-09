@@ -9,7 +9,7 @@
 7. Tag the project version (eg: `git tag v1.4.0.0`) and push the tag.
 8. Create a release on github, upload the zip and publish
 9. Remove the FFXIV\_Vibe\_Plugin in devPlugins/FFXIV\_Vibe\_Plugin
-
+<!-- markdownlint-disable MD025 -->
 # Conventions
 
 Version: 1.7.0.0 refers to Dalamud API 7

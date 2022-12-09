@@ -257,7 +257,7 @@ namespace FFXIV_Vibe_Plugin {
 
     public string getHelp(string command) {
       string helpMessage = $@"Usage:
-      
+
       {command} connect [ip[:port]]
       {command} disconnect
       {command} toys_list
@@ -272,7 +272,7 @@ Chat features
       {command} chat_user <authorized user>
 
 Player features
-      {command} hp_toggle 
+      {command} hp_toggle
 
 New features
       {command} send <0-100>
@@ -282,7 +282,7 @@ New features
 Example:
        {command} connect
        {command} chat_add 0 shh
-       {command} chat_add 20 slowly 
+       {command} chat_add 20 slowly
        {command} chat_add 75 getting there
        {command} chat_add 100 hey ;)
        {command} user Alice
@@ -290,8 +290,8 @@ Example:
        {command} threshold 90
 
 These commands let anyone whose name contains 'Alice'
-control all your connected toys with the appropriate 
-phrases, as long as those are uttered in a tell, a 
+control all your connected toys with the appropriate
+phrases, as long as those are uttered in a tell, a
 party, a (cross) linkshell, or a free company chat.
 ";
       return helpMessage;
@@ -486,7 +486,7 @@ party, a (cross) linkshell, or a free company chat.
       int index = (int)e.Device.Index;
       Print($"Added device: {index}:{name}");
       /**
-       * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface. 
+       * Sending some vibes at the intial stats make sure that some toys re-sync to Intiface.
        * Therefore, it is important to trigger a zero and some vibes before continuing further.
        * Don't remove this part unless you want to debug for hours.
        */
@@ -585,7 +585,7 @@ party, a (cross) linkshell, or a free company chat.
       try {
         id = int.Parse(args.Split(" ")[1]);
         if (id < 0) {
-          throw new FormatException(); // XXX: exceptionally exceptional control flow please somnenoee hehhehjel;;  ,.-
+          throw new FormatException(); // XXX: exceptionally exceptional control flow please someone hehhehjel;;  ,.-
         }
       } catch (FormatException) {
         PrintError("Malformed argument for [chat_remove]");
@@ -610,7 +610,7 @@ ID   Intensity   Text Match
 
 
     /**
-     * Sends an itensity vibe to all of the devices 
+     * Sends an intensity vibe to all of the devices
      * @param {float} intensity
      */
     public void buttplug_sendVibe(float intensity) {

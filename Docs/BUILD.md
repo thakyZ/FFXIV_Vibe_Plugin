@@ -10,6 +10,7 @@ Don't forget to install the Nuggets:
 - Lumina (as of 14.01.2022 version is 3.5.1)
 - Lumina.Excel (as of 14.01.2022 version is 6.0.2)
 
+<!-- markdownlint-disable MD025 -->
 # Package for plugin
 
 Simply change the mode from Debug to Release. Ignore the error reported for UIDev project that is missing the manifest.

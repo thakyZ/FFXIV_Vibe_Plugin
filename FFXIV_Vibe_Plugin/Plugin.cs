@@ -76,12 +76,12 @@ namespace FFXIV_Vibe_Plugin {
       this.DataManager = dataManager;
       this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
       this.Configuration.Initialize(this.PluginInterface);
-      
+
       this.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand) {
         HelpMessage = "A vibe plugin for fun..."
       });
       if(DalamudChat != null) {
-        DalamudChat.ChatMessage += ChatWasTriggered; 
+        DalamudChat.ChatMessage += ChatWasTriggered;
       }
 
       // Initialize the logger
@@ -97,7 +97,7 @@ namespace FFXIV_Vibe_Plugin {
       // Patterns
       this.Patterns = new Patterns();
       this.Patterns.SetCustomPatterns(this.ConfigurationProfile.PatternList);
-      
+
       // Initialize the devices Controller
       this.DeviceController = new Device.DevicesController(this.Logger, this.Configuration, this.ConfigurationProfile, this.Patterns);
       if(this.ConfigurationProfile.AUTO_CONNECT) {
@@ -107,7 +107,7 @@ namespace FFXIV_Vibe_Plugin {
         });
         t.Start();
       }
-      
+
       // Initialize Hook ActionEffect
       this.hook_ActionEffect = new(this.DataManager, this.Logger, scanner, clientState, gameObjects);
       this.hook_ActionEffect.ReceivedEvent += SpellWasTriggered;
@@ -122,8 +122,8 @@ namespace FFXIV_Vibe_Plugin {
 
       // Triggers
       this.TriggersController = new Triggers.TriggersController(this.Logger, this.PlayerStats, this.ConfigurationProfile);
-      
-      
+
+
       // Experimental
       this.experiment_networkCapture = new NetworkCapture(this.Logger, this.GameNetwork);
 
@@ -131,7 +131,7 @@ namespace FFXIV_Vibe_Plugin {
       this.PluginUi = new PluginUI(this.Logger, this.PluginInterface, this.Configuration, this.ConfigurationProfile, this, this.DeviceController, this.TriggersController, this.Patterns);
       this.PluginInterface.UiBuilder.Draw += DrawUI;
       this.PluginInterface.UiBuilder.OpenConfigUi += DisplayConfigUI;
-      
+
       // Make sure we set the current profile everywhere.
       this.SetProfile(this.Configuration.CurrentProfileName);
     }
@@ -194,7 +194,7 @@ namespace FFXIV_Vibe_Plugin {
 
     public static string GetHelp(string command) {
       string helpMessage = $@"Usage:
-      {command} config      
+      {command} config
       {command} connect
       {command} disconnect
       {command} send <0-100> # Send vibe intensity to all toys
@@ -318,7 +318,7 @@ namespace FFXIV_Vibe_Plugin {
       private void PlayerCurrentHPChanged(object? send, EventArgs e) {
       float currentHP = this.PlayerStats.GetCurrentHP();
       float maxHP = this.PlayerStats.GetMaxHP();
-      
+
       if(this.TriggersController == null) {
         this.Logger.Warn("PlayerCurrentHPChanged: TriggersController not init yet, ignoring HP change...");
         return;

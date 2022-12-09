@@ -319,7 +319,7 @@ namespace FFXIV_Vibe_Plugin.Device {
     }
 
     /**
-     * Sends an itensity vibe to all of the devices 
+     * Sends an intensity vibe to all of the devices
      * @param {float} intensity
      */
     public void SendVibeToAll(int intensity) {
@@ -339,11 +339,11 @@ namespace FFXIV_Vibe_Plugin.Device {
 
       string[] patternSegments = pattern.Value.Split("|");
       this.Logger.Log($"SendPattern '{command}' pattern={pattern.Name} ({patternSegments.Length} segments) to {device} motor={motorId} startAfter={StartAfter} stopAfter={StopAfter} threshold={threshold}");
-      
+
       string deviceAndMotorId = $"{device.Name}:{motorId}";
       int startedUnixTime = this.CurrentDeviceAndMotorPlaying[deviceAndMotorId];
 
-      // Make sure things stops if StopAfter is set by sending a zero. 
+      // Make sure things stops if StopAfter is set by sending a zero.
       // We make sure to send the zero to the correct device and if it is still running.
       bool forceStop = false;
       Thread tStopAfter = new(delegate () {
@@ -358,10 +358,10 @@ namespace FFXIV_Vibe_Plugin.Device {
       tStopAfter.Start();
 
       Thread t = new(delegate () {
-        
+
         Thread.Sleep((int)StartAfter * 1000);
-        
-        // Stop exectution if a new pattern is sent to the same device and motor.
+
+        // Stop execution if a new pattern is sent to the same device and motor.
         if(startedUnixTime != this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
           return;
         }
@@ -372,7 +372,7 @@ namespace FFXIV_Vibe_Plugin.Device {
 
         for(int segIndex = 0; segIndex < patternSegments.Length; segIndex++) {
 
-          // Stop exectution if a new pattern is send to the same device and motor.
+          // Stop execution if a new pattern is send to the same device and motor.
           if(startedUnixTime != this.CurrentDeviceAndMotorPlaying[deviceAndMotorId]) {
             break;
           }
@@ -382,7 +382,7 @@ namespace FFXIV_Vibe_Plugin.Device {
           int intensity = Helpers.ClampIntensity(Int32.Parse(patternValues[0]), threshold);
           int duration = Int32.Parse(patternValues[1]);
           //this.Logger.Debug($"SENDING SEGMENT: intensity={intensity} duration={duration}");
-          
+
           // Stop after and send 0 intensity
           if(forceStop || (StopAfter > 0 && StopAfter * 1000 + startedUnixTime < Helpers.GetUnix())) {
             this.SendCommand(command, device, 0, motorId, duration);

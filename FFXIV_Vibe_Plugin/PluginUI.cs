@@ -316,7 +316,7 @@ namespace FFXIV_Vibe_Plugin {
           this.Configuration.Save();
         }
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better ingame performance.");
+        ImGuiComponents.HelpMarker("Use the /xllog to see all casted spells. Disable this to have better in-game performance.");
         ImGui.TableNextRow();
 
         // Checkbox OPTION_VERBOSE_CHAT
@@ -327,14 +327,14 @@ namespace FFXIV_Vibe_Plugin {
           this.Configuration.Save();
         }
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker("Use the /xllog to see all chat message. Disable this to have better ingame performance.");
+        ImGuiComponents.HelpMarker("Use the /xllog to see all chat message. Disable this to have better in-game performance.");
 
         ImGui.EndTable();
       }
       ImGui.EndChild();
 
       if(this.ConfigurationProfile.VERBOSE_CHAT || this.ConfigurationProfile.VERBOSE_SPELL) {
-        ImGui.TextColored(ImGuiColors.DalamudOrange, "Please, disabled chat and spell logs for better ingame performance.");
+        ImGui.TextColored(ImGuiColors.DalamudOrange, "Please, disabled chat and spell logs for better in-game performance.");
       }
     }
 

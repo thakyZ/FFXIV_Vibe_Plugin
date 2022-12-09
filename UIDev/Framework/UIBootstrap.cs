@@ -13,7 +13,7 @@ namespace UIDev
 {
     class UIBootstrap
     {
-        public static unsafe void Inititalize(IPluginUIMock pluginUI)
+        public static unsafe void Initialize(IPluginUIMock pluginUI)
         {
             // you can edit this if you want more control over things
             // mainly if you want a regular window instead of transparent overlay

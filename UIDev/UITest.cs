@@ -11,7 +11,7 @@ namespace UIDev
     {
         public static void Main(string[] args)
         {
-            UIBootstrap.Inititalize(new UITest());
+            UIBootstrap.Initialize(new UITest());
         }
 
         private TextureWrap? goatImage;

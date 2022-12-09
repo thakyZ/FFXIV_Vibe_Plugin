@@ -14,7 +14,7 @@ namespace FFXIV_Vibe_Plugin {
      * Pattern is: [intensity]:[duration in ms]
      */
     public Patterns() {
-      this.AddBuiltinPattern(new Pattern("intensity", "100:0")); // Don't change this one. 
+      this.AddBuiltinPattern(new Pattern("intensity", "100:0")); // Don't change this one.
       this.AddBuiltinPattern(new Pattern("ramp", "10:150|20:150|30:150|40:150|50:150|60:150|70:150|80:150|90:150|100:250|0:0"));
       this.AddBuiltinPattern(new Pattern("bump", "10:150|20:150|30:150|40:150|50:150|60:150|70:150|80:150|90:150|100:250|50:250|100:500|0:0"));
       this.AddBuiltinPattern(new Pattern("square", "100:800|50:800|0:200|100:1000|0:0"));
@@ -34,7 +34,7 @@ namespace FFXIV_Vibe_Plugin {
       this.AddBuiltinPattern(new Pattern("Vel: Heartbeat (fast) 8.3s", "50:200|0:200|70:200|0:1000|50:200|0:200|70:200|0:1000|50:200|0:200|70:200|0:1000|50:200|0:200|70:200|0:1000|0:0"));
       this.AddBuiltinPattern(new Pattern("FF Victory Jingle 4.95sec", "20:150|0:150|70:150|0:150|0:500|60:150|0:150|40:150|0:150|0:500|30:150|0:150|80:150|0:150|0:500|100:150|0:150|20:150|0:150|0:500|30:150|0:150|40:150|0:150|0:500|90:150|0:150|80:150|0:150|0:500|20:150|0:150|10:150|0:150|0:500|90:150|0:150|80:150|0:150|0:0"));
 
-      
+
 
 
     }

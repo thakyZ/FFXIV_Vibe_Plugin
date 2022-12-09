@@ -22,7 +22,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
       this.StopNetworkCapture();
     }
 
-    /** Monitor the network and caputre some information */
+    /** Monitor the network and capture some information */
     public void StartNetworkCapture() {
       /*
       this.Logger.Debug("STARTING EXPERIMENTAL");

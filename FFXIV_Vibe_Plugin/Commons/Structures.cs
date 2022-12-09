@@ -33,7 +33,7 @@ namespace FFXIV_Vibe_Plugin.Commons {
       Transport = 60,
     };
 
-    // Unused, should be usefull for HookActionEffects but don't know where this field is.
+    // Unused, should be useful for HookActionEffects but don't know where this field is.
     public enum DamageType {
       Unknown = 0,
       Slashing = 1,

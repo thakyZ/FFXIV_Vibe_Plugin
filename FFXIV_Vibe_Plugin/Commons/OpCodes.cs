@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FFXIV_Vibe_Plugin {
   internal class OpCodes {
-    
+
     ////////////////////////////////////////////////////////////////////////////////
     /// Lobby Connection IPC Codes
     /**
