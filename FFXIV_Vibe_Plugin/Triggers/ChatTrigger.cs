@@ -24,22 +24,4 @@ namespace FFXIV_Vibe_Plugin.Triggers {
       }
     }
 
-    public int Intensity { get; }
-
-    public string ToMatch { get; }
-    public string Text { get; }
-
-    public override string ToString() {
-      return $"Trigger(intensity: {Intensity}, text: '{Text}')";
-    }
-    public string ToConfigString() {
-      return $"{Intensity} {Text}";
-    }
-    public int CompareTo(object? obj) {
-      ChatTrigger? that = obj as ChatTrigger;
-      int thatintensity = that != null ? that.Intensity : 0;
-      return this.Intensity.CompareTo(thatintensity);
-    }
-  }
-
 }

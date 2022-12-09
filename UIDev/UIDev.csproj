@@ -14,8 +14,6 @@
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</OutputPath>
-    <BaseOutputPath>$(AppData)\XIVLauncher\devPlugins\FFXIV_Vibe_Plugin\</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +45,6 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.7" />
+    <PackageReference Include="DalamudPackager" Version="2.1.5" />
   </ItemGroup>
 </Project>

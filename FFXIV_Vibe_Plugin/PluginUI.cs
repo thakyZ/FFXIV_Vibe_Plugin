@@ -427,11 +427,11 @@ namespace FFXIV_Vibe_Plugin {
     public unsafe void DrawTriggersTab() {
       List<Triggers.Trigger> triggers = this.TriggerController.GetTriggers();
       string selectedId = this.SelectedTrigger != null ? this.SelectedTrigger.Id : "";
-      if(ImGui.BeginChild("###TriggersSelector", new Vector2(ImGui.GetWindowContentRegionWidth()/3, -ImGui.GetFrameHeightWithSpacing()), true)) {
+      if(ImGui.BeginChild("###TriggersSelector", new Vector2(ImGui.GetWindowContentRegionMax().X/3, -ImGui.GetFrameHeightWithSpacing()), true)) {
         ImGui.SetNextItemWidth(185);
         ImGui.InputText("###TriggersSelector_SearchBar", ref this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR, 200);
         ImGui.Spacing();
-        
+
         for(int triggerIndex=0; triggerIndex<triggers.Count; triggerIndex++) {
           Triggers.Trigger trigger = triggers[triggerIndex];
           if(trigger != null) {
@@ -445,7 +445,7 @@ namespace FFXIV_Vibe_Plugin {
             if(!Helpers.RegExpMatch(this.Logger, triggerName, this.CURRENT_TRIGGER_SELECTOR_SEARCHBAR)) {
               continue;
             }
-            
+
             if(ImGui.Selectable($"{triggerNameWithId}", selectedId == trigger.Id)) { // We don't want to show the ID
               this.SelectedTrigger = trigger;
               this.triggersViewMode = "edit";
@@ -722,7 +722,7 @@ namespace FFXIV_Vibe_Plugin {
             if(
                   this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage ||
                   this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal
-                 || 
+                 ||
                 this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange)
             {
               // Min/Max amount values
@@ -730,7 +730,7 @@ namespace FFXIV_Vibe_Plugin {
               if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Damage) { type = "damage"; }
               if(this.SelectedTrigger.ActionEffectType == (int)Structures.ActionEffectType.Heal) { type = "heal"; }
               if(this.SelectedTrigger.Kind == (int)Triggers.KIND.HPChange) { type = "health"; }
-              
+
               // TRIGGER AMOUNT IN PERCENTAGE
               ImGui.TableNextColumn();
               ImGui.Text("Amount in percentage?");
@@ -741,7 +741,7 @@ namespace FFXIV_Vibe_Plugin {
                 this.Configuration.Save();
               }
 
-              
+
 
               // TRIGGER MIN_VALUE
               ImGui.TableNextColumn();

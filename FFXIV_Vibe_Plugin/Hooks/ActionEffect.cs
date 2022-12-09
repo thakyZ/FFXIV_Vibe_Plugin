@@ -54,15 +54,16 @@ namespace FFXIV_Vibe_Plugin.Hooks {
     private void InitHook() {
       try {
         // Found on: https://github.com/lmcintyre/DamageInfoPlugin/blob/main/DamageInfoPlugin/DamageInfoPlugin.cs#L133
-        IntPtr receiveActionEffectFuncPtr = this.Scanner.ScanText("4C 89 44 24 ?? 55 56 57 41 54 41 55 41 56 48 8D 6C 24");
-        receiveActionEffectHook = new Hook<HOOK_ReceiveActionEffectDelegate>(receiveActionEffectFuncPtr, (HOOK_ReceiveActionEffectDelegate)ReceiveActionEffect);
-        
-      } catch(Exception e) {
+        IntPtr receiveActionEffectFuncPtr = this.Scanner.ScanText("4C 89 44 24 ?? 55 56 41 54 41 55 41 56");
+        receiveActionEffectHook = new Hook<HOOK_ReceiveActionEffectDelegate>(receiveActionEffectFuncPtr, ReceiveActionEffect);
+
+      }
+      catch (Exception e) {
         this.Dispose();
         this.Logger.Warn($"Encountered an error loading HookActionEffect: {e.Message}. Disabling it...");
         throw;
       }
-      
+
       receiveActionEffectHook.Enable();
       this.Logger.Log("HookActionEffect was correctly enabled!");
     }
@@ -84,7 +85,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         int[] amounts = this.GetAmounts(ptr_targetCount, effectArray);
         float amountAverage = ComputeAverageAmount(amounts);
         List<Structures.Player> targets = this.GetAllTarget(ptr_targetCount, effectTrail, amounts);
-        
+
 
         // Spell definition
         spell.Id = (int)ptr_id;
@@ -97,7 +98,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
 
         // WARNING: if there is no target, some information will be wrong !
         // It is needed to avoid effect type if there is no target.
-        if(targets.Count == 0) { 
+        if(targets.Count == 0) {
           spell.ActionEffectType = Structures.ActionEffectType.Any;
         } else {
           spell.ActionEffectType = effect.type;
@@ -107,7 +108,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
         this.Logger.Log($"{e.Message} {e.StackTrace}");
       }
       this.RestoreOriginalHook(sourceId, sourceCharacter, pos, effectHeader, effectArray, effectTrail);
-      
+
     }
 
     private void RestoreOriginalHook(int sourceId, IntPtr sourceCharacter, IntPtr pos, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail) {
@@ -121,7 +122,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
       int targetCount = (int)count;
       int effectsEntries = 0;
 
-      // The packet size depends on the number of target. 
+      // The packet size depends on the number of target.
       if(targetCount == 0) {
         effectsEntries = 0;
       } else if(targetCount == 1) {
@@ -155,7 +156,7 @@ namespace FFXIV_Vibe_Plugin.Hooks {
           if(counterValueFound < count) {
             RESULT[counterValueFound] = (int)tDmg;
           }
-          counterValueFound++; 
+          counterValueFound++;
         }
       }
       return RESULT;
@@ -184,15 +185,15 @@ namespace FFXIV_Vibe_Plugin.Hooks {
       }
       return names;
     }
- 
+
     private string GetSpellName(uint actionId, bool withId) {
       if(this.LuminaActionSheet == null) {
         this.Logger.Warn("HookActionEffect.GetSpellName: LuminaActionSheet is null");
-        return "***LUMINA ACTION SHEET NOT LOADED***";  
+        return "***LUMINA ACTION SHEET NOT LOADED***";
       }
       var row = this.LuminaActionSheet.GetRow(actionId);
       var spellName = "";
-      if(row != null) { 
+      if(row != null) {
         if(withId) {
           spellName = $"{row.RowId}:";
         }

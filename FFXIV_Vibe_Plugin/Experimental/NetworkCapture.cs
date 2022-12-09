@@ -24,12 +24,13 @@ namespace FFXIV_Vibe_Plugin.Experimental {
 
     /** Monitor the network and caputre some information */
     public void StartNetworkCapture() {
+      /*
       this.Logger.Debug("STARTING EXPERIMENTAL");
       this.ExperimentalNetworkCaptureStarted = true;
       if(this.GameNetwork != null) {
         this.GameNetwork.Enable();
         this.GameNetwork.NetworkMessage += this.OnNetworkReceived;
-      }
+      }*/
     }
 
     /** Stops the network capture experiment. */
@@ -43,7 +44,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
     }
 
     /**
-     * Analyze the network message when received. 
+     * Analyze the network message when received.
      * 1. We get the opCode
      * 2. We could retrieve the name of the OpCode using our Common.OpCodes
      * 3. If it is a ClientTrigger OpCode, we get the correct bytes using Sapphire structs
@@ -58,7 +59,7 @@ namespace FFXIV_Vibe_Plugin.Experimental {
       if(direction == NetworkMessageDirection.ZoneUp) {
         actionId = *(uint*)(dataPtr + 0x4);
       }
-      
+
       this.Logger.Log($"Hex: {vOut:X} Decimal: {opCode} ActionId: {actionId} SOURCE_ID: {sourceActorId} TARGET_ID: {targetActorId} DIRECTION: {direction} DATA_PTR: {dataPtr} NAME: {name}");
 
       if(name == "ClientZoneIpcType-ClientTrigger") {
