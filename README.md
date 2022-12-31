@@ -32,7 +32,7 @@ A plugin for FFXIV that will let you vibe your controller or toys.
 
 ## Prerequisites
 - [FFXIV QuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher).
-- [Intiface Desktop](https://intiface.com/desktop/)
+- [Intiface Desktop](https://github.com/intiface/intiface-desktop) (DON'T USE THE INTIFACE CENTRAL)
 
 
 ## Installation
@@ -76,6 +76,7 @@ We recommend you to use a bluetooth dongle. Here is the one we are using: [TP-Li
 
 ## FAQ
 ### Troubleshooting
+Make sure you have the [intiface-desktop](https://github.com/intiface/intiface-desktop) and not the new Intiface Central.
 1. Make sure your toy is not connected to another device (eg: your phone, your browser...). Disable the bluetooth on your phone.
 2. Make sure the addon is correctly installed (check the installation process again).
 3. Make sure you have the latest version.
@@ -98,6 +99,7 @@ please buy a bluetooth 5.0 dongle on amazon for 20$.
 
 ### The plugin does not connect to Intiface
 Please make sure you are doing it right. 
+Make sure you have the [intiface-desktop](https://github.com/intiface/intiface-desktop) and not the new Intiface Central.
 1. Open Intiface and click on the top right side **red** icon.
 2. Uncheck everything but not *WebSocket* and *Bluetooth*. WebSocket should have the following text: "on [All Interfaces]:12345"
 3. Click on Start Server (now you should have one *green* icon and one *red* icon on the top right side).
